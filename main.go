@@ -1,50 +1,47 @@
 package main
 
 import (
+	"fmt"
 	"math"
+	"time"
 
-	"github.com/gordonklaus/portaudio"
+	a "github.com/iljarotar/synth/audio"
+	w "github.com/iljarotar/synth/wave"
 )
 
 const sampleRate = 44100
 
+func root(x float64) float64 {
+	return math.Sin(2 * math.Pi * 440 * x)
+}
+
+func fifth(x float64) float64 {
+	return math.Sin(2 * math.Pi * 660 * x)
+}
+
+func third(x float64) float64 {
+	return math.Sin(2 * math.Pi * 550 * x)
+}
+
+var functions = []func(float64) float64{root, third}
+
 func main() {
-	portaudio.Initialize()
-	defer portaudio.Terminate()
-	s := newStereoSine(256, 320, sampleRate)
-	defer s.Close()
-	chk(s.Start())
+	audio := a.NewAudio()
+	audio.Init()
+	defer audio.Terminate()
 
-	for true {
-	}
-	chk(s.Stop())
-}
+	signal := a.NewSignal(w.Custom(sampleRate, functions))
+	defer signal.Close()
 
-type stereoSine struct {
-	*portaudio.Stream
-	stepL, phaseL float64
-	stepR, phaseR float64
-}
-
-func newStereoSine(freqL, freqR, sampleRate float64) *stereoSine {
-	s := &stereoSine{nil, freqL / sampleRate, 0, freqR / sampleRate, 0}
-	var err error
-	s.Stream, err = portaudio.OpenDefaultStream(0, 2, sampleRate, 0, s.processAudio)
-	chk(err)
-	return s
-}
-
-func (g *stereoSine) processAudio(out [][]float32) {
-	for i := range out[0] {
-		out[0][i] = float32(math.Sin(2 * math.Pi * g.phaseL))
-		_, g.phaseL = math.Modf(g.phaseL + g.stepL)
-		out[1][i] = float32(math.Sin(2 * math.Pi * g.phaseR))
-		_, g.phaseR = math.Modf(g.phaseR + g.stepR)
-	}
-}
-
-func chk(err error) {
+	err := signal.Start()
 	if err != nil {
-		panic(err)
+		fmt.Print(err)
+	}
+
+	time.Sleep(time.Second * 10)
+
+	err = signal.Stop()
+	if err != nil {
+		fmt.Print(err)
 	}
 }
