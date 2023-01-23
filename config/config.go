@@ -1,11 +1,16 @@
 package config
 
-// TODO: make Config a singleton class
+const sampleRate = 44100
+
+var instance *Config = nil
 
 type Config struct {
 	SampleRate float64
 }
 
-func NewConfig(sampleRate float64) *Config {
-	return &Config{SampleRate: sampleRate}
+func Instance() *Config {
+	if instance == nil {
+		instance = &Config{SampleRate: sampleRate}
+	}
+	return instance
 }

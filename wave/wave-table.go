@@ -10,7 +10,6 @@ type SignalFunc func(float64) float64
 
 type WaveTable struct {
 	step, phase float64
-	Config      *config.Config
 	SignalFunc  SignalFunc
 }
 
@@ -21,15 +20,17 @@ func (w *WaveTable) Process(out []float32) {
 	}
 }
 
-func Sine(c *config.Config, freq float64) *WaveTable {
+func Sine(freq float64) *WaveTable {
 	sine := func(x float64) float64 {
 		return math.Sin(x * 2 * math.Pi * freq)
 	}
-	w := &WaveTable{SignalFunc: sine, phase: 0, step: 1 / c.SampleRate, Config: c}
+
+	c := config.Instance()
+	w := &WaveTable{SignalFunc: sine, phase: 0, step: 1 / c.SampleRate}
 	return w
 }
 
-func Custom(c *config.Config, functions []SignalFunc) *WaveTable {
+func Custom(functions []SignalFunc) *WaveTable {
 	signalFunc := func(x float64) float64 {
 		var y float64
 		for i := range functions {
@@ -38,6 +39,7 @@ func Custom(c *config.Config, functions []SignalFunc) *WaveTable {
 		return y
 	}
 
-	w := &WaveTable{SignalFunc: signalFunc, phase: 0, step: 1 / c.SampleRate, Config: c}
+	c := config.Instance()
+	w := &WaveTable{SignalFunc: signalFunc, phase: 0, step: 1 / c.SampleRate}
 	return w
 }
