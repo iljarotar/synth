@@ -8,24 +8,18 @@ import (
 	"github.com/iljarotar/synth/config"
 )
 
-type SignalFunc func(float64) float64
-type WaveFunc func(float64) float64
-type NoiseFunc func() float64
+type SignalFunc func(x ...float64) float64
 
 type WaveTable struct {
 	step, phase float64
 	SignalFunc  SignalFunc
 }
 
-func NewWaveTable(waves []WaveFunc, noises []NoiseFunc) WaveTable {
-	signalFunc := func(x float64) float64 {
+func NewWaveTable(functions []SignalFunc) WaveTable {
+	signalFunc := func(x ...float64) float64 {
 		var y float64
-		for i := range waves {
-			y += waves[i](x)
-		}
-
-		for i := range noises {
-			y += noises[i]()
+		for i := range functions {
+			functions[i](x...)
 		}
 		return y
 	}
@@ -42,17 +36,17 @@ func (w *WaveTable) Process(out []float32) {
 	}
 }
 
-func SineFunc(freq float64) WaveFunc {
-	sine := func(x float64) float64 {
-		return math.Sin(x * 2 * math.Pi * freq)
+func SineFunc(freq float64) SignalFunc {
+	sine := func(x ...float64) float64 {
+		return math.Sin(2 * math.Pi * freq * x[0])
 	}
 
 	return sine
 }
 
-func Noise() NoiseFunc {
+func NoiseFunc() SignalFunc {
 	rand.Seed(time.Now().Unix())
-	noise := func() float64 {
+	noise := func(x ...float64) float64 {
 		return rand.Float64()
 	}
 
