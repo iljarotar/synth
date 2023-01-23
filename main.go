@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/iljarotar/synth/context"
@@ -14,19 +13,11 @@ func main() {
 	ctx.Init()
 	defer ctx.Terminate()
 
-	w := wave.NewWaveTable([]wave.SignalFunc{wave.SineFunc(440), wave.NoiseFunc()})
+	w := wave.NewWaveTable(wave.SineFunc(440), wave.NoiseFunc())
 	s := signal.NewSignal(w)
 	defer s.Close()
 
-	err := s.Start()
-	if err != nil {
-		fmt.Print(err)
-	}
-
+	s.Start()
 	time.Sleep(time.Second * 10)
-
-	err = s.Stop()
-	if err != nil {
-		fmt.Print(err)
-	}
+	s.Stop()
 }

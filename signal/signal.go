@@ -24,3 +24,17 @@ func NewSignal(w wave.WaveTable) *Signal {
 
 	return s
 }
+
+func (s *Signal) Play() {
+	err := s.Stream.Start()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (s *Signal) Stop() {
+	err := s.Stream.Stop()
+	if err != nil {
+		panic(err)
+	}
+}
