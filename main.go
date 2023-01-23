@@ -15,7 +15,7 @@ func main() {
 	ctx.Init()
 	defer ctx.Terminate()
 
-	w := wave.NewWaveTable(wave.SineFunc(220, 0.1), wave.SineFunc(275, 0.1), wave.SineFunc(330, 0.1), wave.SineFunc(412, 0.15), wave.NoiseFunc(0.005))
+	w := wave.NewWaveTable(wave.Wave{Type: wave.Sine})
 	s := signal.NewSignal(w)
 	defer s.Close()
 

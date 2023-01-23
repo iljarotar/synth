@@ -8,9 +8,9 @@ import (
 
 type SignalFunc func(x ...float64) float64
 
-func SineFunc(freq float64, amplitude float64) SignalFunc {
+func SineFunc(freq int, amplitude float64) SignalFunc {
 	sine := func(x ...float64) float64 {
-		return math.Sin(2*math.Pi*freq*x[0]) * amplitude
+		return math.Sin(2*math.Pi*float64(freq)*x[0]) * amplitude
 	}
 
 	return sine
