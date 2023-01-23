@@ -1,8 +1,7 @@
 package main
 
 import (
-	"time"
-
+	"github.com/Songmu/prompter"
 	"github.com/iljarotar/synth/context"
 	"github.com/iljarotar/synth/signal"
 	"github.com/iljarotar/synth/wave"
@@ -17,7 +16,7 @@ func main() {
 	s := signal.NewSignal(w)
 	defer s.Close()
 
-	s.Start()
-	time.Sleep(time.Second * 10)
+	go s.Play()
+	prompter.Prompt(">", "exit")
 	s.Stop()
 }
