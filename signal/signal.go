@@ -12,7 +12,7 @@ type Signal struct {
 	*portaudio.Stream
 }
 
-func NewSignal(w *wave.WaveTable) *Signal {
+func NewSignal(w wave.WaveTable) *Signal {
 	s := &Signal{}
 	c := config.Instance()
 
