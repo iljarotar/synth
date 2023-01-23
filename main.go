@@ -2,45 +2,34 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"time"
 
-	a "github.com/iljarotar/synth/audio"
-	w "github.com/iljarotar/synth/wave"
+	"github.com/iljarotar/synth/config"
+	"github.com/iljarotar/synth/context"
+	"github.com/iljarotar/synth/signal"
+	"github.com/iljarotar/synth/wave"
 )
 
 const sampleRate = 44100
 
-func root(x float64) float64 {
-	return math.Sin(2 * math.Pi * 440 * x)
-}
-
-func fifth(x float64) float64 {
-	return math.Sin(2 * math.Pi * 660 * x)
-}
-
-func third(x float64) float64 {
-	return math.Sin(2 * math.Pi * 550 * x)
-}
-
-var functions = []func(float64) float64{root, third}
-
 func main() {
-	audio := a.NewAudio()
-	audio.Init()
-	defer audio.Terminate()
+	ctx := context.NewContext()
+	ctx.Init()
+	defer ctx.Terminate()
 
-	signal := a.NewSignal(w.Custom(sampleRate, functions))
-	defer signal.Close()
+	c := config.NewConfig(sampleRate)
 
-	err := signal.Start()
+	s := signal.NewSignal(wave.Sine(c, 440))
+	defer s.Close()
+
+	err := s.Start()
 	if err != nil {
 		fmt.Print(err)
 	}
 
 	time.Sleep(time.Second * 10)
 
-	err = signal.Stop()
+	err = s.Stop()
 	if err != nil {
 		fmt.Print(err)
 	}

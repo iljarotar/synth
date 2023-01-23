@@ -2,11 +2,16 @@ package wave
 
 import (
 	"math"
+
+	"github.com/iljarotar/synth/config"
 )
 
+type SignalFunc func(float64) float64
+
 type WaveTable struct {
-	step, phase, SampleRate float64
-	SignalFunc              func(x float64) float64
+	step, phase float64
+	Config      *config.Config
+	SignalFunc  SignalFunc
 }
 
 func (w *WaveTable) Process(out []float32) {
@@ -16,15 +21,15 @@ func (w *WaveTable) Process(out []float32) {
 	}
 }
 
-func Sine(freq, sampleRate float64) *WaveTable {
+func Sine(c *config.Config, freq float64) *WaveTable {
 	sine := func(x float64) float64 {
 		return math.Sin(x * 2 * math.Pi * freq)
 	}
-	w := &WaveTable{SignalFunc: sine, phase: 0, step: 1 / sampleRate, SampleRate: sampleRate}
+	w := &WaveTable{SignalFunc: sine, phase: 0, step: 1 / c.SampleRate, Config: c}
 	return w
 }
 
-func Custom(sampleRate float64, functions []func(float64) float64) *WaveTable {
+func Custom(c *config.Config, functions []SignalFunc) *WaveTable {
 	signalFunc := func(x float64) float64 {
 		var y float64
 		for i := range functions {
@@ -33,6 +38,6 @@ func Custom(sampleRate float64, functions []func(float64) float64) *WaveTable {
 		return y
 	}
 
-	w := &WaveTable{SignalFunc: signalFunc, phase: 0, step: 1 / sampleRate, SampleRate: sampleRate}
+	w := &WaveTable{SignalFunc: signalFunc, phase: 0, step: 1 / c.SampleRate, Config: c}
 	return w
 }
