@@ -1,6 +1,9 @@
 package main
 
 import (
+	"os"
+	"os/exec"
+
 	"github.com/Songmu/prompter"
 	"github.com/iljarotar/synth/context"
 	"github.com/iljarotar/synth/signal"
@@ -12,11 +15,22 @@ func main() {
 	ctx.Init()
 	defer ctx.Terminate()
 
-	w := wave.NewWaveTable(wave.SineFunc(440), wave.NoiseFunc())
+	w := wave.NewWaveTable(wave.NoiseFunc())
 	s := signal.NewSignal(w)
 	defer s.Close()
 
+	clear()
 	go s.Play()
-	prompter.Prompt(">", "exit")
+
+	for input := prompter.Prompt(">", ""); input != "exit"; {
+		input = prompter.Prompt(">", "")
+	}
+
 	s.Stop()
+}
+
+func clear() {
+	cmd := exec.Command("clear")
+	cmd.Stdout = os.Stdout
+	cmd.Run()
 }

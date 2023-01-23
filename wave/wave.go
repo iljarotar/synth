@@ -15,7 +15,7 @@ func NewWaveTable(functions ...SignalFunc) WaveTable {
 	signalFunc := func(x ...float64) float64 {
 		var y float64
 		for i := range functions {
-			functions[i](x...)
+			y += functions[i](x...)
 		}
 		return y
 	}
