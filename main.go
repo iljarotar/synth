@@ -17,12 +17,16 @@ var waves = []wave.Wave{
 	{Type: wave.Sine, Freq: 415, Amplitude: 1},
 }
 
+var noise = []wave.Wave{
+	{Type: wave.Noise, Amplitude: 1},
+}
+
 func main() {
 	ctx := context.NewContext()
 	ctx.Init()
 	defer ctx.Terminate()
 
-	w := wave.NewWaveTable(waves...)
+	w := wave.NewWaveTable(noise...)
 	s := signal.NewSignal(w)
 	defer s.Close()
 

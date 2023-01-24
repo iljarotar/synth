@@ -37,7 +37,8 @@ func SineFunc(freq int, amplitude float64) SignalFunc {
 func NoiseFunc(amplitude float64) SignalFunc {
 	rand.Seed(time.Now().Unix())
 	noise := func(x ...float64) float64 {
-		return rand.Float64() * amplitude
+		y := rand.Float64()*2 - 1
+		return y * amplitude
 	}
 
 	return noise
