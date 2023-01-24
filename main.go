@@ -1,12 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 
 	"github.com/Songmu/prompter"
-	"github.com/iljarotar/synth/context"
-	"github.com/iljarotar/synth/signal"
+	"github.com/iljarotar/synth/audio"
+	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/wave"
 )
 
@@ -22,22 +23,27 @@ var noise = []wave.Wave{
 }
 
 func main() {
-	ctx := context.NewContext()
-	ctx.Init()
-	defer ctx.Terminate()
+	audio.Init()
+	defer audio.Terminate()
 
+	c := config.Instance()
 	w := wave.NewWaveTable(noise...)
-	s := signal.NewSignal(w)
-	defer s.Close()
+
+	ctx, err := audio.NewContext(c.SampleRate, w.Process)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	defer ctx.Close()
 
 	clear()
-	go s.Play()
+	go ctx.Start()
 
 	for input := prompter.Prompt(">", ""); input != "exit"; {
 		input = prompter.Prompt(">", "")
 	}
 
-	s.Stop()
+	ctx.Stop()
 }
 
 func clear() {
