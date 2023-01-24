@@ -30,15 +30,18 @@ type Wave struct {
 
 func NewWaveTable(waves ...Wave) WaveTable {
 	var amp float64
+	f := make([]SignalFunc, 0)
+
 	for i := range waves {
-		amp += waves[i].Amplitude
+		w := waves[i]
+		amp += w.Amplitude
+		f = append(f, NewFunc(w.Freq, w.Amplitude, w.Type))
 	}
 
 	signalFunc := func(x ...float64) float64 {
 		var y float64
 		for i := range waves {
-			w := waves[i]
-			y += NewFunc(w.Freq, w.Amplitude, w.Type)(x...)
+			y += f[i](x...)
 		}
 		return y / amp // normalize
 	}
