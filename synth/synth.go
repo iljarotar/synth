@@ -20,3 +20,7 @@ func (s *Synth) Play(input chan<- float32) {
 	}
 	close(input)
 }
+
+func (s *Synth) SetWaveTable(waveTable wave.WaveTable) {
+	s.waveTable = waveTable
+}

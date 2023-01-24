@@ -41,9 +41,8 @@ func main() {
 	}
 	defer ctx.Close()
 
-	ctl := control.NewControl(*ctx, *s)
+	ctl := control.NewControl(*ctx, s)
 	err = ctl.Start()
-
 	if err != nil {
 		fmt.Println(err)
 		return

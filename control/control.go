@@ -7,10 +7,10 @@ import (
 
 type Control struct {
 	ctx   audio.Context
-	synth s.Synth
+	synth *s.Synth
 }
 
-func NewControl(ctx audio.Context, synth s.Synth) *Control {
+func NewControl(ctx audio.Context, synth *s.Synth) *Control {
 	return &Control{ctx: ctx, synth: synth}
 }
 
