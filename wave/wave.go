@@ -23,15 +23,24 @@ type WaveTable struct {
 }
 
 type Wave struct {
-	Type            WaveType
-	Freq, Amplitude *float64
+	Type      WaveType
+	Amplitude float64
+	Freq      int
 }
 
-// TODO: implement SignalFunc initialization and normalization
-// Sum all the amplitudes to get maximum possible amplitude
 func NewWaveTable(waves ...Wave) WaveTable {
+	var amp float64
+	for i := range waves {
+		amp += waves[i].Amplitude
+	}
+
 	signalFunc := func(x ...float64) float64 {
-		return 0
+		var y float64
+		for i := range waves {
+			w := waves[i]
+			y += NewFunc(w.Freq, w.Amplitude, w.Type)(x...)
+		}
+		return y / amp // normalize
 	}
 
 	c := config.Instance()
