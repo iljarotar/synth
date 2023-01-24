@@ -23,7 +23,9 @@ var noise = []wave.Wave{
 }
 
 func main() {
-	audio.Init()
+	if err := audio.Init(); err != nil {
+		return
+	}
 	defer audio.Terminate()
 
 	c := config.Instance()

@@ -34,10 +34,10 @@ func (c *Context) Stop() {
 	}
 }
 
-func Init() {
-	portaudio.Initialize()
+func Init() error {
+	return portaudio.Initialize()
 }
 
-func Terminate() {
-	portaudio.Terminate()
+func Terminate() error {
+	return portaudio.Terminate()
 }
