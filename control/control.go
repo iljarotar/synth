@@ -3,15 +3,27 @@ package control
 import (
 	"github.com/iljarotar/synth/audio"
 	s "github.com/iljarotar/synth/synth"
+	"gopkg.in/yaml.v2"
 )
 
 type Control struct {
 	ctx   audio.Context
-	synth *s.Synth
+	Synth *s.Synth `yaml:"synth"`
 }
 
-func NewControl(ctx audio.Context, synth *s.Synth) *Control {
-	return &Control{ctx: ctx, synth: synth}
+func NewControl(ctx *audio.Context) *Control {
+	return &Control{ctx: *ctx}
+}
+
+func (c *Control) Parse(data []byte) error {
+	err := yaml.Unmarshal(data, c)
+	if err != nil {
+		return err
+	}
+
+	c.Synth.Initialize()
+
+	return nil
 }
 
 func (c *Control) Start() error {
@@ -20,13 +32,13 @@ func (c *Control) Start() error {
 		return err
 	}
 
-	*c.synth.Playing = true
-	go c.synth.Play(c.ctx.Input)
+	*c.Synth.Playing = true
+	go c.Synth.Play(c.ctx.Input)
 
 	return nil
 }
 
 func (c *Control) Stop() error {
-	*c.synth.Playing = false
+	*c.Synth.Playing = false
 	return c.ctx.Stop()
 }

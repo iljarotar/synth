@@ -18,32 +18,34 @@ const (
 type WaveTable struct {
 	Step, Phase float64
 	SignalFunc  SignalFunc
+	Waves       []Wave `yaml:"waves"`
 }
 
 type Wave struct {
-	Type      WaveType
-	Amplitude float64
-	Freq      int
+	Type      WaveType `yaml:"type"`
+	Amplitude float64  `yaml:"amplitude"`
+	Freq      int      `yaml:"freq"`
 }
 
-func NewWaveTable(waves ...Wave) WaveTable {
+func (w *WaveTable) CreateSignalFunction() {
 	var amp float64
 	f := make([]SignalFunc, 0)
 
-	for i := range waves {
-		w := waves[i]
+	for i := range w.Waves {
+		w := w.Waves[i]
 		amp += w.Amplitude
 		f = append(f, NewFunc(w.Freq, w.Amplitude, w.Type))
 	}
 
 	signalFunc := func(x ...float64) float64 {
 		var y float64
-		for i := range waves {
+		for i := range w.Waves {
 			y += f[i](x...)
 		}
 		return y / amp // normalize
 	}
 
 	c := config.Instance()
-	return WaveTable{Step: 1 / c.SampleRate, SignalFunc: signalFunc}
+	w.Step = 1 / c.SampleRate
+	w.SignalFunc = signalFunc
 }

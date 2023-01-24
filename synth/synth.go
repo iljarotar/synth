@@ -5,22 +5,23 @@ import (
 )
 
 type Synth struct {
-	waveTable wave.WaveTable
+	WaveTable wave.WaveTable `yaml:"wavetable"`
 	Playing   *bool
 }
 
-func NewSynth(waveTable wave.WaveTable) *Synth {
-	return &Synth{waveTable: waveTable, Playing: new(bool)}
+func (s *Synth) Initialize() {
+	s.WaveTable.CreateSignalFunction()
+	s.Playing = new(bool)
 }
 
 func (s *Synth) Play(input chan<- float32) {
 	for *s.Playing {
-		input <- float32(s.waveTable.SignalFunc(s.waveTable.Phase))
-		s.waveTable.Phase += s.waveTable.Step
+		input <- float32(s.WaveTable.SignalFunc(s.WaveTable.Phase))
+		s.WaveTable.Phase += s.WaveTable.Step
 	}
 	close(input)
 }
 
 func (s *Synth) SetWaveTable(waveTable wave.WaveTable) {
-	s.waveTable = waveTable
+	s.WaveTable = waveTable
 }

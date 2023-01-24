@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 
@@ -9,17 +10,7 @@ import (
 	"github.com/iljarotar/synth/audio"
 	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/control"
-	"github.com/iljarotar/synth/synth"
-	"github.com/iljarotar/synth/wave"
 )
-
-var waves = []wave.Wave{
-	{Type: wave.Sine, Freq: 220, Amplitude: 1},
-	{Type: wave.Sine, Freq: 275, Amplitude: 1},
-	{Type: wave.Sine, Freq: 330, Amplitude: 1},
-	{Type: wave.Sine, Freq: 415, Amplitude: 1},
-	{Type: wave.Noise, Amplitude: 0.1},
-}
 
 func main() {
 	if err := audio.Init(); err != nil {
@@ -28,9 +19,6 @@ func main() {
 	}
 	defer audio.Terminate()
 	clear()
-
-	w := wave.NewWaveTable(waves...)
-	s := synth.NewSynth(w)
 
 	c := config.Instance()
 	input := make(chan float32)
@@ -41,7 +29,20 @@ func main() {
 	}
 	defer ctx.Close()
 
-	ctl := control.NewControl(*ctx, s)
+	ctl := control.NewControl(ctx)
+
+	data, err := ioutil.ReadFile("patches/example.yaml")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	err = ctl.Parse(data)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	err = ctl.Start()
 	if err != nil {
 		fmt.Println(err)
