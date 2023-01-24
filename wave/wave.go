@@ -6,23 +6,45 @@ import (
 	"github.com/iljarotar/synth/config"
 )
 
+type WaveType string
+
+func (t WaveType) String() string {
+	return string(t)
+}
+
+const (
+	Sine  WaveType = "Sine"
+	Noise WaveType = "Noise"
+)
+
 type WaveTable struct {
 	step, phase float64
 	SignalFunc  SignalFunc
 }
 
-func NewWaveTable(functions ...SignalFunc) WaveTable {
+type Wave struct {
+	Type      WaveType
+	Amplitude float64
+	Freq      int
+}
+
+func NewWaveTable(waves ...Wave) WaveTable {
+	var amp float64
+	for i := range waves {
+		amp += waves[i].Amplitude
+	}
+
 	signalFunc := func(x ...float64) float64 {
 		var y float64
-		for i := range functions {
-			y += functions[i](x...)
+		for i := range waves {
+			w := waves[i]
+			y += NewFunc(w.Freq, w.Amplitude, w.Type)(x...)
 		}
-		return y
+		return y / amp // normalize
 	}
 
 	c := config.Instance()
-	w := WaveTable{SignalFunc: signalFunc, phase: 0, step: 1 / c.SampleRate}
-	return w
+	return WaveTable{step: 1 / c.SampleRate, SignalFunc: signalFunc}
 }
 
 func (w *WaveTable) Process(out []float32) {
