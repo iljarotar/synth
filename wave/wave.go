@@ -1,8 +1,6 @@
 package wave
 
 import (
-	"math"
-
 	"github.com/iljarotar/synth/config"
 )
 
@@ -18,7 +16,7 @@ const (
 )
 
 type WaveTable struct {
-	step, phase float64
+	Step, Phase float64
 	SignalFunc  SignalFunc
 }
 
@@ -47,12 +45,5 @@ func NewWaveTable(waves ...Wave) WaveTable {
 	}
 
 	c := config.Instance()
-	return WaveTable{step: 1 / c.SampleRate, SignalFunc: signalFunc}
-}
-
-func (w *WaveTable) Process(out []float32) {
-	for i := range out {
-		out[i] = float32(w.SignalFunc(w.phase))
-		_, w.phase = math.Modf(w.phase + w.step)
-	}
+	return WaveTable{Step: 1 / c.SampleRate, SignalFunc: signalFunc}
 }
