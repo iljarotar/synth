@@ -1,18 +1,17 @@
-synth:
-  wavetable:
-    waves:
-      - type: "Sine"
-        amplitude: 1
-        freq: 220
-      - type: "Sine"
-        amplitude: 1
-        freq: 275
-      - type: "Sine"
-        amplitude: 1
-        freq: 330
-      - type: "Sine"
-        amplitude: 1
-        freq: 415
-      - type: "Sine"
-        amplitude: 1
-        freq: 550
+wavetable:
+  waves:
+    - type: "Sine"
+      amplitude: 1
+      freq: 220
+    - type: "Sine"
+      amplitude: 1
+      freq: 275
+    - type: "Sine"
+      amplitude: 1
+      freq: 330
+    - type: "Sine"
+      amplitude: 1
+      freq: 415
+    - type: "Sine"
+      amplitude: 1
+      freq: 550

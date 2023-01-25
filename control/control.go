@@ -2,26 +2,28 @@ package control
 
 import (
 	"github.com/iljarotar/synth/audio"
+	"github.com/iljarotar/synth/parser"
 	s "github.com/iljarotar/synth/synth"
-	"gopkg.in/yaml.v2"
 )
 
 type Control struct {
 	ctx   audio.Context
-	Synth *s.Synth `yaml:"synth"`
+	Synth *s.Synth
 }
 
 func NewControl(ctx *audio.Context) *Control {
 	return &Control{ctx: *ctx}
 }
 
-func (c *Control) Parse(data []byte) error {
-	err := yaml.Unmarshal(data, c)
+func (c *Control) LoadSynth() error {
+	var synth s.Synth
+	err := parser.Parse(&synth)
 	if err != nil {
 		return err
 	}
 
-	c.Synth.Initialize()
+	synth.Initialize()
+	c.Synth = &synth
 
 	return nil
 }

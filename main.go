@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 
 	"github.com/iljarotar/synth/audio"
 	"github.com/iljarotar/synth/config"
@@ -28,14 +27,7 @@ func main() {
 	defer ctx.Close()
 
 	ctl := control.NewControl(ctx)
-
-	data, err := ioutil.ReadFile("patches/example.yaml")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	err = ctl.Parse(data)
+	err = ctl.LoadSynth()
 	if err != nil {
 		fmt.Println(err)
 		return
