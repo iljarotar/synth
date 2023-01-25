@@ -3,13 +3,11 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
-	"os/exec"
 
-	"github.com/Songmu/prompter"
 	"github.com/iljarotar/synth/audio"
 	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/control"
+	"github.com/iljarotar/synth/ui"
 )
 
 func main() {
@@ -18,7 +16,7 @@ func main() {
 		return
 	}
 	defer audio.Terminate()
-	clear()
+	ui.ClearScreen()
 
 	c := config.Instance()
 	input := make(chan float32)
@@ -49,18 +47,12 @@ func main() {
 		return
 	}
 
-	for input := prompter.Prompt(">", ""); input != "exit"; {
-		input = prompter.Prompt(">", "")
-	}
+	done := make(chan bool)
+	go ui.AcceptInput(done)
+	<-done
 
 	err = ctl.Stop()
 	if err != nil {
 		fmt.Println(err)
 	}
-}
-
-func clear() {
-	cmd := exec.Command("clear")
-	cmd.Stdout = os.Stdout
-	cmd.Run()
 }
