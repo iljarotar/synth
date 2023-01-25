@@ -15,7 +15,7 @@ func (b *buffer) Pipe() {
 		v := <-b.Input
 		b.buffer = append(b.buffer, v)
 		if len(b.buffer) > 1024 {
-			// b.send = filter(b.buffer) PLACE FILTERS HERE
+			b.send = b.buffer // filter b.buffer if necessary
 			b.Ouput <- b.send[0]
 			b.send = b.send[1:]
 			b.buffer = b.buffer[1:]
