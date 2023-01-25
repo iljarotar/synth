@@ -14,4 +14,4 @@ wavetable:
       freq: 415
     - type: "Sine"
       amplitude: 1
-      freq: 550
+      freq: 8000
