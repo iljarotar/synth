@@ -6,16 +6,14 @@ import (
 
 type Synth struct {
 	WaveTable wave.WaveTable `yaml:"wavetable"`
-	Playing   *bool
 }
 
 func (s *Synth) Initialize() {
 	s.WaveTable.CreateSignalFunction()
-	s.Playing = new(bool)
 }
 
-func (s *Synth) Play(input chan<- float32) {
-	for *s.Playing {
+func (s *Synth) Play(input chan<- float32, play *bool) {
+	for *play {
 		input <- float32(s.WaveTable.SignalFunc(s.WaveTable.Phase))
 		s.WaveTable.Phase += s.WaveTable.Step
 	}
