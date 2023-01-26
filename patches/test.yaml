@@ -11,6 +11,7 @@ wavetable:
           - type: "Sine"
             amplitude: 0.5
             freq: 2
+
     - type: "Sine"
       amplitude: 0.5
       freq: 275
@@ -19,8 +20,10 @@ wavetable:
           - type: "Sine"
             amplitude: 3
             freq: 1
-          - type: "Noise"
+          - type: "Sine"
             amplitude: 0.03
+            freq: 2
+
     - type: "Sine"
       amplitude: 0.5
       freq: 330
@@ -29,6 +32,7 @@ wavetable:
           - type: "Sine"
             amplitude: 0.5
             freq: 1
+
     - type: "Sine"
       amplitude: 0.5
       freq: 415
@@ -40,3 +44,11 @@ wavetable:
           - type: "Sine"
             amplitude: 1.2
             freq: 4
+
+    - type: "Noise"
+      amplitude: 0.01
+      amp-mod:
+        oscillators:
+          - type: "Sine"
+            amplitude: 0.005
+            freq: 1
