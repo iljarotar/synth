@@ -1,5 +1,0 @@
-wavetable:
-  oscillators:
-    - type: "Sine"
-      amplitude: 1
-      freq: 220

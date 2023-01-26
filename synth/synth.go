@@ -1,6 +1,8 @@
 package synth
 
 import (
+	"math"
+
 	o "github.com/iljarotar/synth/oscillator"
 )
 
@@ -9,13 +11,13 @@ type Synth struct {
 }
 
 func (s *Synth) Initialize() {
-	s.WaveTable.CreateSignalFunction()
+	s.WaveTable.Initialize()
 }
 
 func (s *Synth) Play(input chan<- float32, play *bool) {
 	for *play {
 		input <- float32(s.WaveTable.SignalFunc(s.WaveTable.Phase))
-		s.WaveTable.Phase += s.WaveTable.Step
+		_, s.WaveTable.Phase = math.Modf(s.WaveTable.Phase + s.WaveTable.Step)
 	}
 	close(input)
 }

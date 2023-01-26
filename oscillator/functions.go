@@ -8,12 +8,12 @@ import (
 
 type SignalFunc func(x float64) float64
 
-func NewFunc(freq int, amplitude float64, waveType OscillatorType) SignalFunc {
+func NewFunc(waveType OscillatorType) SignalFunc {
 	switch waveType {
 	case Sine:
-		return SineFunc(freq, amplitude)
+		return SineFunc()
 	case Noise:
-		return NoiseFunc(amplitude)
+		return NoiseFunc()
 	default:
 		return NoFunc()
 	}
@@ -26,19 +26,19 @@ func NoFunc() SignalFunc {
 	return f
 }
 
-func SineFunc(freq int, amplitude float64) SignalFunc {
+func SineFunc() SignalFunc {
 	sine := func(x float64) float64 {
-		return math.Sin(2*math.Pi*float64(freq)*x) * amplitude
+		return math.Sin(2 * math.Pi * x)
 	}
 
 	return sine
 }
 
-func NoiseFunc(amplitude float64) SignalFunc {
+func NoiseFunc() SignalFunc {
 	rand.Seed(time.Now().Unix())
 	noise := func(x float64) float64 {
 		y := rand.Float64()*2 - 1
-		return y * amplitude
+		return y
 	}
 
 	return noise

@@ -24,25 +24,47 @@ type WaveTable struct {
 type Oscillator struct {
 	Type      OscillatorType `yaml:"type"`
 	Amplitude float64        `yaml:"amplitude"`
-	Freq      int            `yaml:"freq"`
+	Freq      float64        `yaml:"freq"`
+	FreqMod   *WaveTable     `yaml:"freq-mod"`
+	AmpMod    *WaveTable     `yaml:"amp-mod"`
 }
 
-func (w *WaveTable) CreateSignalFunction() {
-	var amp float64
+func (w *WaveTable) Initialize() {
 	f := make([]SignalFunc, 0)
 
 	for i := range w.Oscillators {
 		w := w.Oscillators[i]
-		amp += w.Amplitude
-		f = append(f, NewFunc(w.Freq, w.Amplitude, w.Type))
+		f = append(f, NewFunc(w.Type))
+
+		if w.FreqMod != nil {
+			w.FreqMod.Initialize()
+		}
+
+		if w.AmpMod != nil {
+			w.AmpMod.Initialize()
+		}
 	}
 
 	signalFunc := func(x float64) float64 {
 		var y float64
+
 		for i := range w.Oscillators {
-			y += f[i](x)
+			osc := w.Oscillators[i]
+			amp := osc.Amplitude
+			freq := osc.Freq
+
+			if osc.FreqMod != nil {
+				freq += osc.FreqMod.SignalFunc(x)
+			}
+
+			if osc.AmpMod != nil {
+				amp += osc.AmpMod.SignalFunc(x)
+			}
+
+			y += f[i](x*freq) * amp
 		}
-		return y / amp // normalize
+
+		return y
 	}
 
 	c := config.Instance()
