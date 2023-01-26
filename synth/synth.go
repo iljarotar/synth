@@ -1,11 +1,11 @@
 package synth
 
 import (
-	"github.com/iljarotar/synth/wave"
+	o "github.com/iljarotar/synth/oscillator"
 )
 
 type Synth struct {
-	WaveTable wave.WaveTable `yaml:"wavetable"`
+	WaveTable o.WaveTable `yaml:"wavetable"`
 }
 
 func (s *Synth) Initialize() {
@@ -20,6 +20,6 @@ func (s *Synth) Play(input chan<- float32, play *bool) {
 	close(input)
 }
 
-func (s *Synth) SetWaveTable(waveTable wave.WaveTable) {
+func (s *Synth) SetWaveTable(waveTable o.WaveTable) {
 	s.WaveTable = waveTable
 }

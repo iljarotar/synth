@@ -35,10 +35,8 @@ func (c *Control) Start() error {
 		return err
 	}
 
-	buf := NewBuffer(c.ctx.Input)
-	go buf.Pipe()
 	*c.playing = true
-	go c.Synth.Play(buf.Input, c.playing) // pass buffer instead
+	go c.Synth.Play(c.ctx.Input, c.playing) // pass buffer instead
 
 	return nil
 }
