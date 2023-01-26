@@ -2,9 +2,9 @@ wavetable:
   oscillators:
     - type: "Sine"
       amplitude: 1
-      freq: 220.1
-      freq-mod:
-        oscillators:
-          - type: "Sine"
-            amplitude: 2
-            freq: 1
+      freq: 220.5
+      # freq-mod:
+      #   oscillators:
+      #     - type: "Sine"
+      #       amplitude: 2
+      #       freq: 1

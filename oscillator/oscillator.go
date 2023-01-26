@@ -64,7 +64,7 @@ func (w *WaveTable) Initialize() {
 			y += f[i](x*freq) * amp
 		}
 
-		return y
+		return y / float64(len(w.Oscillators))
 	}
 
 	c := config.Instance()
