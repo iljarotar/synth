@@ -9,14 +9,11 @@ func (t FilterType) String() string {
 const (
 	Lowpass  FilterType = "Lowpass"
 	Highpass FilterType = "Highpass"
-	Bandpass FilterType = "Bandpass"
 )
 
 type Filter struct {
 	Type       FilterType `yaml:"type"`
 	Cutoff     float64    `yaml:"cutoff"`
-	Freq       float64    `yaml:"freq"`
-	Range      float64    `yaml:"range"`
 	filterFunc FilterFunc
 }
 
