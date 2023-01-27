@@ -1,8 +1,7 @@
-package oscillator
+package wavetable
 
 import (
 	"github.com/iljarotar/synth/config"
-	f "github.com/iljarotar/synth/filter"
 )
 
 type OscillatorType string
@@ -20,7 +19,7 @@ type WaveTable struct {
 	Step, Phase float64
 	SignalFunc  SignalFunc
 	Oscillators []Oscillator `yaml:"oscillators"`
-	Filters     []f.Filter   `yaml:"filters"`
+	Filters     []Filter     `yaml:"filters"`
 }
 
 type Oscillator struct {
@@ -40,7 +39,7 @@ func (w *WaveTable) Initialize() {
 
 	for i := range w.Oscillators {
 		osc := w.Oscillators[i]
-		f = append(f, NewFunc(osc.Type))
+		f = append(f, NewSignalFunc(osc.Type))
 
 		if osc.FM != nil {
 			osc.FM.Initialize()
@@ -71,7 +70,7 @@ func (w *WaveTable) Initialize() {
 
 			for j := range w.Filters {
 				filter := w.Filters[j]
-				amp *= filter.Apply(osc.Freq)
+				amp *= filter.Apply(osc.Freq, x)
 			}
 
 			y += f[i](x*freq) * amp

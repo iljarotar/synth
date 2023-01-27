@@ -4,6 +4,11 @@ wavetable:
     - type: "Lowpass"
       cutoff: 330
       ramp: 1
+      cutoff-mod:
+        oscillators:
+          - type: "Sine"
+            amplitude: 2
+            freq: 1
   oscillators:
     - type: "Sine"
       amplitude: 30

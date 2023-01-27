@@ -1,24 +1,24 @@
-package filter
+package wavetable
 
 type FilterFunc func(freq, cutoff, ramp float64) (amp float64)
 
-func NewFunc(filterType FilterType) FilterFunc {
+func NewFilterFunc(filterType FilterType) FilterFunc {
 	switch filterType {
 	case Lowpass:
-		return LowpassFunc()
+		return LowpassFilterFunc()
 	default:
-		return NoFunc()
+		return NoFilterFunc()
 	}
 }
 
-func NoFunc() FilterFunc {
+func NoFilterFunc() FilterFunc {
 	f := func(freq, cutoff, ramp float64) (amp float64) {
 		return freq
 	}
 	return f
 }
 
-func LowpassFunc() FilterFunc {
+func LowpassFilterFunc() FilterFunc {
 	f := func(freq, cutoff, ramp float64) (amp float64) {
 		if freq < cutoff {
 			return 1
