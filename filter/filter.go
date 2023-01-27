@@ -14,6 +14,7 @@ const (
 type Filter struct {
 	Type       FilterType `yaml:"type"`
 	Cutoff     float64    `yaml:"cutoff"`
+	Ramp       float64    `yaml:"ramp"`
 	filterFunc FilterFunc
 }
 
@@ -22,5 +23,5 @@ func (f *Filter) Initialize() {
 }
 
 func (f *Filter) Apply(x float64) float64 {
-	return x
+	return f.filterFunc(x, f.Cutoff, f.Ramp)
 }
