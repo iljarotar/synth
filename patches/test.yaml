@@ -1,3 +1,4 @@
+gain: 100
 wavetable:
   oscillators:
     - type: "Sine"

@@ -34,7 +34,7 @@ func (w *WaveTable) Initialize() {
 
 	for i := range w.Oscillators {
 		w := w.Oscillators[i]
-		w.Amplitude /= 100 // amplitude should be given in %
+		w.Amplitude /= 100 // amplitude is given in percent
 		f = append(f, NewFunc(w.Type))
 
 		if w.FreqMod != nil {
