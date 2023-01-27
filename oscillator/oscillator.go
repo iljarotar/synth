@@ -25,10 +25,10 @@ type WaveTable struct {
 
 type Oscillator struct {
 	Type      OscillatorType `yaml:"type"`
-	Amplitude *float64       `yaml:"amplitude"`
+	Amplitude float64        `yaml:"amplitude"`
 	Freq      float64        `yaml:"freq"`
-	FreqMod   *WaveTable     `yaml:"freq-mod"`
-	AmpMod    *WaveTable     `yaml:"amp-mod"`
+	FM        *WaveTable     `yaml:"fm"`
+	AM        *WaveTable     `yaml:"am"`
 }
 
 func (w *WaveTable) Initialize() {
@@ -42,15 +42,15 @@ func (w *WaveTable) Initialize() {
 		w := w.Oscillators[i]
 		f = append(f, NewFunc(w.Type))
 
-		if w.FreqMod != nil {
-			w.FreqMod.Initialize()
+		if w.FM != nil {
+			w.FM.Initialize()
 		}
 
-		if w.AmpMod != nil {
-			w.AmpMod.Initialize()
+		if w.AM != nil {
+			w.AM.Initialize()
 		}
 
-		*w.Amplitude /= 100 // amplitude is given in percent
+		w.Amplitude /= 100 // amplitude is given in percent
 	}
 
 	signalFunc := func(x float64) float64 {
@@ -58,22 +58,21 @@ func (w *WaveTable) Initialize() {
 
 		for i := range w.Oscillators {
 			osc := w.Oscillators[i]
-			amp := *osc.Amplitude
+			amp := osc.Amplitude
 			freq := osc.Freq
 
-			if osc.FreqMod != nil {
-				freq += osc.FreqMod.SignalFunc(x)
+			if osc.FM != nil {
+				freq += osc.FM.SignalFunc(x)
 			}
 
-			if osc.AmpMod != nil {
-				amp += osc.AmpMod.SignalFunc(x)
+			if osc.AM != nil {
+				amp += osc.AM.SignalFunc(x)
 			}
 
-			// doesn't work
-			// for i := range w.Filters {
-			// 	filter := w.Filters[i]
-			// 	amp += filter.Apply(freq)
-			// }
+			for j := range w.Filters {
+				filter := w.Filters[j]
+				amp *= filter.Apply(osc.Freq)
+			}
 
 			y += f[i](x*freq) * amp
 		}

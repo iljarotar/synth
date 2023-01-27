@@ -4,7 +4,7 @@ wavetable:
     - type: "Sine"
       amplitude: 50
       freq: 220
-      amp-mod:
+      am:
         oscillators:
           - type: "Sine"
             amplitude: 50
@@ -16,7 +16,7 @@ wavetable:
     - type: "Sine"
       amplitude: 50
       freq: 275
-      freq-mod:
+      fm:
         oscillators:
           - type: "Sine"
             amplitude: 100
@@ -28,7 +28,7 @@ wavetable:
     - type: "Sine"
       amplitude: 50
       freq: 330
-      amp-mod:
+      am:
         oscillators:
           - type: "Sine"
             amplitude: 50
@@ -37,7 +37,7 @@ wavetable:
     - type: "Sine"
       amplitude: 50
       freq: 415
-      freq-mod:
+      fm:
         oscillators:
           - type: "Sine"
             amplitude: 100

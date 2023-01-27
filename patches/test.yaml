@@ -1,14 +1,14 @@
-gain: 50
+gain: 30
 wavetable:
   filters:
     - type: "Lowpass"
-      cufoff: 330
+      cutoff: 300
       ramp: 1
   oscillators:
     - type: "Sine"
       amplitude: 100
       freq: 220.24
-      amp-mod:
+      am:
         oscillators:
           - type: "Sine"
             amplitude: 50
