@@ -25,7 +25,7 @@ type WaveTable struct {
 
 type Oscillator struct {
 	Type      OscillatorType `yaml:"type"`
-	Amplitude float64        `yaml:"amplitude"`
+	Amplitude *float64       `yaml:"amplitude"`
 	Freq      float64        `yaml:"freq"`
 	FM        *WaveTable     `yaml:"fm"`
 	AM        *WaveTable     `yaml:"am"`
@@ -39,18 +39,18 @@ func (w *WaveTable) Initialize() {
 	}
 
 	for i := range w.Oscillators {
-		w := w.Oscillators[i]
-		f = append(f, NewFunc(w.Type))
+		osc := w.Oscillators[i]
+		f = append(f, NewFunc(osc.Type))
 
-		if w.FM != nil {
-			w.FM.Initialize()
+		if osc.FM != nil {
+			osc.FM.Initialize()
 		}
 
-		if w.AM != nil {
-			w.AM.Initialize()
+		if osc.AM != nil {
+			osc.AM.Initialize()
 		}
 
-		w.Amplitude /= 100 // amplitude is given in percent
+		*osc.Amplitude /= 100 // amplitude is given in percent
 	}
 
 	signalFunc := func(x float64) float64 {
@@ -58,7 +58,7 @@ func (w *WaveTable) Initialize() {
 
 		for i := range w.Oscillators {
 			osc := w.Oscillators[i]
-			amp := osc.Amplitude
+			amp := *osc.Amplitude
 			freq := osc.Freq
 
 			if osc.FM != nil {

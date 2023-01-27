@@ -2,11 +2,11 @@ gain: 30
 wavetable:
   filters:
     - type: "Lowpass"
-      cutoff: 300
+      cutoff: 330
       ramp: 1
   oscillators:
     - type: "Sine"
-      amplitude: 100
+      amplitude: 30
       freq: 220.24
       am:
         oscillators:
@@ -14,5 +14,5 @@ wavetable:
             amplitude: 50
             freq: 1
     - type: "Sine"
-      amplitude: 100
+      amplitude: 40
       freq: 330
