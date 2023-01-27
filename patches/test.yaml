@@ -1,5 +1,9 @@
 gain: 50
 wavetable:
+  filters:
+    - type: "Lowpass"
+      cufoff: 330
+      ramp: 1
   oscillators:
     - type: "Sine"
       amplitude: 100
@@ -9,3 +13,6 @@ wavetable:
           - type: "Sine"
             amplitude: 50
             freq: 1
+    - type: "Sine"
+      amplitude: 100
+      freq: 330

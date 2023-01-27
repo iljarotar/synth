@@ -2,6 +2,7 @@ package oscillator
 
 import (
 	"github.com/iljarotar/synth/config"
+	f "github.com/iljarotar/synth/filter"
 )
 
 type OscillatorType string
@@ -19,6 +20,7 @@ type WaveTable struct {
 	Step, Phase float64
 	SignalFunc  SignalFunc
 	Oscillators []Oscillator `yaml:"oscillators"`
+	Filters     []f.Filter   `yaml:"filters"`
 }
 
 type Oscillator struct {
@@ -31,6 +33,10 @@ type Oscillator struct {
 
 func (w *WaveTable) Initialize() {
 	f := make([]SignalFunc, 0)
+
+	for i := range w.Filters {
+		w.Filters[i].Initialize()
+	}
 
 	for i := range w.Oscillators {
 		w := w.Oscillators[i]
@@ -62,6 +68,12 @@ func (w *WaveTable) Initialize() {
 			if osc.AmpMod != nil {
 				amp += osc.AmpMod.SignalFunc(x)
 			}
+
+			// doesn't work
+			// for i := range w.Filters {
+			// 	filter := w.Filters[i]
+			// 	amp += filter.Apply(freq)
+			// }
 
 			y += f[i](x*freq) * amp
 		}
