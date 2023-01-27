@@ -1,11 +1,11 @@
-gain: 100
+gain: 50
 wavetable:
   oscillators:
     - type: "Sine"
-      amplitude: 50
+      amplitude: 100
       freq: 220.24
       amp-mod:
         oscillators:
           - type: "Sine"
             amplitude: 50
-            freq: 0.25
+            freq: 1

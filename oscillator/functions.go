@@ -8,8 +8,8 @@ import (
 
 type SignalFunc func(x float64) float64
 
-func NewFunc(waveType OscillatorType) SignalFunc {
-	switch waveType {
+func NewFunc(oscType OscillatorType) SignalFunc {
+	switch oscType {
 	case Sine:
 		return SineFunc()
 	case Noise:
