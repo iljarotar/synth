@@ -2,53 +2,9 @@ wavetable:
   oscillators:
     - type: "Sine"
       amplitude: 0.5
-      freq: 220
+      freq: 220.24
       amp-mod:
         oscillators:
           - type: "Sine"
             amplitude: 0.5
-            freq: 1
-          - type: "Sine"
-            amplitude: 0.5
-            freq: 2
-
-    - type: "Sine"
-      amplitude: 0.5
-      freq: 275
-      freq-mod:
-        oscillators:
-          - type: "Sine"
-            amplitude: 3
-            freq: 1
-          - type: "Sine"
-            amplitude: 0.03
-            freq: 2
-
-    - type: "Sine"
-      amplitude: 0.5
-      freq: 330
-      amp-mod:
-        oscillators:
-          - type: "Sine"
-            amplitude: 0.5
-            freq: 1
-
-    - type: "Sine"
-      amplitude: 0.5
-      freq: 415
-      freq-mod:
-        oscillators:
-          - type: "Sine"
-            amplitude: 1
-            freq: 1
-          - type: "Sine"
-            amplitude: 1.2
-            freq: 4
-
-    - type: "Noise"
-      amplitude: 0.01
-      amp-mod:
-        oscillators:
-          - type: "Sine"
-            amplitude: 0.005
-            freq: 1
+            freq: 0.25
