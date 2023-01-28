@@ -11,12 +11,14 @@ func (t OscillatorType) String() string {
 }
 
 const (
-	Sine  OscillatorType = "Sine"
-	Noise OscillatorType = "Noise"
+	Sine   OscillatorType = "Sine"
+	Square OscillatorType = "Square"
+	Noise  OscillatorType = "Noise"
 )
 
 type WaveTable struct {
-	Step, Phase float64
+	Step        float64
+	Phase       float64 `yaml:"phase"`
 	SignalFunc  SignalFunc
 	Oscillators []Oscillator `yaml:"oscillators"`
 	Filters     []Filter     `yaml:"filters"`

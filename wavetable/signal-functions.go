@@ -12,6 +12,8 @@ func NewSignalFunc(oscType OscillatorType) SignalFunc {
 	switch oscType {
 	case Sine:
 		return SineSignalFunc()
+	case Square:
+		return SquareSignalFunc()
 	case Noise:
 		return NoiseSignalFunc()
 	default:
@@ -32,6 +34,18 @@ func SineSignalFunc() SignalFunc {
 	}
 
 	return sine
+}
+
+func SquareSignalFunc() SignalFunc {
+	square := func(x float64) float64 {
+		y := math.Sin(2 * math.Pi * x)
+		if y > 0 {
+			return 1
+		}
+		return -1
+	}
+
+	return square
 }
 
 func NoiseSignalFunc() SignalFunc {
