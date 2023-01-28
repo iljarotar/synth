@@ -1,5 +1,23 @@
 gain: 1
 wavetable:
+  filters:
+    - type: "Highpass"
+      cutoff: 300
+      ramp: 110
+      cutoff-mod:
+        oscillators:
+          - type: "Sine"
+            amplitude: 100
+            freq: 0.25
+    - type: "Lowpass"
+      cutoff: 300
+      ramp: 110
+      cutoff-mod:
+        oscillators:
+          - type: "Sine"
+            amplitude: 100
+            freq: 0.25
+
   oscillators:
     - type: "Sine"
       amplitude: 0.5
