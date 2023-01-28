@@ -17,6 +17,9 @@ func newCLI() cli {
 
 	c.commands["help"] = helpFunc
 	c.commands["h"] = helpFunc
+
+	c.commands["root"] = setRootPath
+	c.commands["r"] = setRootPath
 	return c
 }
 

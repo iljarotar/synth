@@ -3,6 +3,8 @@ package ui
 import (
 	"os"
 	"os/exec"
+
+	"github.com/iljarotar/synth/config"
 )
 
 func clearFunc(done chan<- bool, args ...string) string {
@@ -31,4 +33,15 @@ func helpFunc(done chan<- bool, args ...string) string {
 	}
 
 	return "some helpful information"
+}
+
+func setRootPath(done chan<- bool, args ...string) string {
+	if len(args) != 1 {
+		return "please specify exactly one root path"
+	}
+
+	c := config.Instance()
+	*c.RootPath = args[0]
+
+	return "root path set to " + *c.RootPath
 }
