@@ -1,4 +1,4 @@
-package oscillator
+package wavetable
 
 import (
 	"math"
@@ -8,25 +8,25 @@ import (
 
 type SignalFunc func(x float64) float64
 
-func NewFunc(oscType OscillatorType) SignalFunc {
+func NewSignalFunc(oscType OscillatorType) SignalFunc {
 	switch oscType {
 	case Sine:
-		return SineFunc()
+		return SineSignalFunc()
 	case Noise:
-		return NoiseFunc()
+		return NoiseSignalFunc()
 	default:
-		return NoFunc()
+		return NoSignalFunc()
 	}
 }
 
-func NoFunc() SignalFunc {
+func NoSignalFunc() SignalFunc {
 	f := func(x float64) float64 {
 		return 0
 	}
 	return f
 }
 
-func SineFunc() SignalFunc {
+func SineSignalFunc() SignalFunc {
 	sine := func(x float64) float64 {
 		return math.Sin(2 * math.Pi * x)
 	}
@@ -34,7 +34,7 @@ func SineFunc() SignalFunc {
 	return sine
 }
 
-func NoiseFunc() SignalFunc {
+func NoiseSignalFunc() SignalFunc {
 	rand.Seed(time.Now().Unix())
 	noise := func(x float64) float64 {
 		y := rand.Float64()*2 - 1

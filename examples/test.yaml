@@ -1,0 +1,41 @@
+gain: 1
+wavetable:
+  filters:
+    - type: "Highpass"
+      cutoff: 440
+      ramp: 110
+      cutoff-mod:
+        oscillators:
+          - type: "Sine"
+            amplitude: 330
+            freq: 0.25
+    - type: "Lowpass"
+      cutoff: 440
+      ramp: 110
+      cutoff-mod:
+        oscillators:
+          - type: "Sine"
+            amplitude: 330
+            freq: 0.25
+  oscillators:
+    - type: "Sine"
+      amplitude: 1
+      freq: 110
+    - type: "Sine"
+      amplitude: 1
+      freq: 220
+    - type: "Sine"
+      amplitude: 1
+      freq: 330
+    - type: "Sine"
+      amplitude: 1
+      freq: 440
+    - type: "Sine"
+      amplitude: 1
+      freq: 550
+    - type: "Sine"
+      amplitude: 1
+      freq: 660
+    - type: "Sine"
+      amplitude: 1
+      freq: 770
