@@ -48,8 +48,6 @@ func (w *WaveTable) Initialize() {
 		if osc.AM != nil {
 			osc.AM.Initialize()
 		}
-
-		*osc.Amplitude /= 100 // amplitude is given in percent
 	}
 
 	signalFunc := func(x float64) float64 {

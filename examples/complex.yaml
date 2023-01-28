@@ -1,47 +1,47 @@
-gain: 100
+gain: 1
 wavetable:
   oscillators:
     - type: "Sine"
-      amplitude: 50
+      amplitude: 0.5
       freq: 220
       am:
         oscillators:
           - type: "Sine"
-            amplitude: 50
+            amplitude: 0.5
             freq: 1
           - type: "Sine"
-            amplitude: 50
+            amplitude: 0.5
             freq: 2
 
     - type: "Sine"
-      amplitude: 50
+      amplitude: 0.5
       freq: 275
       fm:
         oscillators:
           - type: "Sine"
-            amplitude: 100
+            amplitude: 1
             freq: 1
           - type: "Sine"
-            amplitude: 3
+            amplitude: 0.03
             freq: 1
 
     - type: "Sine"
-      amplitude: 50
+      amplitude: 0.5
       freq: 330
       am:
         oscillators:
           - type: "Sine"
-            amplitude: 50
+            amplitude: 0.5
             freq: 1
 
     - type: "Sine"
-      amplitude: 50
+      amplitude: 0.5
       freq: 415
       fm:
         oscillators:
           - type: "Sine"
-            amplitude: 100
+            amplitude: 1
             freq: 1
           - type: "Sine"
-            amplitude: 120
+            amplitude: 1.2
             freq: 0.25

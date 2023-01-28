@@ -1,5 +1,9 @@
 package wavetable
 
+import (
+	"math"
+)
+
 type FilterFunc func(freq, cutoff, ramp float64) (amp float64)
 
 func NewFilterFunc(filterType FilterType) FilterFunc {
@@ -23,7 +27,10 @@ func LowpassFilterFunc() FilterFunc {
 		if freq < cutoff {
 			return 1
 		}
-		return 0 // return linear ramp instead
+		m := -1 / ramp
+		t := (cutoff + ramp) / ramp
+		y := m*freq + t // linear descent
+		return math.Max(y, 0)
 	}
 
 	return f

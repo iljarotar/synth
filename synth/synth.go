@@ -13,7 +13,6 @@ func (s *Synth) Initialize() {
 	if s.Gain == 0 {
 		s.Gain = 1
 	} else {
-		s.Gain /= 100 // gain is given in percent
 	}
 
 	s.WaveTable.Initialize()
