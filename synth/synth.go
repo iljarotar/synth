@@ -18,12 +18,11 @@ func (s *Synth) Initialize() {
 	s.WaveTable.Initialize()
 }
 
-func (s *Synth) Play(input chan<- float32, play *bool) {
-	for *play {
+func (s *Synth) Play(input chan<- float32) {
+	for {
 		input <- float32(s.WaveTable.SignalFunc(s.WaveTable.Phase) * s.Gain)
 		s.WaveTable.Phase += s.WaveTable.Step
 	}
-	close(input)
 }
 
 func (s *Synth) SetWaveTable(waveTable w.WaveTable) {

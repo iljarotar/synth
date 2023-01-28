@@ -7,13 +7,12 @@ import (
 )
 
 type Control struct {
-	ctx     audio.Context
-	Synth   *s.Synth
-	playing *bool
+	ctx   audio.Context
+	Synth *s.Synth
 }
 
 func NewControl(ctx *audio.Context) *Control {
-	return &Control{ctx: *ctx, playing: new(bool)}
+	return &Control{ctx: *ctx}
 }
 
 func (c *Control) LoadSynth() error {
@@ -35,13 +34,23 @@ func (c *Control) Start() error {
 		return err
 	}
 
-	*c.playing = true
-	go c.Synth.Play(c.ctx.Input, c.playing) // pass buffer instead
+	return nil
+}
 
+func (c *Control) Close() error {
+	return c.ctx.Close()
+}
+
+func (c *Control) Play() error {
+	err := c.Start()
+	if err != nil {
+		return err
+	}
+
+	go c.Synth.Play(c.ctx.Input)
 	return nil
 }
 
 func (c *Control) Stop() error {
-	*c.playing = false
 	return c.ctx.Stop()
 }

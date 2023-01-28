@@ -5,30 +5,31 @@ import (
 	"strings"
 
 	"github.com/Songmu/prompter"
+	c "github.com/iljarotar/synth/control"
 )
 
 type UI struct {
-	cmd cli
+	cli cli
 }
 
-func NewUI() UI {
-	u := UI{cmd: newCLI()}
-	return u
+func NewUI(ctl *c.Control, exit chan<- bool) UI {
+	config := cmdConfig{control: ctl, exit: exit}
+	return UI{cli: newCLI(config)}
 }
 
-func (u *UI) AcceptInput(done chan<- bool) {
+func (ui *UI) AcceptInput() {
 	for {
 		input := prompter.Prompt("", "")
 		args := strings.Split(input, " ")
-		resp := u.cmd.exec(args[0], done, args[1:]...)
+		resp := ui.cli.exec(args[0], args[1:]...)
 		fmt.Println(resp)
 	}
 }
 
-func (u *UI) ClearScreen() {
-	cmd, ok := u.cmd.commands["clear"]
+func (ui *UI) ClearScreen() {
+	cmd, ok := ui.cli.commands["clear"]
 	if !ok {
 		fmt.Println("something went wrong")
 	}
-	cmd(make(chan bool))
+	cmd(ui.cli.config)
 }
