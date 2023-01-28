@@ -6,6 +6,7 @@ import (
 
 	"github.com/Songmu/prompter"
 	c "github.com/iljarotar/synth/control"
+	p "github.com/iljarotar/synth/parser"
 )
 
 type UI struct {
@@ -13,7 +14,8 @@ type UI struct {
 }
 
 func NewUI(ctl *c.Control, exit chan<- bool) UI {
-	config := cmdConfig{control: ctl, exit: exit}
+	parser := p.NewParser()
+	config := cmdConfig{control: ctl, exit: exit, parser: parser}
 	return UI{cli: newCLI(config)}
 }
 

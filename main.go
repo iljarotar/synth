@@ -23,11 +23,6 @@ func main() {
 	defer ctx.Close()
 
 	ctl := control.NewControl(ctx)
-	err = ctl.LoadSynth()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
 
 	exit := make(chan bool)
 	UI := ui.NewUI(ctl, exit)

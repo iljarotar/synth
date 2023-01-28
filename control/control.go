@@ -2,30 +2,24 @@ package control
 
 import (
 	"github.com/iljarotar/synth/audio"
-	"github.com/iljarotar/synth/parser"
 	s "github.com/iljarotar/synth/synth"
 )
 
 type Control struct {
-	ctx   audio.Context
-	Synth *s.Synth
+	ctx         audio.Context
+	Synth       *s.Synth
+	Initialized bool
 }
 
 func NewControl(ctx *audio.Context) *Control {
-	return &Control{ctx: *ctx}
+	var synth s.Synth
+	return &Control{ctx: *ctx, Synth: &synth, Initialized: false}
 }
 
-func (c *Control) LoadSynth() error {
-	var synth s.Synth
-	err := parser.Parse(&synth)
-	if err != nil {
-		return err
-	}
-
+func (c *Control) LoadSynth(synth s.Synth) {
 	synth.Initialize()
-	c.Synth = &synth
-
-	return nil
+	*c.Synth = synth
+	c.Initialized = true
 }
 
 func (c *Control) Start() error {

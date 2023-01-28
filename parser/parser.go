@@ -3,16 +3,25 @@ package parser
 import (
 	"io/ioutil"
 
+	s "github.com/iljarotar/synth/synth"
 	"gopkg.in/yaml.v2"
 )
 
-func Parse(out interface{}) error {
-	data, err := ioutil.ReadFile("examples/test.yaml")
+type Parser struct {
+	lastOpened, RootPath string
+}
+
+func NewParser() *Parser {
+	return &Parser{RootPath: "examples"}
+}
+
+func (p *Parser) Load(file string, synth *s.Synth) error {
+	data, err := ioutil.ReadFile(p.RootPath + "/" + file)
 	if err != nil {
 		return err
 	}
 
-	err = yaml.Unmarshal(data, out)
+	err = yaml.Unmarshal(data, synth)
 	if err != nil {
 		return err
 	}
