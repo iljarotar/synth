@@ -1,6 +1,6 @@
-gain: 1
-wavetable:
-  oscillators:
-    - type: "Square"
-      amplitude: 1
-      freq: 220
+# gain: 1
+# wavetable:
+#   oscillators:
+#     - type: "Square"
+#       amplitude: 1
+#       freq: 220

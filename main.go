@@ -15,7 +15,6 @@ func main() {
 		return
 	}
 	defer audio.Terminate()
-	ui.ClearScreen()
 
 	c := config.Instance()
 	input := make(chan float32)
@@ -39,9 +38,13 @@ func main() {
 		return
 	}
 
+	UI := ui.NewUI()
+	UI.ClearScreen()
+
 	done := make(chan bool)
-	go ui.AcceptInput(done)
+	go UI.AcceptInput(done)
 	<-done
+	UI.ClearScreen()
 
 	err = ctl.Stop()
 	if err != nil {
