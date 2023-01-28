@@ -1,4 +1,4 @@
-package oscillator
+package wavetable
 
 import (
 	"github.com/iljarotar/synth/config"
@@ -19,30 +19,34 @@ type WaveTable struct {
 	Step, Phase float64
 	SignalFunc  SignalFunc
 	Oscillators []Oscillator `yaml:"oscillators"`
+	Filters     []Filter     `yaml:"filters"`
 }
 
 type Oscillator struct {
 	Type      OscillatorType `yaml:"type"`
-	Amplitude float64        `yaml:"amplitude"`
+	Amplitude *float64       `yaml:"amplitude"`
 	Freq      float64        `yaml:"freq"`
-	FreqMod   *WaveTable     `yaml:"freq-mod"`
-	AmpMod    *WaveTable     `yaml:"amp-mod"`
+	FM        *WaveTable     `yaml:"fm"`
+	AM        *WaveTable     `yaml:"am"`
 }
 
 func (w *WaveTable) Initialize() {
 	f := make([]SignalFunc, 0)
 
-	for i := range w.Oscillators {
-		w := w.Oscillators[i]
-		w.Amplitude /= 100 // amplitude is given in percent
-		f = append(f, NewFunc(w.Type))
+	for i := range w.Filters {
+		w.Filters[i].Initialize()
+	}
 
-		if w.FreqMod != nil {
-			w.FreqMod.Initialize()
+	for i := range w.Oscillators {
+		osc := w.Oscillators[i]
+		f = append(f, NewSignalFunc(osc.Type))
+
+		if osc.FM != nil {
+			osc.FM.Initialize()
 		}
 
-		if w.AmpMod != nil {
-			w.AmpMod.Initialize()
+		if osc.AM != nil {
+			osc.AM.Initialize()
 		}
 	}
 
@@ -51,15 +55,20 @@ func (w *WaveTable) Initialize() {
 
 		for i := range w.Oscillators {
 			osc := w.Oscillators[i]
-			amp := osc.Amplitude
+			amp := *osc.Amplitude
 			freq := osc.Freq
 
-			if osc.FreqMod != nil {
-				freq += osc.FreqMod.SignalFunc(x)
+			if osc.FM != nil {
+				freq += osc.FM.SignalFunc(x)
 			}
 
-			if osc.AmpMod != nil {
-				amp += osc.AmpMod.SignalFunc(x)
+			if osc.AM != nil {
+				amp += osc.AM.SignalFunc(x)
+			}
+
+			for j := range w.Filters {
+				filter := w.Filters[j]
+				amp *= filter.Apply(osc.Freq, x)
 			}
 
 			y += f[i](x*freq) * amp
