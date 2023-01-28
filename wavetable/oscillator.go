@@ -24,13 +24,16 @@ type WaveTable struct {
 
 type Oscillator struct {
 	Type      OscillatorType `yaml:"type"`
-	Amplitude *float64       `yaml:"amplitude"`
+	Amplitude float64        `yaml:"amplitude"`
 	Freq      float64        `yaml:"freq"`
-	FM        *WaveTable     `yaml:"fm"`
+	PM        *WaveTable     `yaml:"pm"`
 	AM        *WaveTable     `yaml:"am"`
 }
 
 func (w *WaveTable) Initialize() {
+	c := config.Instance()
+	w.Step = 1 / c.SampleRate
+
 	f := make([]SignalFunc, 0)
 
 	for i := range w.Filters {
@@ -41,8 +44,8 @@ func (w *WaveTable) Initialize() {
 		osc := w.Oscillators[i]
 		f = append(f, NewSignalFunc(osc.Type))
 
-		if osc.FM != nil {
-			osc.FM.Initialize()
+		if osc.PM != nil {
+			osc.PM.Initialize()
 		}
 
 		if osc.AM != nil {
@@ -55,11 +58,11 @@ func (w *WaveTable) Initialize() {
 
 		for i := range w.Oscillators {
 			osc := w.Oscillators[i]
-			amp := *osc.Amplitude
+			amp := osc.Amplitude
 			freq := osc.Freq
 
-			if osc.FM != nil {
-				freq += osc.FM.SignalFunc(x)
+			if osc.PM != nil {
+				x += osc.PM.SignalFunc(x) * w.Step
 			}
 
 			if osc.AM != nil {
@@ -68,7 +71,7 @@ func (w *WaveTable) Initialize() {
 
 			for j := range w.Filters {
 				filter := w.Filters[j]
-				amp *= filter.Apply(osc.Freq, x)
+				amp *= filter.Apply(freq, x)
 			}
 
 			y += f[i](x*freq) * amp
@@ -77,7 +80,5 @@ func (w *WaveTable) Initialize() {
 		return y / float64(len(w.Oscillators))
 	}
 
-	c := config.Instance()
-	w.Step = 1 / c.SampleRate
 	w.SignalFunc = signalFunc
 }

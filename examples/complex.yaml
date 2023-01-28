@@ -34,13 +34,13 @@ wavetable:
     - type: "Sine"
       amplitude: 0.5
       freq: 275
-      fm:
+      pm:
         oscillators:
           - type: "Sine"
-            amplitude: 1
+            amplitude: 100
             freq: 1
           - type: "Sine"
-            amplitude: 0.03
+            amplitude: 30
             freq: 1
 
     - type: "Sine"
@@ -55,7 +55,7 @@ wavetable:
     - type: "Sine"
       amplitude: 0.5
       freq: 415
-      fm:
+      pm:
         oscillators:
           - type: "Sine"
             amplitude: 1
