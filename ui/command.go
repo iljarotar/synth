@@ -11,8 +11,12 @@ func newCLI() cli {
 	c.commands = make(map[string]cmdFunc)
 	c.commands["clear"] = clearFunc
 	c.commands["c"] = clearFunc
+
 	c.commands["exit"] = exitFunc
 	c.commands["e"] = exitFunc
+
+	c.commands["help"] = helpFunc
+	c.commands["h"] = helpFunc
 	return c
 }
 

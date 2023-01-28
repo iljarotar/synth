@@ -24,3 +24,11 @@ func exitFunc(done chan<- bool, args ...string) string {
 	done <- true
 	return ""
 }
+
+func helpFunc(done chan<- bool, args ...string) string {
+	if len(args) > 0 {
+		return "help command doesn't expect any arguments"
+	}
+
+	return "some helpful information"
+}
