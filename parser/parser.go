@@ -7,7 +7,7 @@ import (
 )
 
 func Parse(out interface{}) error {
-	data, err := ioutil.ReadFile("examples/complex.yaml")
+	data, err := ioutil.ReadFile("examples/test.yaml")
 	if err != nil {
 		return err
 	}
