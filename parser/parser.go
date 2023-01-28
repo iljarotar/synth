@@ -26,5 +26,11 @@ func (p *Parser) Load(file string, synth *s.Synth) error {
 		return err
 	}
 
+	p.lastOpened = file
+
 	return nil
+}
+
+func (p *Parser) LoadLastOpened(synth *s.Synth) error {
+	return p.Load(p.lastOpened, synth)
 }

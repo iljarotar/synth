@@ -72,6 +72,20 @@ func loadCmd(config cmdConfig, args ...string) string {
 	}
 
 	config.control.LoadSynth(s)
+	return ""
+}
 
+func applyCmd(config cmdConfig, args ...string) string {
+	if len(args) > 0 {
+		return "apply command doesn't expect any arguments"
+	}
+
+	var s synth.Synth
+	err := config.parser.LoadLastOpened(&s)
+	if err != nil {
+		return err.Error()
+	}
+
+	config.control.LoadSynth(s)
 	return ""
 }
