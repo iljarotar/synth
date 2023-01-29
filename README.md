@@ -38,7 +38,7 @@ Note: every command can be called by its full name or by its shortcut, e.g `play
 
 ### Load patches
 
-By default the synth will look for files in a directory called ~/synth. If you want to use this default, create the directory and place all your patches there.
+By default the synth will look for files in a directory called `~/synth`. If you want to use this default, create the directory and place all your patches there.
 
 If you want to use a different directory, start the synth and type
 
