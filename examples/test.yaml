@@ -1,9 +1,0 @@
-gain: 1
-wavetable:
-  oscillators:
-    - type: "Sine"
-      amplitude: 1
-      freq: 330
-    - type: "Sine"
-      amplitude: 1
-      freq: 415
