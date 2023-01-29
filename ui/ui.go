@@ -24,7 +24,10 @@ func (ui *UI) AcceptInput() {
 		input := prompter.Prompt("", "")
 		args := strings.Split(input, " ")
 		resp := ui.cli.exec(args[0], args[1:]...)
-		fmt.Println(resp)
+
+		if resp != "" {
+			fmt.Println(resp)
+		}
 	}
 }
 
@@ -34,4 +37,8 @@ func (ui *UI) ClearScreen() {
 		fmt.Println("something went wrong")
 	}
 	cmd(ui.cli.config)
+}
+
+func (ui *UI) PrintMenu() {
+	fmt.Println(menu)
 }
