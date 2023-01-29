@@ -46,13 +46,13 @@ If you want to use a different directory, start the synth and type
 root <PATH-TO-YOUR-PATCHES>
 ```
 
-To load a file type
+load a file
 
 ```bash
 load <PATH-TO-YOUR-FILE-RELATIVE-TO-YOUR-ROOT-PATH>
 ```
 
-If you want to reload the same file type
+load the same file again
 
 ```bash
 apply
