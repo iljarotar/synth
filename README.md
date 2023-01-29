@@ -141,7 +141,7 @@ wavetable:
   oscillators:
 ```
 
-filters and oscillators are arrays.
+filters and oscillators are arrays. `gain` is the main volume.
 
 ### Oscillators
 
