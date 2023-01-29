@@ -4,3 +4,6 @@ wavetable:
     - type: "Sine"
       amplitude: 1
       freq: 330
+    - type: "Sine"
+      amplitude: 1
+      freq: 415
