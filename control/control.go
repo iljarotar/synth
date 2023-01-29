@@ -2,31 +2,44 @@ package control
 
 import (
 	"github.com/iljarotar/synth/audio"
-	"github.com/iljarotar/synth/parser"
 	s "github.com/iljarotar/synth/synth"
 )
 
 type Control struct {
-	ctx     audio.Context
-	Synth   *s.Synth
-	playing *bool
+	ctx         audio.Context
+	Synth       *s.Synth
+	Initialized bool
+	playing     bool
 }
 
 func NewControl(ctx *audio.Context) *Control {
-	return &Control{ctx: *ctx, playing: new(bool)}
+	var synth s.Synth
+	synth.Initialize()
+	ctl := &Control{ctx: *ctx, Synth: &synth, Initialized: false, playing: false}
+	ctl.Start()
+	return ctl
 }
 
-func (c *Control) LoadSynth() error {
-	var synth s.Synth
-	err := parser.Parse(&synth)
-	if err != nil {
-		return err
+func (c *Control) LoadSynth(synth s.Synth) {
+	synth.Initialize()
+	c.Synth.FadeOut()
+	*c.Synth = synth
+
+	if c.playing {
+		c.Synth.FadeIn()
 	}
 
-	synth.Initialize()
-	c.Synth = &synth
+	c.Initialized = true
+}
 
-	return nil
+func (c *Control) Play() {
+	c.Synth.FadeIn()
+	c.playing = true
+}
+
+func (c *Control) Stop() {
+	c.Synth.FadeOut()
+	c.playing = false
 }
 
 func (c *Control) Start() error {
@@ -35,13 +48,18 @@ func (c *Control) Start() error {
 		return err
 	}
 
-	*c.playing = true
-	go c.Synth.Play(c.ctx.Input, c.playing) // pass buffer instead
+	go c.Synth.Play(c.ctx.Input)
 
 	return nil
 }
 
-func (c *Control) Stop() error {
-	*c.playing = false
-	return c.ctx.Stop()
+func (c *Control) Close() error {
+	defer c.ctx.Close()
+
+	err := c.ctx.Stop()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

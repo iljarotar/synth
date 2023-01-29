@@ -1,21 +1,37 @@
 package ui
 
 import (
-	"os"
-	"os/exec"
+	"fmt"
+	"strings"
 
 	"github.com/Songmu/prompter"
+	c "github.com/iljarotar/synth/control"
+	p "github.com/iljarotar/synth/parser"
 )
 
-func AcceptInput(done chan<- bool) {
-	for input := prompter.Prompt(">", ""); input != "exit"; {
-		input = prompter.Prompt(">", "")
-	}
-	done <- true
+type UI struct {
+	cli cli
 }
 
-func ClearScreen() {
-	cmd := exec.Command("clear")
-	cmd.Stdout = os.Stdout
-	cmd.Run()
+func NewUI(ctl *c.Control, exit chan<- bool) UI {
+	parser := p.NewParser()
+	config := cmdConfig{control: ctl, exit: exit, parser: parser}
+	return UI{cli: newCLI(config)}
+}
+
+func (ui *UI) AcceptInput() {
+	for {
+		input := prompter.Prompt("", "")
+		args := strings.Split(input, " ")
+		resp := ui.cli.exec(args[0], args[1:]...)
+		fmt.Println(resp)
+	}
+}
+
+func (ui *UI) ClearScreen() {
+	cmd, ok := ui.cli.commands["clear"]
+	if !ok {
+		fmt.Println("something went wrong")
+	}
+	cmd(ui.cli.config)
 }

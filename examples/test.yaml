@@ -1,6 +1,9 @@
 gain: 1
 wavetable:
   oscillators:
-    - type: "Square"
+    - type: "Sine"
       amplitude: 1
-      freq: 220
+      freq: 330
+    - type: "Sine"
+      amplitude: 1
+      freq: 415
