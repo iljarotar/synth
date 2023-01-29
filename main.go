@@ -28,6 +28,7 @@ func main() {
 	UI := ui.NewUI(ctl, exit)
 
 	UI.ClearScreen()
+	UI.PrintMenu()
 	go UI.AcceptInput()
 	<-exit
 	UI.ClearScreen()

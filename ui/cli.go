@@ -53,4 +53,7 @@ func (c *cli) addCommands() {
 
 	c.commands["apply"] = applyCmd
 	c.commands["a"] = applyCmd
+
+	c.commands["help"] = helpCmd
+	c.commands["h"] = helpCmd
 }

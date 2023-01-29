@@ -95,3 +95,11 @@ func applyCmd(config cmdConfig, args ...string) string {
 	config.control.LoadSynth(s)
 	return ""
 }
+
+func helpCmd(config cmdConfig, args ...string) string {
+	if len(args) > 0 {
+		return "help command doesn't expect any arguments"
+	}
+
+	return menu
+}
