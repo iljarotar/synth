@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 
+	c "github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/synth"
 )
 
@@ -34,8 +35,13 @@ func setRootPathCmd(config cmdConfig, args ...string) string {
 		return "please specify exactly one root path"
 	}
 
-	config.parser.RootPath = args[0]
-	return "root path set to " + config.parser.RootPath
+	err := config.parser.SetRootPath(args[0])
+	if err != nil {
+		return "could not set root path"
+	}
+
+	path := c.Instance().RootPath
+	return "root path set to " + path
 }
 
 func playCmd(config cmdConfig, args ...string) string {
