@@ -1,0 +1,15 @@
+gain: 1
+wavetable:
+  oscillators:
+    - type: Sine
+      amplitude: 0.5
+      freq: 220
+      am:
+        oscillators:
+          - type: Square
+            amplitude: 0.5
+            freq: 0.5
+            phase: 0.4
+          - type: Square
+            amplitude: 0.2
+            freq: 0.5

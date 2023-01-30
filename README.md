@@ -145,7 +145,7 @@ filters and oscillators are arrays. `gain` is the main volume.
 
 ### Oscillators
 
-An oscillator may have a type of `Sine`, `Square` or `Noise`. Every oscillator needs an amplitude. Sine and Square oscillators also need a frequency. A phase may be passed to periodic wave forms and will be 0 if omitted.
+An oscillator may have a type of `Sine`, `Square` or `Noise`. Every oscillator needs an amplitude. Sine and Square oscillators also need a frequency.
 
 Examples
 
@@ -154,7 +154,6 @@ oscillators:
   - type: Square
     amplitude: 0.75
     freq: 440
-    phase: 0.5
   - type: Sine
     amplitude: 1
     freq: 220
