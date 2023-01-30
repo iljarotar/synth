@@ -74,7 +74,7 @@ func (w *WaveTable) Initialize() {
 
 			for j := range w.Filters {
 				filter := w.Filters[j]
-				amp *= filter.Apply(freq, arg)
+				amp *= filter.Apply(freq, x)
 			}
 
 			y += f[i](arg*freq) * amp
