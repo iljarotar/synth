@@ -77,6 +77,10 @@ func (w *WaveTable) Initialize() {
 				amp *= filter.Apply(freq, x)
 			}
 
+			if amp < 0 {
+				amp = 0
+			}
+
 			y += f[i](arg*freq) * amp
 		}
 
