@@ -135,17 +135,17 @@ wavetable:
 The basic structure is
 
 ```yaml
-gain: 1
+gain:
 wavetable:
   filters:
   oscillators:
 ```
 
-filters and oscillators are arrays. `gain` is the main volume.
+`gain` is the synthesizer's main volume, `filters` and `oscillators` may hold multiple filters and oscillators.
 
 ### Oscillators
 
-An oscillator may have a type of `Sine`, `Square` or `Noise`. Every oscillator needs an amplitude. Sine and Square oscillators also need a frequency.
+An oscillator may have a type of `Sine`, `Square` or `Noise`. Every oscillator needs an amplitude. Sine and Square oscillators also need a frequency. A phase may be passed to periodic wave forms and will be 0 if omitted.
 
 Examples
 
@@ -154,6 +154,7 @@ oscillators:
   - type: Square
     amplitude: 0.75
     freq: 440
+    phase: 0.5
   - type: Sine
     amplitude: 1
     freq: 220
