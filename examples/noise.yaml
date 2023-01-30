@@ -1,0 +1,10 @@
+gain: 0.7
+wavetable:
+  oscillators:
+    - type: Noise
+      amplitude: 0.5
+      am:
+        oscillators:
+          - type: Sine
+            amplitude: 0.5
+            freq: 0.125
