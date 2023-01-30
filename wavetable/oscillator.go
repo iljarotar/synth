@@ -64,7 +64,7 @@ func (w *WaveTable) Initialize() {
 			freq := osc.Freq
 
 			if osc.PM != nil {
-				x += osc.PM.SignalFunc(x) * w.Step
+				x += osc.PM.SignalFunc(x)
 			}
 
 			if osc.AM != nil {
