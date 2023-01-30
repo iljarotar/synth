@@ -135,13 +135,13 @@ wavetable:
 The basic structure is
 
 ```yaml
-gain: 1
+gain:
 wavetable:
   filters:
   oscillators:
 ```
 
-filters and oscillators are arrays. `gain` is the main volume.
+`gain` is the synthesizer's main volume, `filters` and `oscillators` may hold multiple filters and oscillators.
 
 ### Oscillators
 

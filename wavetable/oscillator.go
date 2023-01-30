@@ -17,8 +17,7 @@ const (
 )
 
 type WaveTable struct {
-	Step        float64
-	Phase       float64 `yaml:"phase"`
+	Step, Phase float64
 	SignalFunc  SignalFunc
 	Oscillators []Oscillator `yaml:"oscillators"`
 	Filters     []Filter     `yaml:"filters"`
@@ -28,6 +27,7 @@ type Oscillator struct {
 	Type      OscillatorType `yaml:"type"`
 	Amplitude float64        `yaml:"amplitude"`
 	Freq      float64        `yaml:"freq"`
+	Phase     float64        `yaml:"phase"`
 	PM        *WaveTable     `yaml:"pm"`
 	AM        *WaveTable     `yaml:"am"`
 }
@@ -62,9 +62,10 @@ func (w *WaveTable) Initialize() {
 			osc := w.Oscillators[i]
 			amp := osc.Amplitude
 			freq := osc.Freq
+			arg := x + osc.Phase
 
 			if osc.PM != nil {
-				x += osc.PM.SignalFunc(x)
+				arg += osc.PM.SignalFunc(x)
 			}
 
 			if osc.AM != nil {
@@ -73,10 +74,10 @@ func (w *WaveTable) Initialize() {
 
 			for j := range w.Filters {
 				filter := w.Filters[j]
-				amp *= filter.Apply(freq, x)
+				amp *= filter.Apply(freq, arg)
 			}
 
-			y += f[i](x*freq) * amp
+			y += f[i](arg*freq) * amp
 		}
 
 		return y / float64(len(w.Oscillators))
