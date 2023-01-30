@@ -3,12 +3,9 @@ wavetable:
   oscillators:
     - type: "Sine"
       amplitude: 0.5
-      freq: 150
+      freq: 330
       pm:
         oscillators:
           - type: "Sine"
-            amplitude: 3000
-            freq: 2
-          - type: "Sine"
-            amplitude: 1000
+            amplitude: 0.05
             freq: 1
