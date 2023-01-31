@@ -1,0 +1,60 @@
+gain: 1
+wavetables:
+  - filters:
+      - type: Lowpass
+        cutoff: 0
+        ramp: 10
+        cutoff-mod:
+          oscillators:
+            - type: Sine
+              amplitude: 90
+              freq: 0.5
+    oscillators:
+      - type: Sine
+        amplitude: 1
+        freq: 80
+
+  - filters:
+      - type: Lowpass
+        cutoff: 0
+        ramp: 10
+        cutoff-mod:
+          oscillators:
+            - type: Sine
+              amplitude: 90
+              freq: 0.5
+              phase: 0.5
+    oscillators:
+      - type: Sine
+        amplitude: 1
+        freq: 91
+
+  - filters:
+      - type: Lowpass
+        cutoff: 0
+        ramp: 10
+        cutoff-mod:
+          oscillators:
+            - type: Sine
+              amplitude: 114
+              freq: 0.5
+              phase: 1
+    oscillators:
+      - type: Sine
+        amplitude: 1
+        freq: 112
+
+  - filters:
+      - type: Lowpass
+        cutoff: 0
+        ramp: 10
+        cutoff-mod:
+          oscillators:
+            - type: Sine
+              amplitude: 135
+              freq: 0.5
+              phase: 1.5
+    oscillators:
+      - type: Sine
+        amplitude: 1
+        freq: 134
