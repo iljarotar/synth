@@ -8,8 +8,9 @@ import (
 )
 
 type Synth struct {
-	Gain, gainMemory float64     `yaml:"gain"`
-	WaveTable        w.WaveTable `yaml:"wavetable"`
+	Gain       float64 `yaml:"gain"`
+	gainMemory float64
+	WaveTables []*w.WaveTable `yaml:"wavetables"`
 }
 
 func (s *Synth) Initialize() {
@@ -18,13 +19,24 @@ func (s *Synth) Initialize() {
 	}
 	s.gainMemory = s.Gain
 	s.Gain = 0 // start muted
-	s.WaveTable.Initialize()
+
+	for i := range s.WaveTables {
+		s.WaveTables[i].Initialize()
+	}
 }
 
 func (s *Synth) Play(input chan<- float32) {
 	for {
-		input <- float32(s.WaveTable.SignalFunc(s.WaveTable.Phase) * s.Gain)
-		s.WaveTable.Phase += s.WaveTable.Step
+		var y float64
+
+		for i := range s.WaveTables {
+			w := s.WaveTables[i]
+			y += w.SignalFunc(w.Phase) * s.Gain
+			w.Phase += w.Step
+		}
+
+		y /= float64(len(s.WaveTables))
+		input <- float32(y)
 	}
 }
 

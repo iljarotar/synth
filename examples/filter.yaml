@@ -1,34 +1,33 @@
 gain: 1
-wavetable:
-  filters:
-    - type: Lowpass
-      cutoff: 400
-      ramp: 100
-      cutoff-mod:
-        oscillators:
-          - type: Sine
-            amplitude: 300
-            freq: 0.5
-
-  oscillators:
-    - type: Sine
-      amplitude: 1
-      freq: 100
-    - type: Sine
-      amplitude: 0.9
-      freq: 200
-    - type: Sine
-      amplitude: 0.8
-      freq: 300
-    - type: Sine
-      amplitude: 0.7
-      freq: 400
-    - type: Sine
-      amplitude: 0.6
-      freq: 500
-    - type: Sine
-      amplitude: 0.5
-      freq: 600
-    - type: Sine
-      amplitude: 0.4
-      freq: 700
+wavetables:
+  - filters:
+      - type: Lowpass
+        cutoff: 400
+        ramp: 100
+        cutoff-mod:
+          oscillators:
+            - type: Sine
+              amplitude: 300
+              freq: 0.5
+    oscillators:
+      - type: Sine
+        amplitude: 1
+        freq: 100
+      - type: Sine
+        amplitude: 0.9
+        freq: 200
+      - type: Sine
+        amplitude: 0.8
+        freq: 300
+      - type: Sine
+        amplitude: 0.7
+        freq: 400
+      - type: Sine
+        amplitude: 0.6
+        freq: 500
+      - type: Sine
+        amplitude: 0.5
+        freq: 600
+      - type: Sine
+        amplitude: 0.4
+        freq: 700

@@ -1,11 +1,11 @@
 gain: 1
-wavetable:
-  oscillators:
-    - type: Sine
-      amplitude: 0.5
-      freq: 330
-      pm:
-        oscillators:
-          - type: Sine
-            amplitude: 0.05
-            freq: 1
+wavetables:
+  - oscillators:
+      - type: Sine
+        amplitude: 0.5
+        freq: 330
+        pm:
+          oscillators:
+            - type: Sine
+              amplitude: 0.05
+              freq: 1

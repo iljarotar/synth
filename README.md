@@ -66,82 +66,83 @@ A patch is a yaml-file and may look like this
 
 ```yaml
 gain: 1
-wavetable:
-  filters:
-    - type: "Highpass"
-      cutoff: 300
-      ramp: 110
-      cutoff-mod:
-        oscillators:
-          - type: "Sine"
-            amplitude: 100
-            freq: 0.25
-    - type: "Lowpass"
-      cutoff: 300
-      ramp: 110
-      cutoff-mod:
-        oscillators:
-          - type: "Sine"
-            amplitude: 100
-            freq: 0.25
+wavetables:
+  - filters:
+      - type: "Highpass"
+        cutoff: 300
+        ramp: 110
+        cutoff-mod:
+          oscillators:
+            - type: "Sine"
+              amplitude: 100
+              freq: 0.25
+      - type: "Lowpass"
+        cutoff: 300
+        ramp: 110
+        cutoff-mod:
+          oscillators:
+            - type: "Sine"
+              amplitude: 100
+              freq: 0.25
+    oscillators:
+      - type: "Sine"
+        amplitude: 0.5
+        freq: 220
+        am:
+          oscillators:
+            - type: "Sine"
+              amplitude: 0.5
+              freq: 1
+            - type: "Sine"
+              amplitude: 0.5
+              freq: 2
 
-  oscillators:
-    - type: "Sine"
-      amplitude: 0.5
-      freq: 220
-      am:
-        oscillators:
-          - type: "Sine"
-            amplitude: 0.5
-            freq: 1
-          - type: "Sine"
-            amplitude: 0.5
-            freq: 2
+      - type: "Sine"
+        amplitude: 0.5
+        freq: 275
+        pm:
+          oscillators:
+            - type: "Sine"
+              amplitude: 100
+              freq: 1
+            - type: "Sine"
+              amplitude: 30
+              freq: 1
 
-    - type: "Sine"
-      amplitude: 0.5
-      freq: 275
-      pm:
-        oscillators:
-          - type: "Sine"
-            amplitude: 100
-            freq: 1
-          - type: "Sine"
-            amplitude: 30
-            freq: 1
+      - type: "Sine"
+        amplitude: 0.5
+        freq: 330
+        am:
+          oscillators:
+            - type: "Sine"
+              amplitude: 0.5
+              freq: 1
 
-    - type: "Sine"
-      amplitude: 0.5
-      freq: 330
-      am:
-        oscillators:
-          - type: "Sine"
-            amplitude: 0.5
-            freq: 1
-
-    - type: "Sine"
-      amplitude: 0.5
-      freq: 415
-      pm:
-        oscillators:
-          - type: "Sine"
-            amplitude: 1
-            freq: 1
-          - type: "Sine"
-            amplitude: 1.2
-            freq: 0.25
+      - type: "Sine"
+        amplitude: 0.5
+        freq: 415
+        pm:
+          oscillators:
+            - type: "Sine"
+              amplitude: 1
+              freq: 1
+            - type: "Sine"
+              amplitude: 1.2
+              freq: 0.25
 ```
 
 The basic structure is
 
 ```yaml
 gain:
-wavetable:
-  filters:
-  oscillators:
+wavetables:
+  - filters:
+    oscillators:
+  - filters:
+    oscillators:
 ```
 
-`gain` is the synthesizer's main volume, `filters` and `oscillators` may hold multiple filters and oscillators.
+`gain` is the synthesizer's main volume, `wavetables` is an array of wavetables. Each wavetable may have multiple filters and oscillators.
 
 ### Oscillators
 
