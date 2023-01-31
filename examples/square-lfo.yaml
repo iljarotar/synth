@@ -14,8 +14,8 @@ wavetables:
               freq: 0.73
         am:
           oscillators:
-            - type: Square
-              amplitude: 0.5
+            - type: SmoothSquare
+              amplitude: 0.3
               freq: 1.21
               pm:
                 oscillators:

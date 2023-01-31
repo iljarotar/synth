@@ -52,13 +52,14 @@ func SquareSignalFunc() SignalFunc {
 
 func SmoothSquareSignalFunc() SignalFunc {
 	square := func(x float64) float64 {
-		arg := 2 * math.Pi * x
-		var y float64
+		n, _ := math.Modf(x / math.Pi)
+		arg := (2*math.Pi*x - float64(n)*math.Pi)
+		y := math.Sin(2 * math.Pi * x)
 
-		for i := 1; i < 12; i += 2 {
-			y += math.Sin(float64(i) * arg)
+		if y > 0 {
+			return 2/(1+math.Exp(-5*arg)) - 1
 		}
-		return y
+		return 1 - 2/(1+math.Exp(-5*arg))
 	}
 
 	return square

@@ -13,12 +13,3 @@ wavetables:
       - type: Sine
         amplitude: 1
         freq: 178
-        # am:
-        #   oscillators:
-        #     - type: Square
-        #       amplitude: 0.3
-        #       freq: 0.125
-        #     - type: Square
-        #       amplitude: 0.3
-        #       freq: 0.125
-        #       phase: 4.1
