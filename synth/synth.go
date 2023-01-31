@@ -35,9 +35,9 @@ func (s *Synth) Play(input chan<- float32) {
 		for i := range s.WaveTables {
 			w := s.WaveTables[i]
 			y += w.SignalFunc(s.Phase) * s.Gain
-			s.Phase += s.step
 		}
 
+		s.Phase += s.step
 		y /= float64(len(s.WaveTables))
 		input <- float32(y)
 	}
