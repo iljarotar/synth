@@ -11,9 +11,10 @@ func (t OscillatorType) String() string {
 }
 
 const (
-	Sine   OscillatorType = "Sine"
-	Square OscillatorType = "Square"
-	Noise  OscillatorType = "Noise"
+	Sine         OscillatorType = "Sine"
+	Square       OscillatorType = "Square"
+	SmoothSquare OscillatorType = "SmoothSquare"
+	Noise        OscillatorType = "Noise"
 )
 
 type WaveTable struct {

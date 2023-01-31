@@ -1,0 +1,24 @@
+gain: 0.7
+wavetables:
+  - filters:
+      - type: Lowpass
+        cutoff: 0
+        ramp: 10
+        cutoff-mod:
+          oscillators:
+            - type: Sine
+              amplitude: 200
+              freq: 0.25
+    oscillators:
+      - type: Sine
+        amplitude: 1
+        freq: 178
+        # am:
+        #   oscillators:
+        #     - type: Square
+        #       amplitude: 0.3
+        #       freq: 0.125
+        #     - type: Square
+        #       amplitude: 0.3
+        #       freq: 0.125
+        #       phase: 4.1
