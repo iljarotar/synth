@@ -22,6 +22,7 @@ func NewControl(ctx *audio.Context) *Control {
 
 func (c *Control) LoadSynth(synth s.Synth) {
 	synth.Initialize()
+	synth.Phase = c.Synth.Phase
 	c.Synth.FadeOut()
 	*c.Synth = synth
 
@@ -33,6 +34,7 @@ func (c *Control) LoadSynth(synth s.Synth) {
 }
 
 func (c *Control) Play() {
+	c.Synth.Phase = 0
 	c.Synth.FadeIn()
 	c.playing = true
 }

@@ -1,9 +1,5 @@
 package wavetable
 
-import (
-	"github.com/iljarotar/synth/config"
-)
-
 type OscillatorType string
 
 func (t OscillatorType) String() string {
@@ -18,7 +14,6 @@ const (
 )
 
 type WaveTable struct {
-	Step, Phase float64
 	SignalFunc  SignalFunc
 	Oscillators []Oscillator `yaml:"oscillators"`
 	Filters     []Filter     `yaml:"filters"`
@@ -34,9 +29,6 @@ type Oscillator struct {
 }
 
 func (w *WaveTable) Initialize() {
-	c := config.Instance()
-	w.Step = 1 / c.SampleRate
-
 	f := make([]SignalFunc, 0)
 
 	for i := range w.Filters {
