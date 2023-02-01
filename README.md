@@ -212,4 +212,4 @@ filters:
 
 `cutoff-mod` is a wavetable, that modulates the `cutoff`.
 
-## Have fun
+Note: unfortunately filters don't affect oscillators of type `Noise`.
