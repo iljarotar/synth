@@ -7,9 +7,11 @@ func (t OscillatorType) String() string {
 }
 
 const (
+	Sawtooth     OscillatorType = "Sawtooth"
 	Sine         OscillatorType = "Sine"
-	Square       OscillatorType = "Square"
 	SmoothSquare OscillatorType = "SmoothSquare"
+	Square       OscillatorType = "Square"
+	Triangle     OscillatorType = "Triangle"
 	Noise        OscillatorType = "Noise"
 )
 

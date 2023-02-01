@@ -16,6 +16,10 @@ func NewSignalFunc(oscType OscillatorType) SignalFunc {
 		return SquareSignalFunc()
 	case SmoothSquare:
 		return SmoothSquareSignalFunc()
+	case Sawtooth:
+		return SawtoothSignalFunc()
+	case Triangle:
+		return TriangleSignalFunc()
 	case Noise:
 		return NoiseSignalFunc()
 	default:
@@ -63,6 +67,22 @@ func SmoothSquareSignalFunc() SignalFunc {
 	}
 
 	return square
+}
+
+func TriangleSignalFunc() SignalFunc {
+	triangle := func(x float64) float64 {
+		return 2 / math.Pi * math.Asin(math.Sin(2*math.Pi*x))
+	}
+
+	return triangle
+}
+
+func SawtoothSignalFunc() SignalFunc {
+	sawtooth := func(x float64) float64 {
+		return 2*(x-math.Floor(1/2+x)) - 1
+	}
+
+	return sawtooth
 }
 
 func NoiseSignalFunc() SignalFunc {
