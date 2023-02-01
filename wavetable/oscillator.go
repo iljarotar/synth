@@ -7,12 +7,13 @@ func (t OscillatorType) String() string {
 }
 
 const (
-	Sawtooth     OscillatorType = "Sawtooth"
-	Sine         OscillatorType = "Sine"
-	SmoothSquare OscillatorType = "SmoothSquare"
-	Square       OscillatorType = "Square"
-	Triangle     OscillatorType = "Triangle"
-	Noise        OscillatorType = "Noise"
+	Sawtooth         OscillatorType = "Sawtooth"
+	InvertedSawtooth OscillatorType = "InvertedSawtooth"
+	Sine             OscillatorType = "Sine"
+	SmoothSquare     OscillatorType = "SmoothSquare"
+	Square           OscillatorType = "Square"
+	Triangle         OscillatorType = "Triangle"
+	Noise            OscillatorType = "Noise"
 )
 
 type WaveTable struct {
