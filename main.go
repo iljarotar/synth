@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/iljarotar/synth/audio"
+	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/control"
 	"github.com/iljarotar/synth/ui"
 )
@@ -27,7 +28,8 @@ func main() {
 	exit := make(chan bool)
 	UI := ui.NewUI(ctl, exit)
 
-	UI.ClearScreen()
+	UI.ClearScreen(config.Instance().GetErrorMsg())
+	config.Instance().ClearErrorMsg()
 	UI.PrintMenu()
 	go UI.AcceptInput()
 	<-exit

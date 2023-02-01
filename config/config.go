@@ -8,13 +8,14 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const sampleRate = 44100
+const defaultSampleRate = 44100
 
 var instance *Config = nil
 
 type Config struct {
 	SampleRate float64 `yaml:"sample-rate"`
 	RootPath   string  `yaml:"root-path"`
+	errorMsg   string
 }
 
 func Instance() *Config {
@@ -29,15 +30,23 @@ func initialize() *Config {
 
 	home, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Printf("could not load config file. falling back to default: %s", err.Error())
+		c.errorMsg = "could not load config file. falling back to default: " + err.Error()
 	}
 
 	data, err := ioutil.ReadFile(home + "/.config/synth/config.yaml")
 	if err != nil {
-		fmt.Printf("could not load config file. falling back to default: %s", err.Error())
+		c.errorMsg = "could not load config file. falling back to default: " + err.Error()
 	}
 
 	err = yaml.Unmarshal(data, c)
+	if err != nil {
+		c.errorMsg = "could not load config file. falling back to default: " + err.Error()
+	}
+
+	if c.SampleRate < 1000 {
+		c.SampleRate = defaultSampleRate
+		c.errorMsg = "invalid sample rate. falling back to default: " + fmt.Sprint(defaultSampleRate)
+	}
 
 	return c
 }
@@ -56,4 +65,12 @@ func (c *Config) SetRootPath(path string) {
 	}
 
 	ioutil.WriteFile(home+"/.config/synth/config.yaml", data, 666)
+}
+
+func (c *Config) GetErrorMsg() string {
+	return c.errorMsg
+}
+
+func (c *Config) ClearErrorMsg() {
+	c.errorMsg = ""
 }

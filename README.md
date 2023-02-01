@@ -10,6 +10,10 @@ cd synth
 make install
 ```
 
+## Configuration
+
+After running `make install` you should have a file called `~/.config/synth/config.yaml`, which specifies the sample rate and the root path, where the synth will look for patch files. You can change the root path from within the synth (see below). The sample rate can only be changed manually and will be applied on startup.
+
 ## Usage
 
 Start the synth:
@@ -34,8 +38,6 @@ stop, s         stop synth
 
 :
 ```
-
-Note: every command can be called by its full name or by its shortcut, e.g `play` or `p` are equivalent.
 
 ### Load patches
 
@@ -147,7 +149,7 @@ wavetables:
 
 ### Oscillators
 
-An oscillator may have a type of `Sine`, `Square`, `Noise` or `SmoothSquare`. Every oscillator needs an amplitude. Sine and Square oscillators also need a frequency. A phase may be passed to periodic wave forms and will be 0 if omitted.
+An oscillator may have a type of `Sine`, `Square`, `Sawtooth`, `Triangle`, `SmoothSquare` or `Noise`. Every oscillator needs an amplitude. Sine and Square oscillators also need a frequency. A phase may be passed to periodic wave forms and will be 0 if omitted.
 
 Examples
 

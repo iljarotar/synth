@@ -31,12 +31,16 @@ func (ui *UI) AcceptInput() {
 	}
 }
 
-func (ui *UI) ClearScreen() {
+func (ui *UI) ClearScreen(msg ...string) {
 	cmd, ok := ui.cli.commands["clear"]
 	if !ok {
 		fmt.Println("something went wrong")
 	}
 	cmd(ui.cli.config)
+
+	if len(msg) > 0 && msg[0] != "" {
+		fmt.Println(msg[0])
+	}
 }
 
 func (ui *UI) PrintMenu() {
