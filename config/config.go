@@ -26,21 +26,24 @@ func Instance() *Config {
 }
 
 func initialize() *Config {
-	c := &Config{}
+	c := &Config{SampleRate: defaultSampleRate}
 
 	home, err := os.UserHomeDir()
 	if err != nil {
-		c.errorMsg = "could not load config file. falling back to default: " + err.Error()
+		c.errorMsg = "could not load config file. falling back to default. error: " + err.Error()
+		return c
 	}
 
 	data, err := ioutil.ReadFile(home + "/.config/synth/config.yaml")
 	if err != nil {
-		c.errorMsg = "could not load config file. falling back to default: " + err.Error()
+		c.errorMsg = "could not load config file. falling back to default. error: " + err.Error()
+		return c
 	}
 
 	err = yaml.Unmarshal(data, c)
 	if err != nil {
-		c.errorMsg = "could not load config file. falling back to default: " + err.Error()
+		c.errorMsg = "could not load config file. falling back to default. error: " + err.Error()
+		return c
 	}
 
 	if c.SampleRate < 1000 {
