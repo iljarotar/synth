@@ -149,7 +149,14 @@ wavetables:
 
 ### Oscillators
 
-An oscillator may have a type of `Sine`, `Square`, `Sawtooth`, `Triangle`, `SmoothSquare`, `InvertedSawtooth` or `Noise`. Every oscillator needs an amplitude. Periodic wave forms also need a frequency and optionally can be passed a phase.
+| type             | amplitude | freq        | phase       | am       | pm          |
+| ---------------- | --------- | ----------- | ----------- | -------- | ----------- |
+| Sine             | required  | required    | optional    | optional | optional    |
+| Square           | required  | required    | optional    | optional | optional    |
+| Sawtooth         | required  | required    | optional    | optional | optional    |
+| InvertedSawtooth | required  | required    | optional    | optional | optional    |
+| Triangle         | required  | required    | optional    | optional | optional    |
+| Noise            | required  | ineffective | ineffective | optional | ineffective |
 
 Examples
 

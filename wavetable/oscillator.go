@@ -10,7 +10,6 @@ const (
 	Sawtooth         OscillatorType = "Sawtooth"
 	InvertedSawtooth OscillatorType = "InvertedSawtooth"
 	Sine             OscillatorType = "Sine"
-	SmoothSquare     OscillatorType = "SmoothSquare"
 	Square           OscillatorType = "Square"
 	Triangle         OscillatorType = "Triangle"
 	Noise            OscillatorType = "Noise"

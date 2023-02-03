@@ -14,8 +14,6 @@ func NewSignalFunc(oscType OscillatorType) SignalFunc {
 		return SineSignalFunc()
 	case Square:
 		return SquareSignalFunc()
-	case SmoothSquare:
-		return SmoothSquareSignalFunc()
 	case Sawtooth:
 		return SawtoothSignalFunc()
 	case Triangle:
@@ -51,21 +49,6 @@ func SquareSignalFunc() SignalFunc {
 			return 1
 		}
 		return -1
-	}
-
-	return square
-}
-
-func SmoothSquareSignalFunc() SignalFunc {
-	square := func(x float64) float64 {
-		n, _ := math.Modf(x / math.Pi)
-		arg := (2*math.Pi*x - float64(n)*math.Pi)
-		y := math.Sin(2 * math.Pi * x)
-
-		if y > 0 {
-			return 2/(1+math.Exp(-5*arg)) - 1
-		}
-		return 1 - 2/(1+math.Exp(-5*arg))
 	}
 
 	return square
