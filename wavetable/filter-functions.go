@@ -29,9 +29,11 @@ func LowpassFilterFunc() FilterFunc {
 		if freq <= cutoff {
 			return 1
 		}
+
 		m := -1 / ramp
 		t := (cutoff + ramp) / ramp
 		y := m*freq + t // linear ramp
+
 		return math.Max(y, 0)
 	}
 
@@ -43,9 +45,11 @@ func HighpassFilterFunc() FilterFunc {
 		if freq >= cutoff {
 			return 1
 		}
+
 		m := 1 / ramp
 		t := 1 - cutoff/ramp
 		y := m*freq + t // linear ramp
+
 		return math.Max(y, 0)
 	}
 

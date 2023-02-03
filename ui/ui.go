@@ -36,6 +36,7 @@ func (ui *UI) ClearScreen(msg ...string) {
 	if !ok {
 		fmt.Println("something went wrong")
 	}
+
 	cmd(ui.cli.config)
 
 	if len(msg) > 0 && msg[0] != "" {

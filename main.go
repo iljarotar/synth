@@ -23,7 +23,11 @@ func main() {
 	}
 	defer ctx.Close()
 
-	ctl := control.NewControl(ctx)
+	ctl, err := control.NewControl(ctx)
+	if err != nil {
+		fmt.Println("could not initialize control. error: " + err.Error())
+		return
+	}
 
 	exit := make(chan bool)
 	UI := ui.NewUI(ctl, exit)

@@ -27,7 +27,6 @@ func (p *Parser) SetRootPath(path string) error {
 		if err != nil {
 			return err
 		}
-
 		c.SetRootPath(home + path[1:])
 	} else {
 		c.SetRootPath(path)

@@ -12,12 +12,17 @@ type Control struct {
 	playing     bool
 }
 
-func NewControl(ctx *audio.Context) *Control {
+func NewControl(ctx *audio.Context) (*Control, error) {
 	var synth s.Synth
 	synth.Initialize()
-	ctl := &Control{ctx: *ctx, Synth: &synth, Initialized: false, playing: false}
-	ctl.Start()
-	return ctl
+	ctl := &Control{ctx: *ctx, Synth: &synth}
+
+	err := ctl.Start()
+	if err != nil {
+		return nil, err
+	}
+
+	return ctl, nil
 }
 
 func (c *Control) LoadSynth(synth s.Synth) {
