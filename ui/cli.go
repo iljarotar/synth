@@ -2,7 +2,7 @@ package ui
 
 import (
 	c "github.com/iljarotar/synth/control"
-	p "github.com/iljarotar/synth/parser"
+	l "github.com/iljarotar/synth/loader"
 )
 
 type cli struct {
@@ -13,7 +13,7 @@ type cli struct {
 type cmdConfig struct {
 	exit    chan<- bool
 	control *c.Control
-	parser  *p.Parser
+	loader  *l.Loader
 }
 
 func newCLI(config cmdConfig) cli {
@@ -50,9 +50,6 @@ func (c *cli) addCommands() {
 
 	c.commands["load"] = loadCmd
 	c.commands["l"] = loadCmd
-
-	c.commands["apply"] = applyCmd
-	c.commands["a"] = applyCmd
 
 	c.commands["help"] = helpCmd
 	c.commands["h"] = helpCmd
