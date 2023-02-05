@@ -1,20 +1,24 @@
 gain: 1
 wavetables:
-  - filters:
-    oscillators:
+  - oscillators:
       - type: Noise
-        amplitude: 0.002
-        am:
-          oscillators:
-            - type: Square
-              amplitude: 0.002
-              freq: 30
-            - type: Square
-              amplitude: 0.001
-              freq: 21.3
+        amplitude:
+          value: 0.002
+          modulation:
+            oscillators:
+              - type: Square
+                amplitude:
+                  value: 0.002
+                freq: 30
+              - type: Square
+                amplitude:
+                  value: 0.001
+                freq: 21.3
       - type: Square
-        amplitude: 0.008
+        amplitude:
+          value: 0.008
         freq: 8
       - type: Square
-        amplitude: 0.005
+        amplitude:
+          value: 0.005
         freq: 10.3
