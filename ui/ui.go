@@ -6,17 +6,26 @@ import (
 
 	"github.com/Songmu/prompter"
 	c "github.com/iljarotar/synth/control"
-	p "github.com/iljarotar/synth/parser"
+	l "github.com/iljarotar/synth/loader"
 )
 
 type UI struct {
-	cli cli
+	cli    cli
+	loader *l.Loader
 }
 
-func NewUI(ctl *c.Control, exit chan<- bool) UI {
-	parser := p.NewParser()
-	config := cmdConfig{control: ctl, exit: exit, parser: parser}
-	return UI{cli: newCLI(config)}
+func NewUI(ctl *c.Control, exit chan<- bool) (*UI, error) {
+	loader, err := l.NewLoader(ctl)
+	if err != nil {
+		return nil, err
+	}
+
+	config := cmdConfig{control: ctl, exit: exit, loader: loader}
+	return &UI{cli: newCLI(config), loader: loader}, nil
+}
+
+func (ui *UI) Close() error {
+	return ui.loader.Close()
 }
 
 func (ui *UI) AcceptInput() {

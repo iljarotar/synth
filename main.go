@@ -30,7 +30,11 @@ func main() {
 	}
 
 	exit := make(chan bool)
-	UI := ui.NewUI(ctl, exit)
+	UI, err := ui.NewUI(ctl, exit)
+	if err != nil {
+		fmt.Println("could not initialize UI. error: " + err.Error())
+	}
+	defer UI.Close()
 
 	UI.ClearScreen(config.Instance().GetErrorMsg())
 	config.Instance().ClearErrorMsg()

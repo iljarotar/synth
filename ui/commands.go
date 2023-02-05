@@ -35,7 +35,7 @@ func setRootPathCmd(config cmdConfig, args ...string) string {
 		return "please specify exactly one root path"
 	}
 
-	err := config.parser.SetRootPath(args[0])
+	err := config.loader.SetRootPath(args[0])
 	if err != nil {
 		return "could not set root path"
 	}
@@ -72,27 +72,11 @@ func loadCmd(config cmdConfig, args ...string) string {
 	}
 
 	var s synth.Synth
-	err := config.parser.Load(args[0], &s)
+	err := config.loader.Load(args[0], &s)
 	if err != nil {
 		return err.Error()
 	}
 
-	config.control.LoadSynth(s)
-	return ""
-}
-
-func applyCmd(config cmdConfig, args ...string) string {
-	if len(args) > 0 {
-		return "apply command doesn't expect any arguments"
-	}
-
-	var s synth.Synth
-	err := config.parser.LoadLastOpened(&s)
-	if err != nil {
-		return err.Error()
-	}
-
-	config.control.LoadSynth(s)
 	return ""
 }
 
