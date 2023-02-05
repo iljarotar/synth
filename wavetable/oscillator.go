@@ -17,7 +17,7 @@ const (
 
 type WaveTable struct {
 	SignalFunc  SignalFunc
-	Amlitude    *Param        `yaml:"amplitude"`
+	Amplitude   *Param        `yaml:"amplitude"`
 	Oscillators []*Oscillator `yaml:"oscillators"`
 	Filters     []Filter      `yaml:"filters"`
 }
@@ -36,8 +36,8 @@ type Param struct {
 }
 
 func (w *WaveTable) Initialize() {
-	if w.Amlitude != nil && w.Amlitude.Modulation != nil {
-		w.Amlitude.Modulation.Initialize()
+	if w.Amplitude != nil && w.Amplitude.Modulation != nil {
+		w.Amplitude.Modulation.Initialize()
 	}
 
 	for i := range w.Filters {
@@ -100,11 +100,11 @@ func (w *WaveTable) makeSignalFunc() SignalFunc {
 			y += osc.signalFunc(arg*freq) * amp
 		}
 
-		if w.Amlitude != nil {
-			wAmp = w.Amlitude.Value
+		if w.Amplitude != nil {
+			wAmp = w.Amplitude.Value
 
-			if w.Amlitude.Modulation != nil {
-				wAmp += w.Amlitude.Modulation.SignalFunc(x)
+			if w.Amplitude.Modulation != nil {
+				wAmp += w.Amplitude.Modulation.SignalFunc(x)
 			}
 		}
 

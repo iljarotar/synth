@@ -65,158 +65,117 @@ Note: if you load a file, while the synth is playing, it will instantaneously ad
 
 ## Creating a patch
 
-A patch is a yaml-file and may look like this
+A patch is a yaml file, that specifies all of the synth's parameters.
+
+The basic structure looks like this:
 
 ```yaml
-gain: 1
-wavetables:
-  - filters:
-      - type: "Highpass"
-        cutoff: 300
-        ramp: 110
-        cutoff-mod:
-          oscillators:
-            - type: "Sine"
-              amplitude: 100
-              freq: 0.25
-      - type: "Lowpass"
-        cutoff: 300
-        ramp: 110
-        cutoff-mod:
-          oscillators:
-            - type: "Sine"
-              amplitude: 100
-              freq: 0.25
-    oscillators:
-      - type: "Sine"
-        amplitude: 0.5
-        freq: 220
-        am:
-          oscillators:
-            - type: "Sine"
-              amplitude: 0.5
-              freq: 1
-            - type: "Sine"
-              amplitude: 0.5
-              freq: 2
+volume: #decimal value
+wavetables: #array of wavetables
+  - amplitude:
+      value: #decimal value
+      modulation: #wavetable
 
-      - type: "Sine"
-        amplitude: 0.5
-        freq: 275
-        pm:
-          oscillators:
-            - type: "Sine"
-              amplitude: 100
-              freq: 1
-            - type: "Sine"
-              amplitude: 30
-              freq: 1
+    filters: #array of filters
+      - type: #type of filter
+        cutoff:
+          value: #decimal value
+          modulation: #wavetable
+        ramp: #decimal value
 
-      - type: "Sine"
-        amplitude: 0.5
-        freq: 330
-        am:
-          oscillators:
-            - type: "Sine"
-              amplitude: 0.5
-              freq: 1
+        #another filter
+      - type:
+        cutoff:
+        ramp:
 
-      - type: "Sine"
-        amplitude: 0.5
-        freq: 415
-        pm:
-          oscillators:
-            - type: "Sine"
-              amplitude: 1
-              freq: 1
-            - type: "Sine"
-              amplitude: 1.2
-              freq: 0.25
-```
+    oscillators: #array of oscillators
+      - type: #wave form
+        freq: #decimal value
+        amplitude:
+          value: #decimal value
+          modulation: #wavetable
+        phase:
+          value: #decimal value
+          modulation: #wavetable
 
-The basic structure is
-
-```yaml
-gain:
-wavetables:
-  - filters:
-    oscillators:
-  - filters:
+    #another wavetable
+  - amplitude:
+    filters:
     oscillators:
 ```
 
-`gain` is the synthesizer's main volume, `wavetables` is an array of wavetables. Each wavetable may have multiple filters and oscillators.
+Most of the fields are optional. A simple sine wave with a frequency of 440 Hz can be generated like this:
+
+```yaml
+wavetables:
+  - oscillators:
+      - type: Sine
+        freq: 440
+```
+
+You can find more interesting examples in the `examples` directory.
+
+---
+
+### Synth
+
+The topmost level of the synth has two fields:
+
+`volume`  
+is the synth's main volume.
+
+`wavetables`  
+is an array of wavetables.
+
+---
+
+### Wavetable
+
+`amplitude`  
+is a param, that has a `value` and an optional `modulation` field.
+
+`filters`  
+is an array of filters.
+
+`oscillators`  
+is an array of oscillators.
+
+---
+
+### Amplitude
+
+`value`  
+The value of a wavetable's amplitude affects the entire wavetable, whereas an oscillator's amplitude only affects that particular oscillator.
+
+`modulation`  
+is an optional wavetable, that modulates the amplitude.
 
 ### Oscillators
 
-| type             | amplitude | freq        | phase       | am       | pm          |
-| ---------------- | --------- | ----------- | ----------- | -------- | ----------- |
-| Sine             | required  | required    | optional    | optional | optional    |
-| Square           | required  | required    | optional    | optional | optional    |
-| Sawtooth         | required  | required    | optional    | optional | optional    |
-| InvertedSawtooth | required  | required    | optional    | optional | optional    |
-| Triangle         | required  | required    | optional    | optional | optional    |
-| Noise            | required  | ineffective | ineffective | optional | ineffective |
+Types of oscillators:  
+`Sine`  
+`Square`  
+`Triangle`  
+`Sawtooth`  
+`InvertedSawtooth`  
+`Noise`
 
-Examples
+`amplitude`  
+takes an initial value and an optional modulator wavetable. Modulating the amplitude results in a tremolo effect.
 
-```yaml
-oscillators:
-  - type: Square
-    amplitude: 0.75
-    freq: 440
-    phase: 0.5
-  - type: Sine
-    amplitude: 1
-    freq: 220
-  - type: Noise
-    amplitude: 0.05
-```
-
-Optional amplitude and phase modulation can be added to every oscillator individually. A Modulator is itself a wavetable with filters and oscillators, so arbitrarily deep nesting is possible.
-
-Examples
-
-```yaml
-oscillators:
-  - type: Sine
-    amplitude: 0.5
-    freq: 220
-    am:
-      oscillators:
-        - type: "Sine"
-          amplitude: 0.5
-          freq: 1
-
-  - type: Square
-    amplitude: 1
-    freq: 275
-    pm:
-      oscillators:
-        - type: Noise
-          amplitude: 0.5
-```
-
-Note: Phase modulation effectively results in pitch modulation.
+`phase`  
+takes an initial value and an optional modulator wavetable. Modulatin the phase results in a vibrato effect. Phase doesn't have any effect on an oscillator of type `Noise`.
 
 ### Filters
 
-A filter can be of type `Lowpass` or `Highpass`. The basic structure is
+Types of filters  
+`Lowpass`  
+`Highpass`
 
-```yaml
-filters:
-  - type: "Highpass"
-    cutoff: 300
-    ramp: 110
-    cutoff-mod:
-      oscillators:
-        - type: "Sine"
-          amplitude: 100
-          freq: 0.25
-```
+`cutoff`  
+takes an initial value and an optional modulator wavetable. The value specifies the frequency at which the filter sets in. Modulating the cutoff results in kind of a wah wah effect.
 
-`cutoff` specifies the cutoff frequency and `ramp` specifies the length of the linear ramp from the cutoff frequency to the point, where a frequency is filtered out entirely. For example, if `cutoff` is `440` and `ramp` is `60`, then 480 Hz will be softer then 440 Hz and 500 Hz and higher will not be audible any more.
-
-`cutoff-mod` is a wavetable, that modulates the `cutoff`.
+`ramp`  
+specifies the distance between the cutoff frequency and the point, where a frequency isn't audible anymore.
 
 Note: unfortunately filters don't affect oscillators of type `Noise`.
