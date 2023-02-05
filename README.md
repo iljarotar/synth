@@ -132,7 +132,7 @@ is an array of wavetables.
 ### Wavetable
 
 `amplitude`  
-is a param, that has a `value` and an optional `modulation` field.
+is a parameter, that has a `value` and an optional `modulation` field.
 
 `filters`  
 is an array of filters.
