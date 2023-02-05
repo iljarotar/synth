@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/iljarotar/synth/config"
@@ -19,6 +20,7 @@ type Loader struct {
 	watcher    *fsnotify.Watcher
 	watch      *bool
 	control    *control.Control
+	lastLoaded time.Time
 }
 
 func NewLoader(ctl *control.Control) (*Loader, error) {
@@ -55,7 +57,11 @@ func (l *Loader) SetRootPath(path string) error {
 }
 
 func (l *Loader) Load(file string, synth *s.Synth) error {
-	fmt.Println("enter")
+	// to prevent clipping when write event is sent twice for the same change
+	if time.Now().Sub(l.lastLoaded) < 500*time.Millisecond {
+		return nil
+	}
+
 	c := config.Instance()
 	data, err := ioutil.ReadFile(c.RootPath + "/" + file)
 	if err != nil {
@@ -73,7 +79,9 @@ func (l *Loader) Load(file string, synth *s.Synth) error {
 	}
 
 	l.control.LoadSynth(*synth)
+	l.lastLoaded = time.Now()
 	l.lastOpened = file
+
 	return nil
 }
 
@@ -100,6 +108,8 @@ func (l *Loader) StartWatching() {
 			if !ok {
 				return
 			}
+
+			time.Sleep(time.Millisecond * 50) // to prevent occasional empty file loading
 
 			if event.Has(fsnotify.Write) {
 				var s synth.Synth
