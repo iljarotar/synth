@@ -113,7 +113,7 @@ wavetables:
         freq: 440
 ```
 
-You can find more interesting examples in the `examples` directory.
+You can find more examples in the `examples` directory.
 
 ---
 
