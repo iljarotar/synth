@@ -164,7 +164,7 @@ Types of oscillators:
 takes an initial value and an optional modulator wavetable. Modulating the amplitude results in a tremolo effect.
 
 `phase`  
-takes an initial value and an optional modulator wavetable. Modulatin the phase results in a vibrato effect. Phase doesn't have any effect on an oscillator of type `Noise`.
+takes an initial value and an optional modulator wavetable. Modulating the phase results in a vibrato effect. Phase doesn't have any effect on an oscillator of type `Noise`.
 
 ### Filters
 
@@ -178,4 +178,4 @@ takes an initial value and an optional modulator wavetable. The value specifies 
 `ramp`  
 specifies the distance between the cutoff frequency and the point, where a frequency isn't audible anymore.
 
-Note: unfortunately filters don't affect oscillators of type `Noise`.
+Note: filters don't affect oscillators of type `Noise`.
