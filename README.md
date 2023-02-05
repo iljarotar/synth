@@ -27,7 +27,6 @@ The output should look like this
 ```
 Menu
 
-apply, a        reload last file
 clear, c        clear screen
 exit, e         exit synth
 help, h         print this menu
@@ -55,13 +54,7 @@ load a file
 load <PATH-TO-YOUR-FILE-RELATIVE-TO-YOUR-ROOT-PATH>
 ```
 
-load the same file again
-
-```bash
-apply
-```
-
-Note: if you load a file, while the synth is playing, it will instantaneously adapt.
+If you load a file or change the current file, while the synth is playing, it will automatically adapt to the changes.
 
 ## Creating a patch
 
