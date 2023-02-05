@@ -17,21 +17,28 @@ const (
 
 type WaveTable struct {
 	SignalFunc  SignalFunc
-	Oscillators []Oscillator `yaml:"oscillators"`
-	Filters     []Filter     `yaml:"filters"`
+	Amlitude    *Param        `yaml:"amplitude"`
+	Oscillators []*Oscillator `yaml:"oscillators"`
+	Filters     []Filter      `yaml:"filters"`
 }
 
 type Oscillator struct {
-	Type      OscillatorType `yaml:"type"`
-	Amplitude float64        `yaml:"amplitude"`
-	Freq      float64        `yaml:"freq"`
-	Phase     float64        `yaml:"phase"`
-	PM        *WaveTable     `yaml:"pm"`
-	AM        *WaveTable     `yaml:"am"`
+	Type       OscillatorType `yaml:"type"`
+	Freq       float64        `yaml:"freq"`
+	Amplitude  *Param         `yaml:"amplitude"`
+	Phase      *Param         `yaml:"phase"`
+	signalFunc SignalFunc
+}
+
+type Param struct {
+	Value      float64    `yaml:"value"`
+	Modulation *WaveTable `yaml:"modulation"`
 }
 
 func (w *WaveTable) Initialize() {
-	f := make([]SignalFunc, 0)
+	if w.Amlitude != nil && w.Amlitude.Modulation != nil {
+		w.Amlitude.Modulation.Initialize()
+	}
 
 	for i := range w.Filters {
 		w.Filters[i].Initialize()
@@ -39,32 +46,46 @@ func (w *WaveTable) Initialize() {
 
 	for i := range w.Oscillators {
 		osc := w.Oscillators[i]
-		f = append(f, NewSignalFunc(osc.Type))
+		osc.signalFunc = NewSignalFunc(osc.Type)
 
-		if osc.PM != nil {
-			osc.PM.Initialize()
+		if osc.Phase != nil && osc.Phase.Modulation != nil {
+			osc.Phase.Modulation.Initialize()
 		}
 
-		if osc.AM != nil {
-			osc.AM.Initialize()
+		if osc.Amplitude != nil && osc.Amplitude.Modulation != nil {
+			osc.Amplitude.Modulation.Initialize()
 		}
 	}
+
+	w.SignalFunc = w.makeSignalFunc()
+}
+
+func (w *WaveTable) makeSignalFunc() SignalFunc {
+	wAmp := 1.0
 
 	signalFunc := func(x float64) float64 {
 		var y float64
 
 		for i := range w.Oscillators {
 			osc := w.Oscillators[i]
-			amp := osc.Amplitude
 			freq := osc.Freq
-			arg := x + osc.Phase
+			arg := x
+			amp := 1.0
 
-			if osc.PM != nil {
-				arg += osc.PM.SignalFunc(x)
+			if osc.Amplitude != nil {
+				amp = osc.Amplitude.Value
+
+				if osc.Amplitude.Modulation != nil {
+					amp += osc.Amplitude.Modulation.SignalFunc(x)
+				}
 			}
 
-			if osc.AM != nil {
-				amp += osc.AM.SignalFunc(x)
+			if osc.Phase != nil {
+				arg += osc.Phase.Value
+
+				if osc.Phase.Modulation != nil {
+					arg += osc.Phase.Modulation.SignalFunc(x)
+				}
 			}
 
 			for j := range w.Filters {
@@ -76,11 +97,19 @@ func (w *WaveTable) Initialize() {
 				amp = 0
 			}
 
-			y += f[i](arg*freq) * amp
+			y += osc.signalFunc(arg*freq) * amp
 		}
 
-		return y / float64(len(w.Oscillators))
+		if w.Amlitude != nil {
+			wAmp = w.Amlitude.Value
+
+			if w.Amlitude.Modulation != nil {
+				wAmp += w.Amlitude.Modulation.SignalFunc(x)
+			}
+		}
+
+		return y * wAmp / float64(len(w.Oscillators))
 	}
 
-	w.SignalFunc = signalFunc
+	return signalFunc
 }
