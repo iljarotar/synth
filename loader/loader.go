@@ -88,13 +88,14 @@ func (l *Loader) Load(file string, synth *s.Synth) error {
 func (l *Loader) Watch(file string) error {
 	c := config.Instance()
 	filePath := c.RootPath + "/" + file
+	watched := l.watcher.WatchList()
 
-	if l.lastOpened != "" {
-		lastOpenedPath := c.RootPath + "/" + l.lastOpened
-
-		err := l.watcher.Remove(lastOpenedPath)
-		if err != nil {
-			return err
+	if len(watched) > 0 {
+		for i := range watched {
+			err := l.watcher.Remove(watched[i])
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -111,7 +112,7 @@ func (l *Loader) StartWatching() {
 
 			time.Sleep(time.Millisecond * 50) // to prevent occasional empty file loading
 
-			if event.Has(fsnotify.Write) {
+			if !event.Has(fsnotify.Rename) {
 				var s synth.Synth
 
 				err := l.Load(l.lastOpened, &s)
