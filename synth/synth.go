@@ -38,7 +38,10 @@ func (s *Synth) Play(input chan<- float32) {
 		}
 
 		s.Phase += s.step
-		y /= float64(len(s.WaveTables))
+
+		if len(s.WaveTables) > 0 {
+			y /= float64(len(s.WaveTables))
+		}
 		input <- float32(y)
 	}
 }
@@ -46,7 +49,7 @@ func (s *Synth) Play(input chan<- float32) {
 func (s *Synth) FadeOut() {
 	sampleRate := config.Instance().SampleRate
 	for s.Volume > 0 {
-		s.Volume -= 0.005
+		s.Volume -= 0.001
 		time.Sleep(time.Second / time.Duration(sampleRate))
 	}
 }
@@ -54,7 +57,7 @@ func (s *Synth) FadeOut() {
 func (s *Synth) FadeIn() {
 	sampleRate := config.Instance().SampleRate
 	for s.Volume < s.volumeMemory {
-		s.Volume += 0.005
+		s.Volume += 0.001
 		time.Sleep(time.Second / time.Duration(sampleRate))
 	}
 }
