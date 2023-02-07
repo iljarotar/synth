@@ -68,12 +68,12 @@ func (l *Loader) Load(file string, synth *s.Synth) error {
 		return err
 	}
 
-	err = yaml.Unmarshal(data, synth)
+	err = l.Watch(file)
 	if err != nil {
 		return err
 	}
 
-	err = l.Watch(file)
+	err = yaml.Unmarshal(data, synth)
 	if err != nil {
 		return err
 	}
