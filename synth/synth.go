@@ -46,18 +46,18 @@ func (s *Synth) Play(input chan<- float32) {
 	}
 }
 
-func (s *Synth) FadeOut() {
+func (s *Synth) FadeOut(step float64) {
 	sampleRate := config.Instance.SampleRate()
 	for s.Volume > 0 {
-		s.Volume -= 0.005
+		s.Volume -= step
 		time.Sleep(time.Second / time.Duration(sampleRate))
 	}
 }
 
-func (s *Synth) FadeIn() {
+func (s *Synth) FadeIn(step float64) {
 	sampleRate := config.Instance.SampleRate()
 	for s.Volume < s.volumeMemory {
-		s.Volume += 0.005
+		s.Volume += step
 		time.Sleep(time.Second / time.Duration(sampleRate))
 	}
 }

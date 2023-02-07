@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"time"
 
 	"github.com/Songmu/prompter"
 	"github.com/iljarotar/synth/audio"
@@ -91,10 +92,11 @@ func start(file string) error {
 	for {
 		input := prompter.Prompt("type 'q' to quit", "")
 		if input == "q" {
+			ctl.Stop()
+			time.Sleep(time.Millisecond * 50) // avoid clipping at the end
 			break
 		}
 	}
-	ctl.Stop()
 
 	return nil
 }

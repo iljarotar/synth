@@ -20,16 +20,16 @@ func (c *Control) LoadSynth(synth s.Synth) {
 	synth.Initialize()
 	synth.Phase = c.Synth.Phase
 
-	c.Synth.FadeOut()
+	c.Synth.FadeOut(0.005)
 	*c.Synth = synth
-	c.Synth.FadeIn()
+	c.Synth.FadeIn(0.005)
 }
 
 func (c *Control) Stop() {
-	c.Synth.FadeOut()
+	c.Synth.FadeOut(0.005)
 }
 
 func (c *Control) Start() {
 	go c.Synth.Play(c.input)
-	c.Synth.FadeIn()
+	c.Synth.FadeIn(0.005)
 }

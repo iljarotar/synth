@@ -7,54 +7,48 @@ To install the synth [Golang](https://go.dev/doc/install) is required. Once you 
 ```bash
 git clone git@github.com:iljarotar/synth.git
 cd synth
-make install
+go install
 ```
-
-## Configuration
-
-After running `make install` you should have a file called `~/.config/synth/config.yaml`, which specifies the sample rate and the root path, where the synth will look for patch files. You can change the root path from within the synth (see below). The sample rate can only be changed manually and will be applied on startup.
 
 ## Usage
 
-Start the synth:
+Starting the synth with
 
 ```bash
-synth
+synth -h
 ```
 
-The output should look like this
+outputs
 
 ```
-Menu
+command line synthesizer
 
-clear, c        clear screen
-exit, e         exit synth
-help, h         print this menu
-load, l         load file
-play, p         start synth
-root, r         specify root path
-stop, s         stop synth
+Usage:
+  synth [flags]
 
-:
+Flags:
+  -f, --file string          specify which file to load
+  -h, --help                 print help
+  -s, --sample-rate string   specify sample rate
 ```
 
-### Load patches
-
-By default the synth will look for files in a directory called `~/synth`. If you want to use this default, create the directory and place all your patches there.
-
-If you want to use a different directory, start the synth and type
+Loading a file with
 
 ```bash
-root <PATH-TO-YOUR-PATCHES>
+synth -f <PATH_TO_YAML_FILE>
 ```
 
-load a file
+starts playing the file, if the format is correct.
+
+Optionally you can pass a sample rate
 
 ```bash
-load <PATH-TO-YOUR-FILE-RELATIVE-TO-YOUR-ROOT-PATH>
+synth -f <PATH_TO_YAML_FILE> -s 44100
 ```
 
-If you load a file or change the current file, while the synth is playing, it will automatically adapt to the changes.
+44100 Hz is the default sample rate. 1000 Hz is the minimum.
+
+---
 
 ## Creating a patch
 
