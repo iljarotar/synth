@@ -33,8 +33,7 @@ var rootCmd = &cobra.Command{
 			config.Instance.SetSampleRate(sRate)
 		}
 
-		sampleRate := config.Instance.SampleRate()
-		err := start(file, sampleRate)
+		err := start(file)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -54,7 +53,7 @@ func init() {
 	rootCmd.Flags().StringP("sample-rate", "s", "", "specify sample rate")
 }
 
-func start(file string, sampleRate float64) error {
+func start(file string) error {
 	err := audio.Init()
 	if err != nil {
 		return err
@@ -63,7 +62,7 @@ func start(file string, sampleRate float64) error {
 	clear()
 
 	input := make(chan float32)
-	ctx, err := audio.NewContext(input, float64(sampleRate))
+	ctx, err := audio.NewContext(input)
 	if err != nil {
 		return err
 	}
