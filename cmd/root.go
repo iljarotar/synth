@@ -20,7 +20,9 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "synth",
 	Short: "command line synthesizer",
-	Long:  "command line synthesizer",
+	Long: `command line synthesizer
+	
+documentation and usage: https://github.com/iljarotar/synth`,
 	Run: func(cmd *cobra.Command, args []string) {
 		file, _ := cmd.Flags().GetString("file")
 		s, _ := cmd.Flags().GetString("sample-rate")

@@ -23,6 +23,8 @@ outputs
 ```
 command line synthesizer
 
+documentation and usage: https://github.com/iljarotar/synth
+
 Usage:
   synth [flags]
 
