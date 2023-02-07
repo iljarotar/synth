@@ -5,9 +5,8 @@ import (
 )
 
 type Control struct {
-	Synth   *s.Synth
-	input   chan float32
-	playing bool
+	Synth *s.Synth
+	input chan float32
 }
 
 func NewControl(input chan float32) *Control {
@@ -23,19 +22,14 @@ func (c *Control) LoadSynth(synth s.Synth) {
 
 	c.Synth.FadeOut()
 	*c.Synth = synth
-
-	if c.playing {
-		c.Synth.FadeIn()
-	}
+	c.Synth.FadeIn()
 }
 
 func (c *Control) Stop() {
-	c.playing = false
 	c.Synth.FadeOut()
 }
 
 func (c *Control) Start() {
 	go c.Synth.Play(c.input)
-	c.playing = true
 	c.Synth.FadeIn()
 }
