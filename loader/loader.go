@@ -2,13 +2,11 @@ package loader
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
-	"strings"
+	"path/filepath"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/control"
 	"github.com/iljarotar/synth/synth"
 	s "github.com/iljarotar/synth/synth"
@@ -16,11 +14,11 @@ import (
 )
 
 type Loader struct {
-	lastOpened string
-	watcher    *fsnotify.Watcher
-	watch      *bool
-	control    *control.Control
-	lastLoaded time.Time
+	currentFile string
+	watcher     *fsnotify.Watcher
+	watch       *bool
+	lastLoaded  time.Time
+	ctl         *control.Control
 }
 
 func NewLoader(ctl *control.Control) (*Loader, error) {
@@ -30,8 +28,9 @@ func NewLoader(ctl *control.Control) (*Loader, error) {
 	}
 
 	watch := true
-	l := Loader{watcher: watcher, watch: &watch, control: ctl}
+	l := Loader{watcher: watcher, watch: &watch, ctl: ctl}
 	go l.StartWatching()
+
 	return &l, nil
 }
 
@@ -40,30 +39,13 @@ func (l *Loader) Close() error {
 	return l.watcher.Close()
 }
 
-func (l *Loader) SetRootPath(path string) error {
-	c := config.Instance()
-
-	if strings.Split(path, "/")[0] == "~" {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return err
-		}
-		c.SetRootPath(home + path[1:])
-	} else {
-		c.SetRootPath(path)
-	}
-
-	return nil
-}
-
 func (l *Loader) Load(file string, synth *s.Synth) error {
 	// to prevent clipping when write event is sent twice for the same change
 	if time.Now().Sub(l.lastLoaded) < 500*time.Millisecond {
 		return nil
 	}
 
-	c := config.Instance()
-	data, err := ioutil.ReadFile(c.RootPath + "/" + file)
+	data, err := os.ReadFile(file)
 	if err != nil {
 		return err
 	}
@@ -78,25 +60,17 @@ func (l *Loader) Load(file string, synth *s.Synth) error {
 		return err
 	}
 
-	l.control.LoadSynth(*synth)
 	l.lastLoaded = time.Now()
-	l.lastOpened = file
+	l.currentFile = file
+	l.ctl.LoadSynth(*synth)
 
 	return nil
 }
 
 func (l *Loader) Watch(file string) error {
-	c := config.Instance()
-	filePath := c.RootPath + "/" + file
-	watched := l.watcher.WatchList()
-
-	if len(watched) > 0 {
-		for i := range watched {
-			err := l.watcher.Remove(watched[i])
-			if err != nil {
-				return err
-			}
-		}
+	filePath, err := filepath.Abs(file)
+	if err != nil {
+		return err
 	}
 
 	return l.watcher.Add(filePath)
@@ -115,7 +89,7 @@ func (l *Loader) StartWatching() {
 			if !event.Has(fsnotify.Rename) {
 				var s synth.Synth
 
-				err := l.Load(l.lastOpened, &s)
+				err := l.Load(l.currentFile, &s)
 				if err != nil {
 					fmt.Println("could not load file. error: " + err.Error())
 				}

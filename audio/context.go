@@ -12,12 +12,11 @@ type Context struct {
 	Input chan float32
 }
 
-func NewContext() (*Context, error) {
-	ctx := &Context{Input: make(chan float32)}
-	c := config.Instance()
+func NewContext(input chan float32) (*Context, error) {
+	ctx := &Context{Input: input}
 
 	var err error
-	ctx.Stream, err = portaudio.OpenDefaultStream(0, 1, c.SampleRate, 0, ctx.Process)
+	ctx.Stream, err = portaudio.OpenDefaultStream(0, 1, config.Instance.SampleRate(), 0, ctx.Process)
 	if err != nil {
 		return nil, err
 	}
