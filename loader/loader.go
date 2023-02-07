@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/iljarotar/synth/control"
 	"github.com/iljarotar/synth/synth"
 	s "github.com/iljarotar/synth/synth"
 	"gopkg.in/yaml.v2"
@@ -17,16 +18,17 @@ type Loader struct {
 	watcher     *fsnotify.Watcher
 	watch       *bool
 	lastLoaded  time.Time
+	ctl         *control.Control
 }
 
-func NewLoader() (*Loader, error) {
+func NewLoader(ctl *control.Control) (*Loader, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
 	}
 
 	watch := true
-	l := Loader{watcher: watcher, watch: &watch}
+	l := Loader{watcher: watcher, watch: &watch, ctl: ctl}
 	go l.StartWatching()
 
 	return &l, nil
@@ -60,6 +62,7 @@ func (l *Loader) Load(file string, synth *s.Synth) error {
 
 	l.lastLoaded = time.Now()
 	l.currentFile = file
+	l.ctl.LoadSynth(*synth)
 
 	return nil
 }

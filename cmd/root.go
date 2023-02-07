@@ -4,10 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"strconv"
 
 	"github.com/Songmu/prompter"
 	"github.com/iljarotar/synth/audio"
+	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/control"
 	l "github.com/iljarotar/synth/loader"
 	s "github.com/iljarotar/synth/synth"
@@ -16,17 +18,22 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "synth",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "command line synthesizer",
+	Long:  "command line synthesizer",
 	Run: func(cmd *cobra.Command, args []string) {
 		file, _ := cmd.Flags().GetString("file")
-		sampleRate, _ := cmd.Flags().GetString("sample-rate")
+		s, _ := cmd.Flags().GetString("sample-rate")
 
+		if s != "" {
+			sRate, err := parseSampleRate(s)
+			if err != nil {
+				fmt.Println("could not parse sample rate. please provide an integer")
+				return
+			}
+			config.Instance.SetSampleRate(sRate)
+		}
+
+		sampleRate := config.Instance.SampleRate()
 		err := start(file, sampleRate)
 		if err != nil {
 			fmt.Println(err)
@@ -44,23 +51,19 @@ func Execute() {
 func init() {
 	rootCmd.Flags().StringP("file", "f", "", "specify which file to load")
 	rootCmd.Flags().BoolP("help", "h", false, "print help")
-	rootCmd.Flags().StringP("sample-rate", "s", "44100", "specify sample rate")
+	rootCmd.Flags().StringP("sample-rate", "s", "", "specify sample rate")
 }
 
-func start(file, sampleRate string) error {
-	sRate, err := strconv.Atoi(sampleRate)
-	if err != nil {
-		return errors.New("could not parse sample rate. please provide an integer")
-	}
-
-	err = audio.Init()
+func start(file string, sampleRate float64) error {
+	err := audio.Init()
 	if err != nil {
 		return err
 	}
 	defer audio.Terminate()
+	clear()
 
 	input := make(chan float32)
-	ctx, err := audio.NewContext(input, float64(sRate))
+	ctx, err := audio.NewContext(input, float64(sampleRate))
 	if err != nil {
 		return err
 	}
@@ -74,7 +77,7 @@ func start(file, sampleRate string) error {
 	ctl := control.NewControl(input)
 	ctl.Start()
 
-	loader, err := l.NewLoader()
+	loader, err := l.NewLoader(ctl)
 	if err != nil {
 		return err
 	}
@@ -85,7 +88,6 @@ func start(file, sampleRate string) error {
 	if err != nil {
 		return err
 	}
-	ctl.LoadSynth(synth)
 
 	for {
 		input := prompter.Prompt("type 'q' to quit", "")
@@ -98,6 +100,17 @@ func start(file, sampleRate string) error {
 	return nil
 }
 
-func loadFile(file string) error {
-	return nil
+func clear() {
+	cmd := exec.Command("clear")
+	cmd.Stdout = os.Stdout
+	cmd.Run()
+}
+
+func parseSampleRate(input string) (float64, error) {
+	sampleRate, err := strconv.Atoi(input)
+	if err != nil {
+		return 0, errors.New("could not parse sample rate. please provide an integer")
+	}
+
+	return float64(sampleRate), nil
 }

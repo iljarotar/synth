@@ -14,8 +14,8 @@ type Synth struct {
 }
 
 func (s *Synth) Initialize() {
-	c := config.Instance()
-	s.step = 1 / c.SampleRate
+	sampleRate := config.Instance.SampleRate()
+	s.step = 1 / sampleRate
 
 	if s.Volume == 0 {
 		s.Volume = 1
@@ -47,17 +47,17 @@ func (s *Synth) Play(input chan<- float32) {
 }
 
 func (s *Synth) FadeOut() {
-	sampleRate := config.Instance().SampleRate
+	sampleRate := config.Instance.SampleRate()
 	for s.Volume > 0 {
-		s.Volume -= 0.001
+		s.Volume -= 0.005
 		time.Sleep(time.Second / time.Duration(sampleRate))
 	}
 }
 
 func (s *Synth) FadeIn() {
-	sampleRate := config.Instance().SampleRate
+	sampleRate := config.Instance.SampleRate()
 	for s.Volume < s.volumeMemory {
-		s.Volume += 0.001
+		s.Volume += 0.005
 		time.Sleep(time.Second / time.Duration(sampleRate))
 	}
 }
