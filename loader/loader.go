@@ -1,13 +1,13 @@
 package loader
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/iljarotar/synth/control"
+	"github.com/iljarotar/synth/screen"
 	"github.com/iljarotar/synth/synth"
 	s "github.com/iljarotar/synth/synth"
 	"gopkg.in/yaml.v2"
@@ -19,16 +19,17 @@ type Loader struct {
 	watch       *bool
 	lastLoaded  time.Time
 	ctl         *control.Control
+	logger      *screen.Logger
 }
 
-func NewLoader(ctl *control.Control) (*Loader, error) {
+func NewLoader(ctl *control.Control, log *screen.Logger) (*Loader, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
 	}
 
 	watch := true
-	l := Loader{watcher: watcher, watch: &watch, ctl: ctl}
+	l := Loader{watcher: watcher, watch: &watch, ctl: ctl, logger: log}
 	go l.StartWatching()
 
 	return &l, nil
@@ -91,7 +92,7 @@ func (l *Loader) StartWatching() {
 
 				err := l.Load(l.currentFile, &s)
 				if err != nil {
-					fmt.Println("could not load file. error: " + err.Error())
+					l.logger.Log("could not load file. error: " + err.Error())
 				}
 			}
 		case err, ok := <-l.watcher.Errors:
@@ -99,7 +100,7 @@ func (l *Loader) StartWatching() {
 				return
 			}
 
-			fmt.Println("could not load file. error: " + err.Error())
+			l.logger.Log("could not load file. error: " + err.Error())
 		}
 	}
 }
