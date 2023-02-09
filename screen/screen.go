@@ -49,7 +49,7 @@ func (s *Screen) Enter() {
 
 func (s *Screen) acceptInput(cancel chan bool) {
 	for {
-		s.input <- prompt("")
+		s.input <- read()
 
 		c := <-cancel
 		if c == true {
@@ -68,12 +68,11 @@ func (s *Screen) resetScreen() {
 	fmt.Print("type 'q' to quit: ")
 }
 
-func prompt(label string) string {
+func read() string {
 	var input string
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Print(label)
 		input, _ = reader.ReadString('\n')
 		if input != "" {
 			break

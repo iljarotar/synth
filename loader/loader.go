@@ -89,7 +89,6 @@ func (l *Loader) StartWatching() {
 
 			if !event.Has(fsnotify.Rename) {
 				var s synth.Synth
-
 				err := l.Load(l.currentFile, &s)
 				if err != nil {
 					l.logger.Log("could not load file. error: " + err.Error())
@@ -99,7 +98,6 @@ func (l *Loader) StartWatching() {
 			if !ok {
 				return
 			}
-
 			l.logger.Log("could not load file. error: " + err.Error())
 		}
 	}
