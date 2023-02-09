@@ -1,82 +1,36 @@
-gain: 1
-wavetables:
-  - filters:
-      - type: Highpass
-        cutoff:
-          value: 300
-          modulation:
-            oscillators:
-              - type: Sine
-                amplitude:
-                  value: 100
-                freq: 0.25
-        ramp: 110
-      - type: Lowpass
-        cutoff:
-          value: 300
-          modulation:
-            oscillators:
-              - type: Sine
-                amplitude:
-                  value: 100
-                freq: 0.25
-        ramp: 110
+volume: 0.7
+out: [root, third, fifth, seventh]
+oscillators:
+  - name: root
+    type: Sine
+    freq: 220
+    filters: [f1]
 
-    oscillators:
-      - type: Sine
-        amplitude:
-          value: 0.5
-          modulation:
-            oscillators:
-              - type: Sine
-                amplitude:
-                  value: 0.5
-                freq: 1
-              - type: Sine
-                amplitude:
-                  value: 0.5
-                freq: 2
-        freq: 220
+  - name: third
+    type: Sine
+    freq: 275
+    filters: [f1]
 
-      - type: Sine
-        amplitude:
-          value: 0.5
-        phase:
-          modulation:
-            oscillators:
-              - type: Sine
-                amplitude:
-                  value: 0.005
-                freq: 1
-              - type: Sine
-                amplitude:
-                  value: 0.003
-                freq: 1
-        freq: 275
+  - name: fifth
+    type: Sine
+    freq: 330
+    filters: [f1]
 
-      - type: Sine
-        amplitude:
-          value: 0.5
-          modulation:
-            oscillators:
-              - type: Sine
-                amplitude:
-                  value: 0.5
-                freq: 1
-        freq: 330
+  - name: seventh
+    type: Sine
+    freq: 415
+    filters: [f1]
 
-      - type: Sine
-        amplitude:
-          value: 0.5
-        phase:
-          modulation:
-            oscillators:
-              - type: Sine
-                amplitude:
-                  value: 0.0025
-                freq: 1
-              - type: Sine
-                amplitude:
-                  value: 0.005
-                freq: 0.25
-        freq: 415
+  - name: f1-mod
+    type: Sine
+    freq: 0.25
+    amp:
+      val: 200
+
+filters:
+  - name: f1
+    type: Lowpass
+    cutoff:
+      val: 250
+      mod: [f1-mod]
+    ramp: 100
