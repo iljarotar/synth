@@ -4,21 +4,29 @@ oscillators:
   - name: root
     type: Sine
     freq: 220
+    amp:
+      val: 1
     filters: [f1]
 
   - name: third
     type: Sine
     freq: 275
+    amp:
+      val: 1
     filters: [f1]
 
   - name: fifth
     type: Sine
     freq: 330
+    amp:
+      val: 1
     filters: [f1]
 
   - name: seventh
     type: Sine
     freq: 415
+    amp:
+      val: 1
     filters: [f1]
 
   - name: f1-mod

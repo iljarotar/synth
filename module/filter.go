@@ -27,10 +27,14 @@ func (f *Filter) Initialize() {
 	f.currentCutoff = f.Cutoff.Val
 }
 
-func (f *Filter) UpdateCutoff(x ...float64) {
+func (f *Filter) UpdateCutoff(oscMap Oscillators, phase float64) {
 	f.currentCutoff = f.Cutoff.Val
-	for i := range x {
-		f.currentCutoff += x[i]
+
+	for i := range f.Cutoff.Mod {
+		osc, ok := oscMap[f.Cutoff.Mod[i]]
+		if ok {
+			f.currentCutoff += osc.Current
+		}
 	}
 }
 

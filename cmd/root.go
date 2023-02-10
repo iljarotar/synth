@@ -99,7 +99,7 @@ func start(file string) error {
 	<-done
 
 	ctl.Stop()
-	time.Sleep(time.Millisecond * 50) // avoid clipping at the end
+	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
 	return nil
 }
 
