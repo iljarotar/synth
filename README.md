@@ -90,7 +90,7 @@ filters:
   # add as many filters as you need here
 ```
 
-The `out` parameter is an array of oscillators, that will be sent to the speaker.
+The `out` parameter is a list of oscillators, that will be sent to the speaker.
 
 Possible oscillator types are  
 `Sine`  
