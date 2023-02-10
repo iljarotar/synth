@@ -1,4 +1,4 @@
-package wavetable
+package module
 
 import (
 	"math"

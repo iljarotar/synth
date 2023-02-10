@@ -2,12 +2,18 @@
 
 ## Installation
 
-To install the synth [Golang](https://go.dev/doc/install) is required. Once you have Go installed and set up, run:
+To install the synth [Golang](https://go.dev/doc/install) is required. Once you have Go installed and set up, run
 
 ```bash
 git clone git@github.com:iljarotar/synth.git
 cd synth
 go install
+```
+
+Listen to an example
+
+```bash
+synth -f examples/a-major.yaml
 ```
 
 ## Usage
@@ -54,94 +60,39 @@ synth -f <PATH_TO_YAML_FILE> -s 44100
 
 ## Creating a patch
 
-A patch is a yaml file, that specifies all of the synth's parameters.
-
-The basic structure looks like this:
+The basic structure of a patch looks like this
 
 ```yaml
-volume: #decimal value
-wavetables: #array of wavetables
-  - amplitude:
-      value: #decimal value
-      modulation: #wavetable
+volume: # should not exceed 1
+out: [# array of oscillators]
+oscillators:
+  - name: # choose any name
+    type: # oscillator type (see below)
+    freq: # frequency
+    amp:
+      val: # amplitude value (should not exceed 1)
+      mod: [# array of oscillators]
+    phase:
+      val: # initial phase shift
+      mod: [# array of oscillators]
+    filters: [# array of filters]
 
-    filters: #array of filters
-      - type: #type of filter
-        cutoff:
-          value: #decimal value
-          modulation: #wavetable
-        ramp: #decimal value
+  # add as many oscillators as you need here
 
-        #another filter
-      - type:
-        cutoff:
-        ramp:
+filters:
+  - name: # choose any name
+    type: # type of filter
+    ramp: # length of linear ramp
+    cutoff:
+      val: # initial cutoff frequency
+      mod: [# array of oscillators]
 
-    oscillators: #array of oscillators
-      - type: #wave form
-        freq: #decimal value
-        amplitude:
-          value: #decimal value
-          modulation: #wavetable
-        phase:
-          value: #decimal value
-          modulation: #wavetable
-
-    #another wavetable
-  - amplitude:
-    filters:
-    oscillators:
+  # add as many filters as you need here
 ```
 
-Most of the fields are optional. A simple sine wave with a frequency of 440 Hz can be generated like this:
+The `out` parameter is an array of oscillators, that will be sent to the speaker.
 
-```yaml
-wavetables:
-  - oscillators:
-      - type: Sine
-        freq: 440
-```
-
-You can find more examples in the `examples` directory.
-
----
-
-### Synth
-
-The topmost level of the synth has two fields:
-
-`volume`  
-is the synth's main volume.
-
-`wavetables`  
-is an array of wavetables.
-
----
-
-### Wavetable
-
-`amplitude`  
-is a parameter, that has a `value` and an optional `modulation` field.
-
-`filters`  
-is an array of filters.
-
-`oscillators`  
-is an array of oscillators.
-
----
-
-### Amplitude
-
-`value`  
-The value of a wavetable's amplitude affects the entire wavetable, whereas an oscillator's amplitude only affects that particular oscillator.
-
-`modulation`  
-is an optional wavetable, that modulates the amplitude.
-
-### Oscillators
-
-Types of oscillators:  
+Possible oscillator types are  
 `Sine`  
 `Square`  
 `Triangle`  
@@ -149,22 +100,39 @@ Types of oscillators:
 `InvertedSawtooth`  
 `Noise`
 
-`amplitude`  
-takes an initial value and an optional modulator wavetable. Modulating the amplitude results in a tremolo effect.
-
-`phase`  
-takes an initial value and an optional modulator wavetable. Modulating the phase results in a vibrato effect. Phase doesn't have any effect on an oscillator of type `Noise`.
-
-### Filters
-
-Types of filters  
+Possible filter types are  
 `Lowpass`  
 `Highpass`
 
-`cutoff`  
-takes an initial value and an optional modulator wavetable. The value specifies the frequency at which the filter sets in. Modulating the cutoff results in kind of a wah wah effect.
+Most of the parameters are optional. The most simple patch may look like this
 
-`ramp`  
-specifies the distance between the cutoff frequency and the point, where a frequency isn't audible anymore.
+```yaml
+volume: 1
+out: [my-oscillator]
+oscillators:
+  - name: my-oscillator
+    type: Sine
+    freq: 440
+    amp:
+      val: 1
+```
 
-Note: filters don't affect oscillators of type `Noise`.
+The `mod` field of the `amp`, `phase` or `cutoff` parameters is a list of oscillators, that will modulate that respective paramter. Here is an example of a tremolo effect.
+
+```yaml
+volume: 1
+out: [my-oscillator]
+oscillators:
+  - name: my-oscillator
+    type: Sine
+    freq: 440
+    amp:
+      val: 0.5
+      mod: [modulator]
+
+  - name: modulator
+    type: Sine
+    freq: 4
+    amp:
+      val: 0.1
+```

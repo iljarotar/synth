@@ -26,7 +26,7 @@ func (c *Control) LoadSynth(synth s.Synth) {
 }
 
 func (c *Control) Stop() {
-	c.Synth.FadeOut(0.005)
+	c.Synth.FadeOut(0.0001)
 }
 
 func (c *Control) Start() {
