@@ -46,7 +46,7 @@ Loading a file with
 synth -f <PATH_TO_YAML_FILE>
 ```
 
-starts playing the file, if the format is correct.
+starts playing the file, if the format is correct. If you change and save the file, while the synth is running, it will instantly reload the patch.
 
 Optionally you can pass a sample rate
 
@@ -64,18 +64,18 @@ The basic structure of a patch looks like this
 
 ```yaml
 volume: # should not exceed 1
-out: [# array of oscillators]
+out: # list of oscillators
 oscillators:
   - name: # choose any name
-    type: # oscillator type (see below)
+    type: # oscillator type
     freq: # frequency
     amp:
       val: # amplitude value (should not exceed 1)
-      mod: [# array of oscillators]
+      mod: # list of oscillators
     phase:
       val: # initial phase shift
-      mod: [# array of oscillators]
-    filters: [# array of filters]
+      mod: # list of oscillators
+    filters: # list of filters
 
   # add as many oscillators as you need here
 
@@ -85,7 +85,8 @@ filters:
     ramp: # length of linear ramp
     cutoff:
       val: # initial cutoff frequency
-      mod: [# array of oscillators]
+      mod: # list of oscillators
+
 
   # add as many filters as you need here
 ```
@@ -104,7 +105,7 @@ Possible filter types are
 `Lowpass`  
 `Highpass`
 
-Most of the parameters are optional. The most simple patch may look like this
+Most of the parameters are optional. A very simple patch may look like this
 
 ```yaml
 volume: 1
