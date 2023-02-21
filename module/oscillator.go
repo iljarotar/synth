@@ -37,11 +37,8 @@ func (o *Oscillator) NextValue(oscMap Oscillators, filtersMap Filters, phase flo
 	amp := o.getAmp(oscMap)
 	shift := o.getPhase(oscMap)
 
-	for i := range o.Filters {
-		f, ok := filtersMap[o.Filters[i]]
-		if ok {
-			amp *= f.Apply(o.Freq)
-		}
+	if len(o.Filters) > 0 {
+		o.applyFilters(filtersMap, &amp)
 	}
 
 	o.Current = o.Signal(o.Freq*(phase+shift)) * amp
@@ -71,4 +68,22 @@ func (o *Oscillator) getPhase(oscMap Oscillators) float64 {
 	}
 
 	return phase
+}
+
+func (o *Oscillator) applyFilters(filtersMap Filters, amp *float64) {
+	var max float64
+
+	for i := range o.Filters {
+		f, ok := filtersMap[o.Filters[i]]
+
+		if ok {
+			val := f.Apply(o.Freq)
+
+			if val > max {
+				max = val
+			}
+		}
+	}
+
+	*amp *= max
 }
