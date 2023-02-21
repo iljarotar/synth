@@ -26,6 +26,11 @@ documentation and usage: https://github.com/iljarotar/synth`,
 		file, _ := cmd.Flags().GetString("file")
 		s, _ := cmd.Flags().GetString("sample-rate")
 
+		if file == "" {
+			cmd.Help()
+			return
+		}
+
 		if s != "" {
 			sRate, err := parseSampleRate(s)
 			if err != nil {
