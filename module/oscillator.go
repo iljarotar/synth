@@ -20,28 +20,35 @@ type Oscillators map[string]*Oscillator
 type Oscillator struct {
 	Name    string         `yaml:"name"`
 	Type    OscillatorType `yaml:"type"`
-	Freq    float64        `yaml:"freq"`
+	Freq    []float64      `yaml:"freq"`
 	Amp     Param          `yaml:"amp"`
 	Phase   Param          `yaml:"phase"`
 	Filters []string       `yaml:"filters"`
-	Signal  SignalFunc
+	signal  SignalFunc
 	Current float64
 }
 
 func (o *Oscillator) Initialize() {
-	o.Signal = NewSignalFunc(o.Type)
-	o.Current = o.Signal(o.Phase.Val) * o.Amp.Val
+	o.signal = NewSignalFunc(o.Type)
+	o.Current = o.signal(o.Phase.Val) * o.Amp.Val
 }
 
 func (o *Oscillator) NextValue(oscMap Oscillators, filtersMap Filters, phase float64) {
 	amp := o.getAmp(oscMap)
-	shift := o.getPhase(oscMap)
 
-	if len(o.Filters) > 0 {
-		o.applyFilters(filtersMap, &amp)
+	if o.Type == Noise {
+		o.Current = o.signal(0) * amp // noise doesn't care about phase
+		return
 	}
 
-	o.Current = o.Signal(o.Freq*(phase+shift)) * amp
+	shift := o.getPhase(oscMap)
+	o.Current = 0
+
+	for i := range o.Freq {
+		o.Current += o.partial(o.Freq[i], phase+shift, amp, filtersMap)
+	}
+
+	o.Current /= float64(len(o.Freq))
 }
 
 func (o *Oscillator) getAmp(oscMap Oscillators) float64 {
@@ -70,14 +77,14 @@ func (o *Oscillator) getPhase(oscMap Oscillators) float64 {
 	return phase
 }
 
-func (o *Oscillator) applyFilters(filtersMap Filters, amp *float64) {
+func (o *Oscillator) applyFilters(filtersMap Filters, freq, amp float64) float64 {
 	var max float64
 
 	for i := range o.Filters {
 		f, ok := filtersMap[o.Filters[i]]
 
 		if ok {
-			val := f.Apply(o.Freq)
+			val := f.Apply(freq)
 
 			if val > max {
 				max = val
@@ -85,5 +92,15 @@ func (o *Oscillator) applyFilters(filtersMap Filters, amp *float64) {
 		}
 	}
 
-	*amp *= max
+	return max * amp
+}
+
+func (o *Oscillator) partial(freq, phase, amp float64, filtersMap Filters) float64 {
+	a := amp
+
+	if len(o.Filters) > 0 {
+		a = o.applyFilters(filtersMap, freq, amp)
+	}
+
+	return o.signal(freq*phase) * a
 }

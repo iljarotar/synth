@@ -68,7 +68,7 @@ out: # list of oscillators
 oscillators:
   - name: # choose any name
     type: # oscillator type
-    freq: # frequency
+    freq: # list of frequencies
     amp:
       val: # amplitude value (should not exceed 1)
       mod: # list of oscillators
@@ -113,7 +113,7 @@ out: [my-oscillator]
 oscillators:
   - name: my-oscillator
     type: Sine
-    freq: 440
+    freq: [440]
     amp:
       val: 1
 ```
@@ -126,14 +126,14 @@ out: [my-oscillator]
 oscillators:
   - name: my-oscillator
     type: Sine
-    freq: 440
+    freq: [440]
     amp:
       val: 0.5
       mod: [modulator]
 
   - name: modulator
     type: Sine
-    freq: 4
+    freq: [4]
     amp:
       val: 0.1
 ```
