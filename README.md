@@ -2,13 +2,9 @@
 
 ## Installation
 
-To install the synth [Golang](https://go.dev/doc/install) is required. Once you have Go installed and set up, run
-
-```bash
-git clone git@github.com:iljarotar/synth.git
-cd synth
-go install
-```
+1. Get the binary [here](https://github.com/iljarotar/synth/releases)
+2. Make it executable with `chmod +x synth`
+3. Put it into some directory inside your `$PATH`
 
 Listen to an example
 
@@ -21,7 +17,7 @@ synth -f examples/a-major.yaml
 Starting the synth with
 
 ```bash
-synth -h
+synth
 ```
 
 outputs

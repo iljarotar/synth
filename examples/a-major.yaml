@@ -1,37 +1,16 @@
 volume: 0.7
-out: [root, third, fifth, seventh]
+out: [chord]
 oscillators:
-  - name: root
+  - name: chord
     type: Sine
-    freq: 220
+    freq: [220, 275, 330, 415]
     amp:
-      val: 1
-    filters: [f1]
-
-  - name: third
-    type: Sine
-    freq: 275
-    amp:
-      val: 1
-    filters: [f1]
-
-  - name: fifth
-    type: Sine
-    freq: 330
-    amp:
-      val: 1
-    filters: [f1]
-
-  - name: seventh
-    type: Sine
-    freq: 415
-    amp:
-      val: 1
+      val: 0.5
     filters: [f1]
 
   - name: f1-mod
     type: Sine
-    freq: 0.25
+    freq: [0.25]
     amp:
       val: 200
 
