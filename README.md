@@ -5,8 +5,9 @@
 1. Get the binary [here](https://github.com/iljarotar/synth/releases)
 2. Make it executable with `chmod +x synth`
 3. Put it into some directory inside your `$PATH`
+4. Install [portaudio](http://portaudio.com/)
 
-Listen to an example
+To listen to an example clone this repository and run
 
 ```bash
 synth -f examples/a-major.yaml
