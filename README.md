@@ -111,8 +111,8 @@ Possible oscillator types are
 `Noise`
 
 Stereo panning  
-`-1`: signal will be on left channel only
-`1`: signal will be on right channel only
+`-1` signal will be on left channel only  
+`1` signal will be on right channel only
 
 Everything in between will place the signal somewhere between the left and the right channel according to the ratio.
 
