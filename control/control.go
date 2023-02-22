@@ -6,10 +6,10 @@ import (
 
 type Control struct {
 	Synth *s.Synth
-	input chan float32
+	input chan struct{ Left, Right float32 }
 }
 
-func NewControl(input chan float32) *Control {
+func NewControl(input chan struct{ Left, Right float32 }) *Control {
 	var synth s.Synth
 	synth.Initialize()
 	ctl := &Control{Synth: &synth, input: input}

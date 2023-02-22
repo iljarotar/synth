@@ -2,21 +2,20 @@ package audio
 
 import (
 	"github.com/gordonklaus/portaudio"
-	"github.com/iljarotar/synth/config"
 )
 
 type ProcessCallback func([]float32)
 
 type Context struct {
 	*portaudio.Stream
-	Input chan float32
+	Input chan struct{ Left, Right float32 }
 }
 
-func NewContext(input chan float32) (*Context, error) {
+func NewContext(input chan struct{ Left, Right float32 }, sampleRate float64) (*Context, error) {
 	ctx := &Context{Input: input}
 
 	var err error
-	ctx.Stream, err = portaudio.OpenDefaultStream(0, 1, config.Instance.SampleRate(), 0, ctx.Process)
+	ctx.Stream, err = portaudio.OpenDefaultStream(0, 2, sampleRate, 0, ctx.Process)
 	if err != nil {
 		return nil, err
 	}
@@ -24,9 +23,11 @@ func NewContext(input chan float32) (*Context, error) {
 	return ctx, nil
 }
 
-func (c *Context) Process(out []float32) {
-	for i := range out {
-		out[i] = <-c.Input
+func (c *Context) Process(out [][]float32) {
+	for i := range out[0] {
+		y := <-c.Input
+		out[0][i] = y.Left
+		out[1][i] = y.Right
 	}
 }
 

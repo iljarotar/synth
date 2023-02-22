@@ -68,8 +68,8 @@ func start(file string) error {
 	defer audio.Terminate()
 	screen.Clear()
 
-	input := make(chan float32)
-	ctx, err := audio.NewContext(input)
+	input := make(chan struct{ Left, Right float32 })
+	ctx, err := audio.NewContext(input, config.Instance.SampleRate())
 	if err != nil {
 		return err
 	}

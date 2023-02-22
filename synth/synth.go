@@ -36,17 +36,19 @@ func (s *Synth) Initialize() {
 
 }
 
-func (s *Synth) Play(input chan<- float32) {
+func (s *Synth) Play(input chan<- struct{ Left, Right float32 }) {
 	for {
-		y := s.getCurrentValue() * s.Volume
-		s.Phase += s.step
+		left, right := s.getCurrentValue()
+		left *= s.Volume
+		right *= s.Volume
 
 		if len(s.Out) > 0 {
-			y /= float64(len(s.Out))
+			left /= float64(len(s.Out))
+			right /= float64(len(s.Out))
 		}
 
-		input <- float32(y)
-
+		y := struct{ Left, Right float32 }{Left: float32(left), Right: float32(right)}
+		input <- y
 	}
 }
 
@@ -66,18 +68,19 @@ func (s *Synth) FadeIn(step float64) {
 	}
 }
 
-func (s *Synth) getCurrentValue() float64 {
+func (s *Synth) getCurrentValue() (left, right float64) {
 	s.updateCurrentValues()
-	var y float64
+	left, right = 0, 0
 
 	for i := range s.Out {
 		osc, ok := s.oscMap[s.Out[i]]
 		if ok {
-			y += osc.Current
+			left += osc.Current.Left
+			right += osc.Current.Right
 		}
 	}
 
-	return y
+	return left, right
 }
 
 func (s *Synth) updateCurrentValues() {
@@ -90,6 +93,8 @@ func (s *Synth) updateCurrentValues() {
 		f := s.Filters[i]
 		f.Next(s.oscMap, s.Phase)
 	}
+
+	s.Phase += s.step
 }
 
 func (s *Synth) makeOscillatorsMap() {

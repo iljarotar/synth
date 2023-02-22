@@ -27,21 +27,21 @@ func (f *Filter) Next(oscMap Oscillators, phase float64) {
 	for i := range f.Low.Mod {
 		osc, ok := oscMap[f.Low.Mod[i]]
 		if ok {
-			f.low += osc.Current
+			f.low += osc.Current.Mono
 		}
 	}
 
 	for i := range f.High.Mod {
 		osc, ok := oscMap[f.High.Mod[i]]
 		if ok {
-			f.high += osc.Current
+			f.high += osc.Current.Mono
 		}
 	}
 
 	for i := range f.Volume.Mod {
 		osc, ok := oscMap[f.Volume.Mod[i]]
 		if ok {
-			f.vol += osc.Current
+			f.vol += osc.Current.Mono
 		}
 	}
 }

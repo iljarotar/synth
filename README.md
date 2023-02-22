@@ -66,6 +66,9 @@ oscillators:
   - name: # choose any name
     type: # oscillator type
     freq: # list of frequencies
+    pan:
+      val: # initial pan in the interval [-1;1]
+      mod: # list of oscillators
     amp:
       val: # amplitude value (should not exceed 1)
       mod: # list of oscillators
@@ -107,6 +110,12 @@ Possible oscillator types are
 `InvertedSawtooth`  
 `Noise`
 
+Stereo panning  
+`-1`: signal will be on left channel only
+`1`: signal will be on right channel only
+
+Everything in between will place the signal somewhere between the left and the right channel according to the ratio.
+
 ### Filters
 
 All Filters are band pass filters with a frequency range between `low` and `high`.
@@ -128,7 +137,7 @@ oscillators:
 
 ### Modulation
 
-The `mod` field of the `amp`, `phase`, `low`, `high` or `vol` parameters is a list of oscillators, that will modulate that respective paramter. Here is an example of a tremolo effect.
+The `mod` field of the `amp`, `phase`, `pan`, `low`, `high` or `vol` parameters is a list of oscillators, that will modulate that respective paramter. Here is an example of a tremolo effect.
 
 ```yaml
 volume: 1
