@@ -8,7 +8,7 @@ oscillators:
       val: 0.5
     filters: [f1]
 
-  - name: f1-mod
+  - name: f1
     type: Sine
     freq: [0.25]
     amp:
@@ -16,10 +16,9 @@ oscillators:
 
 filters:
   - name: f1
-    type: Lowpass
-    cutoff:
+    high:
       val: 250
-      mod: [f1-mod]
+      mod: [f1]
     vol:
       val: 0.5
     ramp: 100

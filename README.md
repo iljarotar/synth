@@ -78,20 +78,26 @@ oscillators:
 
 filters:
   - name: # choose any name
-    type: # type of filter
     ramp: # length of linear ramp
-    cutoff:
-      val: # initial cutoff frequency
+    low:
+      val: # lower frequency limit
       mod: # list of oscillators
+    high:
+      val: # higher frequency limit
+      mod: #list of oscillators
     vol:
-      val: # volume of unfiltered frequencies
+      val: # volume of frequencies between low and high
       mod: # list of oscillators
 
 
   # add as many filters as you need here
 ```
 
+### Synth
+
 The `out` parameter is a list of oscillators, that will be sent to the speaker.
+
+### Oscillators
 
 Possible oscillator types are  
 `Sine`  
@@ -101,9 +107,11 @@ Possible oscillator types are
 `InvertedSawtooth`  
 `Noise`
 
-Possible filter types are  
-`Lowpass`  
-`Highpass`
+### Filters
+
+All Filters are band pass filters with a frequency range between `low` and `high`.
+
+### Examples
 
 Most of the parameters are optional. A very simple patch may look like this
 
@@ -118,7 +126,9 @@ oscillators:
       val: 1
 ```
 
-The `mod` field of the `amp`, `phase`, `cutoff` or `vol` parameters is a list of oscillators, that will modulate that respective paramter. Here is an example of a tremolo effect.
+### Modulation
+
+The `mod` field of the `amp`, `phase`, `low`, `high` or `vol` parameters is a list of oscillators, that will modulate that respective paramter. Here is an example of a tremolo effect.
 
 ```yaml
 volume: 1

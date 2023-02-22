@@ -1,53 +1,51 @@
 package module
 
-type FilterType string
-
-func (t FilterType) String() string {
-	return string(t)
-}
-
-const (
-	Lowpass  FilterType = "Lowpass"
-	Highpass FilterType = "Highpass"
-)
-
 type Filters map[string]*Filter
 
 type Filter struct {
-	Name                         string     `yaml:"name"`
-	Type                         FilterType `yaml:"type"`
-	Cutoff                       Param      `yaml:"cutoff"`
-	Volume                       Param      `yaml:"vol"`
-	Ramp                         float64    `yaml:"ramp"`
-	Func                         FilterFunc
-	currentCutoff, currentVolume float64
+	Name           string  `yaml:"name"`
+	Low            Param   `yaml:"low"`
+	High           Param   `yaml:"high"`
+	Volume         Param   `yaml:"vol"`
+	Ramp           float64 `yaml:"ramp"`
+	Func           FilterFunc
+	low, high, vol float64
 }
 
 func (f *Filter) Initialize() {
-	f.Func = NewFilterFunc(f.Type)
-	f.currentVolume = f.Volume.Val
-	f.currentCutoff = f.Cutoff.Val
+	f.Func = NewFilterFunc(f.Ramp)
+	f.vol = f.Volume.Val
+	f.low = f.Low.Val
+	f.high = f.High.Val
 }
 
 func (f *Filter) Next(oscMap Oscillators, phase float64) {
-	f.currentCutoff = f.Cutoff.Val
-	f.currentVolume = f.Volume.Val
+	f.low = f.Low.Val
+	f.high = f.High.Val
+	f.vol = f.Volume.Val
 
-	for i := range f.Cutoff.Mod {
-		osc, ok := oscMap[f.Cutoff.Mod[i]]
+	for i := range f.Low.Mod {
+		osc, ok := oscMap[f.Low.Mod[i]]
 		if ok {
-			f.currentCutoff += osc.Current
+			f.low += osc.Current
+		}
+	}
+
+	for i := range f.High.Mod {
+		osc, ok := oscMap[f.High.Mod[i]]
+		if ok {
+			f.high += osc.Current
 		}
 	}
 
 	for i := range f.Volume.Mod {
 		osc, ok := oscMap[f.Volume.Mod[i]]
 		if ok {
-			f.currentVolume += osc.Current
+			f.vol += osc.Current
 		}
 	}
 }
 
 func (f *Filter) Apply(freq float64) float64 {
-	return f.Func(freq, f.currentCutoff, f.Ramp, f.currentVolume)
+	return f.Func(freq, f.low, f.high, f.vol)
 }

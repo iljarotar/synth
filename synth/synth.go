@@ -33,6 +33,7 @@ func (s *Synth) Initialize() {
 
 	s.makeOscillatorsMap()
 	s.makeFiltersMap()
+
 }
 
 func (s *Synth) Play(input chan<- float32) {
@@ -45,6 +46,7 @@ func (s *Synth) Play(input chan<- float32) {
 		}
 
 		input <- float32(y)
+
 	}
 }
 
