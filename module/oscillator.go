@@ -1,5 +1,7 @@
 package module
 
+import "math"
+
 type OscillatorType string
 
 func (t OscillatorType) String() string {
@@ -146,12 +148,10 @@ func (o *Oscillator) stereo(x float64) Output {
 func transpose(pan float64) float64 {
 	var t float64
 
-	if pan >= -1 && pan <= 1 {
-		t = pan
-	} else if pan < -1 {
-		t = -1
+	if pan > -1 {
+		t = math.Min(pan, 1)
 	} else {
-		t = 1
+		t = -1
 	}
 
 	return (t + 1) / 2
