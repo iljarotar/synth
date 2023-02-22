@@ -33,7 +33,7 @@ func (o *Oscillator) Initialize() {
 	o.Current = o.signal(o.Phase.Val) * o.Amp.Val
 }
 
-func (o *Oscillator) NextValue(oscMap Oscillators, filtersMap Filters, phase float64) {
+func (o *Oscillator) Next(oscMap Oscillators, filtersMap Filters, phase float64) {
 	amp := o.getAmp(oscMap)
 
 	if o.Type == Noise {

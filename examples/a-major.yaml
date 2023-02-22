@@ -1,4 +1,4 @@
-volume: 0.7
+vol: 0.7
 out: [chord]
 oscillators:
   - name: chord
@@ -20,4 +20,6 @@ filters:
     cutoff:
       val: 250
       mod: [f1-mod]
+    vol:
+      val: 0.5
     ramp: 100

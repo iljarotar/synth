@@ -4,7 +4,7 @@ import (
 	"math"
 )
 
-type FilterFunc func(freq, cutoff, ramp float64) (amp float64)
+type FilterFunc func(freq, cutoff, ramp, vol float64) (amp float64)
 
 func NewFilterFunc(filterType FilterType) FilterFunc {
 	switch filterType {
@@ -18,20 +18,20 @@ func NewFilterFunc(filterType FilterType) FilterFunc {
 }
 
 func NoFilterFunc() FilterFunc {
-	f := func(freq, cutoff, ramp float64) (amp float64) {
+	f := func(freq, cutoff, ramp, vol float64) (amp float64) {
 		return 1
 	}
 	return f
 }
 
 func LowpassFilterFunc() FilterFunc {
-	f := func(freq, cutoff, ramp float64) (amp float64) {
+	f := func(freq, cutoff, ramp, vol float64) (amp float64) {
 		if freq <= cutoff {
-			return 1
+			return vol
 		}
 
-		m := -1 / ramp
-		t := (cutoff + ramp) / ramp
+		m := -vol / ramp
+		t := vol * (cutoff + ramp) / ramp
 		y := m*freq + t // linear ramp
 
 		return math.Max(y, 0)
@@ -41,13 +41,13 @@ func LowpassFilterFunc() FilterFunc {
 }
 
 func HighpassFilterFunc() FilterFunc {
-	f := func(freq, cutoff, ramp float64) (amp float64) {
+	f := func(freq, cutoff, ramp, vol float64) (amp float64) {
 		if freq >= cutoff {
-			return 1
+			return vol
 		}
 
-		m := 1 / ramp
-		t := 1 - cutoff/ramp
+		m := vol / ramp
+		t := vol * (ramp - cutoff) / ramp
 		y := m*freq + t // linear ramp
 
 		return math.Max(y, 0)

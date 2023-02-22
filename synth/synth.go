@@ -8,7 +8,7 @@ import (
 )
 
 type Synth struct {
-	Volume             float64              `yaml:"volume"`
+	Volume             float64              `yaml:"vol"`
 	Out                []string             `yaml:"out"`
 	Oscillators        []*module.Oscillator `yaml:"oscillators"`
 	Filters            []*module.Filter     `yaml:"filters"`
@@ -81,12 +81,12 @@ func (s *Synth) getCurrentValue() float64 {
 func (s *Synth) updateCurrentValues() {
 	for i := range s.Oscillators {
 		osc := s.Oscillators[i]
-		osc.NextValue(s.oscMap, s.filtersMap, s.Phase)
+		osc.Next(s.oscMap, s.filtersMap, s.Phase)
 	}
 
 	for i := range s.Filters {
 		f := s.Filters[i]
-		f.UpdateCutoff(s.oscMap, s.Phase)
+		f.Next(s.oscMap, s.Phase)
 	}
 }
 

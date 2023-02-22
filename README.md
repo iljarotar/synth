@@ -60,7 +60,7 @@ synth -f <PATH_TO_YAML_FILE> -s 44100
 The basic structure of a patch looks like this
 
 ```yaml
-volume: # should not exceed 1
+vol: # should not exceed 1
 out: # list of oscillators
 oscillators:
   - name: # choose any name
@@ -82,6 +82,9 @@ filters:
     ramp: # length of linear ramp
     cutoff:
       val: # initial cutoff frequency
+      mod: # list of oscillators
+    vol:
+      val: # volume of unfiltered frequencies
       mod: # list of oscillators
 
 
@@ -115,7 +118,7 @@ oscillators:
       val: 1
 ```
 
-The `mod` field of the `amp`, `phase` or `cutoff` parameters is a list of oscillators, that will modulate that respective paramter. Here is an example of a tremolo effect.
+The `mod` field of the `amp`, `phase`, `cutoff` or `vol` parameters is a list of oscillators, that will modulate that respective paramter. Here is an example of a tremolo effect.
 
 ```yaml
 volume: 1
