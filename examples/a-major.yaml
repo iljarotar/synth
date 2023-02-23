@@ -1,4 +1,4 @@
-vol: 0.7
+vol: 1
 out: [chord, noise]
 oscillators:
   - name: noise
@@ -13,7 +13,7 @@ oscillators:
     type: Sine
     freq: [220, 275, 330, 415]
     amp:
-      val: 0.5
+      val: 1
     phase:
       mod: [pm]
     filters: [f1]

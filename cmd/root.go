@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/iljarotar/synth/audio"
@@ -25,22 +23,36 @@ documentation and usage: https://github.com/iljarotar/synth`,
 	Run: func(cmd *cobra.Command, args []string) {
 		file, _ := cmd.Flags().GetString("file")
 		s, _ := cmd.Flags().GetString("sample-rate")
+		in, _ := cmd.Flags().GetString("fade-in")
+		out, _ := cmd.Flags().GetString("fade-out")
 
 		if file == "" {
 			cmd.Help()
 			return
 		}
 
-		if s != "" {
-			sRate, err := parseSampleRate(s)
-			if err != nil {
-				fmt.Println("could not parse sample rate. please provide an integer")
-				return
-			}
-			config.Instance.SetSampleRate(sRate)
+		sampleRate, err := parseInt(s)
+		if err != nil {
+			fmt.Println("could not parse sample rate: %w", err)
+			return
 		}
+		config.Instance.SampleRate = sampleRate
 
-		err := start(file)
+		fadeIn, err := parseFloat(in)
+		if err != nil {
+			fmt.Println("could not parse fade-in: %w", err)
+			return
+		}
+		config.Instance.FadeIn = fadeIn
+
+		fadeOut, err := parseFloat(out)
+		if err != nil {
+			fmt.Println("could not parse fade-out: %w", err)
+			return
+		}
+		config.Instance.FadeOut = fadeOut
+
+		err = start(file)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -57,7 +69,9 @@ func Execute() {
 func init() {
 	rootCmd.Flags().StringP("file", "f", "", "specify which file to load")
 	rootCmd.Flags().BoolP("help", "h", false, "print help")
-	rootCmd.Flags().StringP("sample-rate", "s", "", "specify sample rate")
+	rootCmd.Flags().StringP("sample-rate", "s", "44100", "specify sample rate")
+	rootCmd.Flags().String("fade-in", "1", "length of the fade-in in seconds")
+	rootCmd.Flags().String("fade-out", "5", "length of the fade-out in seconds")
 }
 
 func start(file string) error {
@@ -69,7 +83,7 @@ func start(file string) error {
 	screen.Clear()
 
 	input := make(chan struct{ Left, Right float32 })
-	ctx, err := audio.NewContext(input, config.Instance.SampleRate())
+	ctx, err := audio.NewContext(input, config.Instance.SampleRate)
 	if err != nil {
 		return err
 	}
@@ -81,7 +95,6 @@ func start(file string) error {
 	}
 
 	ctl := control.NewControl(input)
-	ctl.Start()
 
 	log := make(chan string)
 	logger := screen.NewLogger(log)
@@ -101,18 +114,11 @@ func start(file string) error {
 	done := make(chan bool)
 	s := screen.NewScreen(logger, done)
 	go s.Enter()
+	ctl.Start(config.Instance.FadeIn)
+
 	<-done
 
-	ctl.Stop()
+	ctl.Stop(config.Instance.FadeOut)
 	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
 	return nil
-}
-
-func parseSampleRate(input string) (float64, error) {
-	sampleRate, err := strconv.Atoi(input)
-	if err != nil {
-		return 0, errors.New("could not parse sample rate. please provide an integer")
-	}
-
-	return float64(sampleRate), nil
 }

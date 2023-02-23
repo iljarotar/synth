@@ -5,31 +5,29 @@ import (
 )
 
 type Control struct {
-	Synth *s.Synth
+	synth *s.Synth
 	input chan struct{ Left, Right float32 }
 }
 
 func NewControl(input chan struct{ Left, Right float32 }) *Control {
 	var synth s.Synth
 	synth.Initialize()
-	ctl := &Control{Synth: &synth, input: input}
+	ctl := &Control{synth: &synth, input: input}
+	go ctl.synth.Play(ctl.input)
 	return ctl
 }
 
 func (c *Control) LoadSynth(synth s.Synth) {
 	synth.Initialize()
-	synth.Phase = c.Synth.Phase
+	synth.Phase = c.synth.Phase
 
-	c.Synth.FadeOut(0.005)
-	*c.Synth = synth
-	c.Synth.FadeIn(0.005)
+	*c.synth = synth
 }
 
-func (c *Control) Stop() {
-	c.Synth.FadeOut(0.0001)
+func (c *Control) Stop(fadeOut float64) {
+	c.synth.FadeOut(fadeOut)
 }
 
-func (c *Control) Start() {
-	go c.Synth.Play(c.input)
-	c.Synth.FadeIn(0.005)
+func (c *Control) Start(fadeIn float64) {
+	c.synth.FadeIn(fadeIn)
 }

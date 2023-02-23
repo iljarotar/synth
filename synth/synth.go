@@ -1,7 +1,7 @@
 package synth
 
 import (
-	"time"
+	"math"
 
 	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/module"
@@ -16,12 +16,14 @@ type Synth struct {
 	oscMap             module.Oscillators
 	filtersMap         module.Filters
 	step, volumeMemory float64
+	next               chan bool
 }
 
 func (s *Synth) Initialize() {
-	s.step = 1 / config.Instance.SampleRate()
+	s.step = 1 / config.Instance.SampleRate
 	s.volumeMemory = s.Volume
 	s.Volume = 0 // start muted
+	s.next = make(chan bool)
 
 	for i := range s.Oscillators {
 		s.Oscillators[i].Initialize()
@@ -33,7 +35,6 @@ func (s *Synth) Initialize() {
 
 	s.makeOscillatorsMap()
 	s.makeFiltersMap()
-
 }
 
 func (s *Synth) Play(input chan<- struct{ Left, Right float32 }) {
@@ -49,22 +50,38 @@ func (s *Synth) Play(input chan<- struct{ Left, Right float32 }) {
 
 		y := struct{ Left, Right float32 }{Left: float32(left), Right: float32(right)}
 		input <- y
+
+		select {
+		case <-s.next:
+			s.next <- true
+		default:
+		}
 	}
 }
 
-func (s *Synth) FadeOut(step float64) {
-	sampleRate := config.Instance.SampleRate()
+func (s *Synth) FadeOut(seconds float64) {
+	step := secondsToStep(seconds, s.Volume)
 	for s.Volume > 0 {
 		s.Volume -= step
-		time.Sleep(time.Second / time.Duration(sampleRate))
+		s.next <- true
+		<-s.next
+	}
+
+	if s.Volume < 0 {
+		s.Volume = 0
 	}
 }
 
-func (s *Synth) FadeIn(step float64) {
-	sampleRate := config.Instance.SampleRate()
+func (s *Synth) FadeIn(seconds float64) {
+	step := secondsToStep(seconds, s.volumeMemory-s.Volume)
 	for s.Volume < s.volumeMemory {
 		s.Volume += step
-		time.Sleep(time.Second / time.Duration(sampleRate))
+		s.next <- true
+		<-s.next
+	}
+
+	if s.Volume > s.volumeMemory {
+		s.Volume = s.volumeMemory
 	}
 }
 
@@ -117,4 +134,10 @@ func (s *Synth) makeFiltersMap() {
 	}
 
 	s.filtersMap = filtersMap
+}
+
+func secondsToStep(seconds, delta float64) float64 {
+	steps := math.Round(seconds * config.Instance.SampleRate)
+	step := 1 / steps
+	return step
 }

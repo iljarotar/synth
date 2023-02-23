@@ -41,11 +41,6 @@ func (l *Loader) Close() error {
 }
 
 func (l *Loader) Load(file string, synth *s.Synth) error {
-	// to prevent clipping when write event is sent twice for the same change
-	if time.Now().Sub(l.lastLoaded) < 500*time.Millisecond {
-		return nil
-	}
-
 	data, err := os.ReadFile(file)
 	if err != nil {
 		return err
@@ -87,12 +82,16 @@ func (l *Loader) StartWatching() {
 
 			time.Sleep(time.Millisecond * 50) // to prevent occasional empty file loading
 
-			if !event.Has(fsnotify.Rename) {
+			if !event.Has(fsnotify.Rename) && time.Now().Sub(l.lastLoaded) > 500*time.Millisecond {
 				var s synth.Synth
+				l.ctl.Stop(0.01)
+
 				err := l.Load(l.currentFile, &s)
 				if err != nil {
 					l.logger.Log("could not load file. error: " + err.Error())
 				}
+
+				l.ctl.Start(0.01)
 			}
 		case err, ok := <-l.watcher.Errors:
 			if !ok {
