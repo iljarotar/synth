@@ -19,31 +19,10 @@ func (f *Filter) Initialize() {
 	f.high = f.High.Val
 }
 
-func (f *Filter) Next(oscMap Oscillators, phase float64) {
-	f.low = f.Low.Val
-	f.high = f.High.Val
-	f.vol = f.Volume.Val
-
-	for i := range f.Low.Mod {
-		osc, ok := oscMap[f.Low.Mod[i]]
-		if ok {
-			f.low += osc.Current.Mono
-		}
-	}
-
-	for i := range f.High.Mod {
-		osc, ok := oscMap[f.High.Mod[i]]
-		if ok {
-			f.high += osc.Current.Mono
-		}
-	}
-
-	for i := range f.Volume.Mod {
-		osc, ok := oscMap[f.Volume.Mod[i]]
-		if ok {
-			f.vol += osc.Current.Mono
-		}
-	}
+func (f *Filter) Next(oscMap Oscillators) {
+	f.low = modulate(f.Low.Val, f.Low.Mod, oscMap)
+	f.high = modulate(f.High.Val, f.High.Mod, oscMap)
+	f.vol = modulate(f.Volume.Val, f.Volume.Mod, oscMap)
 }
 
 func (f *Filter) Apply(freq float64) float64 {

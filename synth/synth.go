@@ -91,7 +91,7 @@ func (s *Synth) updateCurrentValues() {
 
 	for i := range s.Filters {
 		f := s.Filters[i]
-		f.Next(s.oscMap, s.Phase)
+		f.Next(s.oscMap)
 	}
 
 	s.Phase += s.step

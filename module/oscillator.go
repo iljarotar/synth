@@ -48,15 +48,15 @@ func (o *Oscillator) Initialize() {
 }
 
 func (o *Oscillator) Next(oscMap Oscillators, filtersMap Filters, phase float64) {
-	o.pan = o.getPan(oscMap)
-	amp := o.getAmp(oscMap)
+	o.pan = modulate(o.Pan.Val, o.Pan.Mod, oscMap)
+	amp := modulate(o.Amp.Val, o.Amp.Mod, oscMap)
 
 	if o.Type == Noise {
 		o.Current = o.stereo((o.signal(0) * amp)) // noise doesn't care about phase
 		return
 	}
 
-	shift := o.getPhase(oscMap)
+	shift := modulate(o.Phase.Val, o.Phase.Mod, oscMap)
 	var y float64
 
 	for i := range o.Freq {
@@ -67,43 +67,17 @@ func (o *Oscillator) Next(oscMap Oscillators, filtersMap Filters, phase float64)
 	o.Current = o.stereo(y)
 }
 
-func (o *Oscillator) getAmp(oscMap Oscillators) float64 {
-	amp := o.Amp.Val
+func modulate(initial float64, modulators []string, oscMap Oscillators) float64 {
+	new := initial
 
-	for i := range o.Amp.Mod {
-		mod, ok := oscMap[o.Amp.Mod[i]]
+	for i := range modulators {
+		mod, ok := oscMap[modulators[i]]
 		if ok {
-			amp += mod.Current.Mono
+			new += mod.Current.Mono
 		}
 	}
 
-	return amp
-}
-
-func (o *Oscillator) getPhase(oscMap Oscillators) float64 {
-	phase := o.Phase.Val
-
-	for i := range o.Phase.Mod {
-		mod, ok := oscMap[o.Phase.Mod[i]]
-		if ok {
-			phase += mod.Current.Mono
-		}
-	}
-
-	return phase
-}
-
-func (o *Oscillator) getPan(oscMap Oscillators) float64 {
-	pan := o.Pan.Val
-
-	for i := range o.Pan.Mod {
-		mod, ok := oscMap[o.Pan.Mod[i]]
-		if ok {
-			pan += mod.Current.Mono
-		}
-	}
-
-	return pan
+	return new
 }
 
 func (o *Oscillator) applyFilters(filtersMap Filters, freq, amp float64) float64 {
