@@ -1,11 +1,11 @@
-package cmd
+package utils
 
 import (
 	"errors"
 	"strconv"
 )
 
-func parseInt(input string) (float64, error) {
+func ParseInt(input string) (float64, error) {
 	i, err := strconv.Atoi(input)
 	if err != nil {
 		return 0, errors.New("please provide an integer")
@@ -14,7 +14,7 @@ func parseInt(input string) (float64, error) {
 	return float64(i), nil
 }
 
-func parseFloat(input string) (float64, error) {
+func ParseFloat(input string) (float64, error) {
 	f, err := strconv.ParseFloat(input, 64)
 	if err != nil {
 		return 0, errors.New("please provide a decimal number")

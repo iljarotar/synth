@@ -1,6 +1,8 @@
 package module
 
-import "math"
+import (
+	"github.com/iljarotar/synth/utils"
+)
 
 type OscillatorType string
 
@@ -17,7 +19,7 @@ const (
 	Noise            OscillatorType = "Noise"
 )
 
-type Output struct {
+type output struct {
 	Mono, Left, Right float64
 }
 
@@ -32,7 +34,7 @@ type Oscillator struct {
 	Filters []string       `yaml:"filters"`
 	Pan     Param          `yaml:"pan"`
 	signal  SignalFunc
-	Current Output
+	Current output
 	pan     float64
 }
 
@@ -43,8 +45,10 @@ func (o *Oscillator) Initialize() {
 
 	for i := range o.Freq {
 		y += o.partial(o.Freq[i], o.Phase.Val, o.Amp.Val, make(Filters))
-		o.Current = o.stereo(y)
 	}
+
+	y /= float64(len(o.Freq))
+	o.Current = o.stereo(y)
 }
 
 func (o *Oscillator) Next(oscMap Oscillators, filtersMap Filters, phase float64) {
@@ -63,21 +67,24 @@ func (o *Oscillator) Next(oscMap Oscillators, filtersMap Filters, phase float64)
 		y += o.partial(o.Freq[i], phase+shift, amp, filtersMap)
 	}
 
-	y /= float64(len(o.Freq))
+	if len(o.Freq) > 0 {
+		y /= float64(len(o.Freq))
+	}
+
 	o.Current = o.stereo(y)
 }
 
-func modulate(initial float64, modulators []string, oscMap Oscillators) float64 {
-	new := initial
+func modulate(x float64, modulators []string, oscMap Oscillators) float64 {
+	y := x
 
 	for i := range modulators {
 		mod, ok := oscMap[modulators[i]]
 		if ok {
-			new += mod.Current.Mono
+			y += mod.Current.Mono
 		}
 	}
 
-	return new
+	return y
 }
 
 func (o *Oscillator) applyFilters(filtersMap Filters, freq, amp float64) float64 {
@@ -108,25 +115,12 @@ func (o *Oscillator) partial(freq, phase, amp float64, filtersMap Filters) float
 	return o.signal(freq*phase) * a
 }
 
-func (o *Oscillator) stereo(x float64) Output {
-	out := Output{}
-	pan := transpose(o.pan)
+func (o *Oscillator) stereo(x float64) output {
+	out := output{}
+	pan := utils.Percentage(utils.Limit(o.pan, -1, 1), -1, 1)
 	out.Mono = x
 	out.Right = x * pan
 	out.Left = x * (1 - pan)
 
 	return out
-}
-
-// limits pan to [-1;1] and transposes to [0;1]
-func transpose(pan float64) float64 {
-	var t float64
-
-	if pan > -1 {
-		t = math.Min(pan, 1)
-	} else {
-		t = -1
-	}
-
-	return (t + 1) / 2
 }

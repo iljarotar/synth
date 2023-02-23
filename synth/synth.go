@@ -5,6 +5,7 @@ import (
 
 	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/module"
+	"github.com/iljarotar/synth/utils"
 )
 
 type Synth struct {
@@ -21,6 +22,7 @@ type Synth struct {
 
 func (s *Synth) Initialize() {
 	s.step = 1 / config.Instance.SampleRate
+	s.Volume = utils.Limit(s.Volume, 0, 1)
 	s.volumeMemory = s.Volume
 	s.Volume = 0 // start muted
 	s.next = make(chan bool)

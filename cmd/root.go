@@ -11,6 +11,7 @@ import (
 	l "github.com/iljarotar/synth/loader"
 	"github.com/iljarotar/synth/screen"
 	s "github.com/iljarotar/synth/synth"
+	"github.com/iljarotar/synth/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -31,21 +32,21 @@ documentation and usage: https://github.com/iljarotar/synth`,
 			return
 		}
 
-		sampleRate, err := parseInt(s)
+		sampleRate, err := utils.ParseInt(s)
 		if err != nil {
 			fmt.Println("could not parse sample rate: %w", err)
 			return
 		}
 		config.Instance.SampleRate = sampleRate
 
-		fadeIn, err := parseFloat(in)
+		fadeIn, err := utils.ParseFloat(in)
 		if err != nil {
 			fmt.Println("could not parse fade-in: %w", err)
 			return
 		}
 		config.Instance.FadeIn = fadeIn
 
-		fadeOut, err := parseFloat(out)
+		fadeOut, err := utils.ParseFloat(out)
 		if err != nil {
 			fmt.Println("could not parse fade-out: %w", err)
 			return
