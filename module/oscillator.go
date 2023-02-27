@@ -63,7 +63,7 @@ func (o *Oscillator) Next(oscMap Oscillators, filtersMap Filters, phase float64)
 		return
 	}
 
-	// phase shift should not be limited
+	// phase shift should not be limitted
 	shift := o.Phase.Val + modulate(o.Phase.Mod, oscMap)*o.Phase.ModAmp
 
 	var y float64
@@ -82,8 +82,15 @@ func (o *Oscillator) Next(oscMap Oscillators, filtersMap Filters, phase float64)
 }
 
 func (o *Oscillator) limit() {
+	o.Amp.ModAmp = utils.Limit(o.Amp.ModAmp, 0, 1)
 	o.Amp.Val = utils.Limit(o.Amp.Val, 0, 1)
+
+	// upper limit of modamp is arbitrary but should be sufficiently high because the lower the modulators frequency
+	// the weaker the impact of the modulation will be
+	o.Phase.ModAmp = utils.Limit(o.Phase.ModAmp, 0, 20000)
 	o.Phase.Val = utils.Limit(o.Phase.Val, -1, 1)
+
+	o.Pan.ModAmp = utils.Limit(o.Pan.ModAmp, 0, 1)
 	o.Pan.Val = utils.Limit(o.Pan.Val, -1, 1)
 	o.pan = o.Pan.Val
 

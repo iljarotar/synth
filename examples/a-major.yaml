@@ -1,5 +1,5 @@
 vol: 1
-out: [chord, noise]
+out: [chord]
 oscillators:
   - name: noise
     type: Noise
@@ -18,10 +18,8 @@ oscillators:
       val: 1
     phase:
       mod: [pm]
-      modamp: 0.2
-    filters: [f1]
-    pan:
-      val: 0
+      modamp: 100
+    filters: []
 
   - name: f1-mod
     type: Sine
@@ -37,7 +35,7 @@ oscillators:
 
   - name: pm
     type: Sine
-    freq: [1.7]
+    freq: [0.1]
     amp:
       val: 1
 
