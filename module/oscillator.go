@@ -33,7 +33,6 @@ type Oscillator struct {
 	Phase   Param          `yaml:"phase"`
 	Filters []string       `yaml:"filters"`
 	Pan     Param          `yaml:"pan"`
-	PMAmp   float64        `yaml:"pm_amp"`
 	signal  SignalFunc
 	Current output
 	pan     float64
@@ -56,8 +55,8 @@ func (o *Oscillator) Initialize() {
 }
 
 func (o *Oscillator) Next(oscMap Oscillators, filtersMap Filters, phase float64) {
-	o.pan = utils.Limit(o.Pan.Val+modulate(o.Pan.Mod, oscMap), -1, 1)
-	amp := utils.Limit(o.Amp.Val+0.5*modulate(o.Amp.Mod, oscMap), 0, 1)
+	o.pan = utils.Limit(o.Pan.Val+modulate(o.Pan.Mod, oscMap)*o.Pan.ModAmp, -1, 1)
+	amp := utils.Limit(o.Amp.Val+modulate(o.Amp.Mod, oscMap)*o.Amp.ModAmp, 0, 1)
 
 	if o.Type == Noise {
 		o.Current = o.stereo((o.signal(0) * amp)) // noise doesn't care about phase
@@ -65,8 +64,7 @@ func (o *Oscillator) Next(oscMap Oscillators, filtersMap Filters, phase float64)
 	}
 
 	// phase shift should not be limited
-	// scale modulation to allow stronger modulation
-	shift := o.Phase.Val + modulate(o.Phase.Mod, oscMap)*o.PMAmp
+	shift := o.Phase.Val + modulate(o.Phase.Mod, oscMap)*o.Phase.ModAmp
 
 	var y float64
 	for i := range o.Freq {

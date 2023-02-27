@@ -27,9 +27,9 @@ func (f *Filter) Initialize() {
 }
 
 func (f *Filter) Next(oscMap Oscillators) {
-	f.low = utils.Limit(f.Low.Val+10000*modulate(f.Low.Mod, oscMap), 0, 20000)
-	f.high = utils.Limit(f.High.Val+10000*modulate(f.High.Mod, oscMap), 0, 20000)
-	f.vol = utils.Limit(f.Volume.Val+0.5*modulate(f.Volume.Mod, oscMap), 0, 1)
+	f.low = utils.Limit(f.Low.Val+modulate(f.Low.Mod, oscMap)*f.Low.ModAmp, 0, 20000)
+	f.high = utils.Limit(f.High.Val+modulate(f.High.Mod, oscMap)*f.High.ModAmp, 0, 20000)
+	f.vol = utils.Limit(f.Volume.Val+modulate(f.Volume.Mod, oscMap)*f.Volume.ModAmp, 0, 1)
 }
 
 func (f *Filter) Apply(freq float64) float64 {
