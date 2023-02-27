@@ -10,7 +10,6 @@ import (
 	"github.com/iljarotar/synth/control"
 	l "github.com/iljarotar/synth/loader"
 	"github.com/iljarotar/synth/screen"
-	s "github.com/iljarotar/synth/synth"
 	"github.com/iljarotar/synth/utils"
 	"github.com/spf13/cobra"
 )
@@ -100,14 +99,13 @@ func start(file string) error {
 	log := make(chan string)
 	logger := screen.NewLogger(log)
 
-	loader, err := l.NewLoader(ctl, logger)
+	loader, err := l.NewLoader(ctl, logger, file)
 	if err != nil {
 		return err
 	}
 	defer loader.Close()
 
-	var synth s.Synth
-	err = loader.Load(file, &synth)
+	err = loader.Load()
 	if err != nil {
 		return err
 	}
