@@ -18,13 +18,13 @@ oscillators:
       mod: [pm]
     filters: [f1]
     pan:
-      val: -0.6
+      val: 0
 
   - name: f1-mod
     type: Sine
     freq: [0.3]
     amp:
-      val: 90
+      val: 0.03
 
   - name: amp-mod
     type: Sine
@@ -42,12 +42,12 @@ oscillators:
     type: Sine
     freq: [0.1]
     amp:
-      val: 2
+      val: 1
 
 filters:
   - name: f1
     high:
-      val: 350
+      val: 500
       mod: [f1-mod]
     vol:
       val: 0.5
