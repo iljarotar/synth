@@ -2,6 +2,11 @@ package module
 
 import "github.com/iljarotar/synth/utils"
 
+var (
+	cutoffLimits limits = limits{low: 0, high: 20000}
+	volumeLimits limits = limits{low: 0, high: 1}
+)
+
 type Filters map[string]*Filter
 
 type Filter struct {
@@ -27,9 +32,9 @@ func (f *Filter) Initialize() {
 }
 
 func (f *Filter) Next(oscMap Oscillators) {
-	f.low = utils.Limit(f.Low.Val+modulate(f.Low.Mod, oscMap)*f.Low.ModAmp, 0, 20000)
-	f.high = utils.Limit(f.High.Val+modulate(f.High.Mod, oscMap)*f.High.ModAmp, 0, 20000)
-	f.vol = utils.Limit(f.Volume.Val+modulate(f.Volume.Mod, oscMap)*f.Volume.ModAmp, 0, 1)
+	f.low = utils.Limit(f.Low.Val+modulate(f.Low.Mod, oscMap)*f.Low.ModAmp, cutoffLimits.low, cutoffLimits.high)
+	f.high = utils.Limit(f.High.Val+modulate(f.High.Mod, oscMap)*f.High.ModAmp, cutoffLimits.low, cutoffLimits.high)
+	f.vol = utils.Limit(f.Volume.Val+modulate(f.Volume.Mod, oscMap)*f.Volume.ModAmp, volumeLimits.low, volumeLimits.high)
 }
 
 func (f *Filter) Apply(freq float64) float64 {

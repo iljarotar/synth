@@ -19,6 +19,19 @@ const (
 	Noise            OscillatorType = "Noise"
 )
 
+type limits struct {
+	high, low float64
+}
+
+var (
+	ampLimits      limits = limits{low: 0, high: 1}
+	ampModLimits   limits = limits{low: 0, high: 1}
+	panLimits      limits = limits{low: -1, high: 1}
+	panModLimits   limits = limits{low: 0, high: 1}
+	phaseLimits    limits = limits{low: -1, high: 1}
+	phaseModLimits limits = limits{low: 0, high: 20000} // upper limit is arbitrary
+)
+
 type output struct {
 	Mono, Left, Right float64
 }
@@ -55,8 +68,8 @@ func (o *Oscillator) Initialize() {
 }
 
 func (o *Oscillator) Next(oscMap Oscillators, filtersMap Filters, phase float64) {
-	o.pan = utils.Limit(o.Pan.Val+modulate(o.Pan.Mod, oscMap)*o.Pan.ModAmp, -1, 1)
-	amp := utils.Limit(o.Amp.Val+modulate(o.Amp.Mod, oscMap)*o.Amp.ModAmp, 0, 1)
+	o.pan = utils.Limit(o.Pan.Val+modulate(o.Pan.Mod, oscMap)*o.Pan.ModAmp, panLimits.low, panLimits.high)
+	amp := utils.Limit(o.Amp.Val+modulate(o.Amp.Mod, oscMap)*o.Amp.ModAmp, ampLimits.low, ampLimits.high)
 
 	if o.Type == Noise {
 		o.Current = o.stereo((o.signal(0) * amp)) // noise doesn't care about phase
@@ -82,16 +95,14 @@ func (o *Oscillator) Next(oscMap Oscillators, filtersMap Filters, phase float64)
 }
 
 func (o *Oscillator) limit() {
-	o.Amp.ModAmp = utils.Limit(o.Amp.ModAmp, 0, 1)
-	o.Amp.Val = utils.Limit(o.Amp.Val, 0, 1)
+	o.Amp.ModAmp = utils.Limit(o.Amp.ModAmp, ampModLimits.low, ampModLimits.high)
+	o.Amp.Val = utils.Limit(o.Amp.Val, ampLimits.low, ampLimits.high)
 
-	// upper limit of modamp is arbitrary but should be sufficiently high because the lower the modulators frequency
-	// the weaker the impact of the modulation will be
-	o.Phase.ModAmp = utils.Limit(o.Phase.ModAmp, 0, 20000)
-	o.Phase.Val = utils.Limit(o.Phase.Val, -1, 1)
+	o.Phase.ModAmp = utils.Limit(o.Phase.ModAmp, phaseModLimits.low, phaseModLimits.high)
+	o.Phase.Val = utils.Limit(o.Phase.Val, phaseLimits.low, phaseLimits.high)
 
-	o.Pan.ModAmp = utils.Limit(o.Pan.ModAmp, 0, 1)
-	o.Pan.Val = utils.Limit(o.Pan.Val, -1, 1)
+	o.Pan.ModAmp = utils.Limit(o.Pan.ModAmp, panModLimits.low, panModLimits.high)
+	o.Pan.Val = utils.Limit(o.Pan.Val, panLimits.low, panLimits.high)
 	o.pan = o.Pan.Val
 
 	for i := range o.Freq {
