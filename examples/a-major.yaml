@@ -16,6 +16,7 @@ oscillators:
       val: 1
     phase:
       mod: [pm]
+    pm_amp: 0.2
     filters: [f1]
     pan:
       val: 0
@@ -36,7 +37,7 @@ oscillators:
     type: Sine
     freq: [1.5]
     amp:
-      val: 0.0003
+      val: 1
 
   - name: pan-mod
     type: Sine

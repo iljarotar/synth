@@ -33,6 +33,7 @@ type Oscillator struct {
 	Phase   Param          `yaml:"phase"`
 	Filters []string       `yaml:"filters"`
 	Pan     Param          `yaml:"pan"`
+	PMAmp   float64        `yaml:"pm_amp"`
 	signal  SignalFunc
 	Current output
 	pan     float64
@@ -65,7 +66,7 @@ func (o *Oscillator) Next(oscMap Oscillators, filtersMap Filters, phase float64)
 
 	// phase shift should not be limited
 	// scale modulation to allow stronger modulation
-	shift := o.Phase.Val + modulate(o.Phase.Mod, oscMap)*20
+	shift := o.Phase.Val + modulate(o.Phase.Mod, oscMap)*o.PMAmp
 
 	var y float64
 	for i := range o.Freq {
