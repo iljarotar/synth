@@ -56,12 +56,12 @@ func (o *Oscillator) Initialize() {
 	o.limit()
 
 	var y float64
-	for i := range o.Freq {
-		y += o.partial(o.Freq[i], o.Phase.Val, o.Amp.Val, make(Filters))
+	for _, f := range o.Freq {
+		y += o.partial(f, o.Phase.Val, o.Amp.Val, make(Filters))
 	}
 
-	if len(o.Freq) > 0 {
-		y /= float64(len(o.Freq))
+	if l := len(o.Freq); l > 0 {
+		y /= float64(l)
 	}
 
 	o.Current = o.stereo(y)
@@ -80,15 +80,14 @@ func (o *Oscillator) Next(oscMap Oscillators, filtersMap Filters, phase float64)
 	shift := o.Phase.Val + modulate(o.Phase.Mod, oscMap)*o.Phase.ModAmp
 
 	var y float64
-	for i := range o.Freq {
-		f := o.Freq[i]
+	for _, f := range o.Freq {
 		l := 1 / f
 		s := shift * l
 		y += o.partial(f, phase+s, amp, filtersMap)
 	}
 
-	if len(o.Freq) > 0 {
-		y /= float64(len(o.Freq))
+	if l := len(o.Freq); l > 0 {
+		y /= float64(l)
 	}
 
 	o.Current = o.stereo(y)
@@ -105,16 +104,16 @@ func (o *Oscillator) limit() {
 	o.Pan.Val = utils.Limit(o.Pan.Val, panLimits.low, panLimits.high)
 	o.pan = o.Pan.Val
 
-	for i := range o.Freq {
-		o.Freq[i] = utils.Limit(o.Freq[i], 0, 20000)
+	for _, f := range o.Freq {
+		f = utils.Limit(f, 0, 20000)
 	}
 }
 
 func modulate(modulators []string, oscMap Oscillators) float64 {
 	var y float64
 
-	for i := range modulators {
-		mod, ok := oscMap[modulators[i]]
+	for _, m := range modulators {
+		mod, ok := oscMap[m]
 		if ok {
 			y += mod.Current.Mono
 		}
@@ -126,11 +125,11 @@ func modulate(modulators []string, oscMap Oscillators) float64 {
 func (o *Oscillator) applyFilters(filtersMap Filters, freq float64) float64 {
 	var max float64
 
-	for i := range o.Filters {
-		f, ok := filtersMap[o.Filters[i]]
+	for _, f := range o.Filters {
+		filter, ok := filtersMap[f]
 
 		if ok {
-			val := f.Apply(freq)
+			val := filter.Apply(freq)
 
 			if val > max {
 				max = val

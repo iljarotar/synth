@@ -27,12 +27,12 @@ func (s *Synth) Initialize() {
 	s.Volume = 0 // start muted
 	s.next = make(chan bool)
 
-	for i := range s.Oscillators {
-		s.Oscillators[i].Initialize()
+	for _, osc := range s.Oscillators {
+		osc.Initialize()
 	}
 
-	for i := range s.Filters {
-		s.Filters[i].Initialize()
+	for _, f := range s.Filters {
+		f.Initialize()
 	}
 
 	s.makeOscillatorsMap()
@@ -45,9 +45,9 @@ func (s *Synth) Play(input chan<- struct{ Left, Right float32 }) {
 		left *= s.Volume
 		right *= s.Volume
 
-		if len(s.Out) > 0 {
-			left /= float64(len(s.Out))
-			right /= float64(len(s.Out))
+		if l := len(s.Out); l > 0 {
+			left /= float64(l)
+			right /= float64(l)
 		}
 
 		y := struct{ Left, Right float32 }{Left: float32(left), Right: float32(right)}
@@ -91,8 +91,8 @@ func (s *Synth) getCurrentValue() (left, right float64) {
 	s.updateCurrentValues()
 	left, right = 0, 0
 
-	for i := range s.Out {
-		osc, ok := s.oscMap[s.Out[i]]
+	for _, o := range s.Out {
+		osc, ok := s.oscMap[o]
 		if ok {
 			left += osc.Current.Left
 			right += osc.Current.Right
@@ -103,13 +103,12 @@ func (s *Synth) getCurrentValue() (left, right float64) {
 }
 
 func (s *Synth) updateCurrentValues() {
-	for i := range s.Oscillators {
-		osc := s.Oscillators[i]
+	for _, o := range s.Oscillators {
+		osc := o
 		osc.Next(s.oscMap, s.filtersMap, s.Phase)
 	}
 
-	for i := range s.Filters {
-		f := s.Filters[i]
+	for _, f := range s.Filters {
 		f.Next(s.oscMap)
 	}
 
@@ -119,8 +118,7 @@ func (s *Synth) updateCurrentValues() {
 func (s *Synth) makeOscillatorsMap() {
 	oscMap := make(module.Oscillators)
 
-	for i := range s.Oscillators {
-		osc := s.Oscillators[i]
+	for _, osc := range s.Oscillators {
 		oscMap[osc.Name] = osc
 	}
 
@@ -130,8 +128,7 @@ func (s *Synth) makeOscillatorsMap() {
 func (s *Synth) makeFiltersMap() {
 	filtersMap := make(module.Filters)
 
-	for i := range s.Filters {
-		f := s.Filters[i]
+	for _, f := range s.Filters {
 		filtersMap[f.Name] = f
 	}
 
