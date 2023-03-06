@@ -21,7 +21,7 @@ type Synth struct {
 }
 
 func (s *Synth) Initialize() {
-	s.step = 1 / config.Instance.SampleRate
+	s.step = 1 / config.Config.SampleRate
 	s.Volume = utils.Limit(s.Volume, 0, 1)
 	s.volumeMemory = s.Volume
 	s.Volume = 0 // start muted
@@ -136,7 +136,7 @@ func (s *Synth) makeFiltersMap() {
 }
 
 func secondsToStep(seconds, delta float64) float64 {
-	steps := math.Round(seconds * config.Instance.SampleRate)
+	steps := math.Round(seconds * config.Config.SampleRate)
 	step := 1 / steps
 	return step
 }

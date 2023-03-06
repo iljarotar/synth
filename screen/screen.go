@@ -10,13 +10,13 @@ import (
 
 type Screen struct {
 	logger *Logger
-	done   chan bool
+	quit   chan bool
 	input  chan string
 	logs   []string
 }
 
-func NewScreen(logger *Logger, done chan bool) *Screen {
-	return &Screen{logger: logger, done: done, input: make(chan string)}
+func NewScreen(logger *Logger, quit chan bool) *Screen {
+	return &Screen{logger: logger, quit: quit, input: make(chan string)}
 }
 
 func Clear() {
@@ -25,36 +25,35 @@ func Clear() {
 	cmd.Run()
 }
 
-func (s *Screen) Enter() {
-	cancel := make(chan bool)
-	go s.acceptInput(cancel)
+func (s *Screen) Enter(exit chan bool) {
+	go s.read()
 	s.resetScreen()
 
 	for {
 		select {
 		case input := <-s.input:
 			if input == "q" {
-				cancel <- true
-				s.done <- true
+				s.quit <- true
 			} else {
 				s.resetScreen()
-				cancel <- false
 			}
 		case log := <-s.logger.log:
 			s.logs = append(s.logs, log)
 			s.resetScreen()
+		case e := <-exit:
+			if e == true {
+				s.quit <- true
+			}
 		}
 	}
 }
 
-func (s *Screen) acceptInput(cancel chan bool) {
-	for {
-		s.input <- read()
+func (s *Screen) read() {
+	reader := bufio.NewReader(os.Stdin)
 
-		c := <-cancel
-		if c == true {
-			break
-		}
+	for {
+		in, _ := reader.ReadString('\n')
+		s.input <- strings.TrimSpace(in)
 	}
 }
 
@@ -66,18 +65,4 @@ func (s *Screen) resetScreen() {
 	}
 
 	fmt.Print("type 'q' to quit: ")
-}
-
-func read() string {
-	var input string
-	reader := bufio.NewReader(os.Stdin)
-
-	for {
-		input, _ = reader.ReadString('\n')
-		if input != "" {
-			break
-		}
-	}
-
-	return strings.TrimSpace(input)
 }
