@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/iljarotar/synth/audio"
@@ -129,12 +131,26 @@ func start(file string) error {
 	quit := make(chan bool)
 	u := ui.NewUI(logger, quit)
 	go u.Enter(exit)
+
+	sig := make(chan os.Signal, 2)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	interrupt := make(chan bool)
+	go catchInterrupt(interrupt, sig)
 	ctl.Start(c.Config.FadeIn)
 
-	<-quit
+	select {
+	case <-quit:
+		ctl.Stop(c.Config.FadeOut)
+	case <-interrupt:
+		ctl.Stop(0.05)
+	}
 
-	ctl.Stop(c.Config.FadeOut)
 	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
 	ui.Clear()
 	return nil
+}
+
+func catchInterrupt(stop chan bool, sig chan os.Signal) {
+	<-sig
+	stop <- true
 }

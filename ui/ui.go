@@ -26,7 +26,6 @@ func Clear() {
 }
 
 func (u *UI) Enter(exit chan bool) {
-	defer os.Stdin.Close()
 	go u.read()
 	u.resetScreen()
 
