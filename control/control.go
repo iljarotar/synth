@@ -1,6 +1,9 @@
 package control
 
 import (
+	"time"
+
+	"github.com/iljarotar/synth/config"
 	s "github.com/iljarotar/synth/synth"
 )
 
@@ -34,7 +37,13 @@ func (c *Control) Stop(fadeOut float64) {
 }
 
 func (c *Control) Start(fadeIn float64) {
-	// check if duration is set
-	// if yes, start goroutine, that will send to the screens exit channel, once the duration is over
+	if config.Config.Duration > 0 {
+		go c.watchDuration()
+	}
 	c.synth.FadeIn(fadeIn)
+}
+
+func (c *Control) watchDuration() {
+	time.Sleep(time.Duration(float64(config.Config.Duration)-config.Config.FadeOut) * time.Second)
+	c.exit <- true
 }

@@ -5,13 +5,13 @@ import (
 	"strconv"
 )
 
-func ParseInt(input string) (float64, error) {
+func ParseInt(input string) (int, error) {
 	i, err := strconv.Atoi(input)
 	if err != nil {
 		return 0, errors.New("please provide an integer")
 	}
 
-	return float64(i), nil
+	return int(i), nil
 }
 
 func ParseFloat(input string) (float64, error) {

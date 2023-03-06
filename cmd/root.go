@@ -25,6 +25,7 @@ documentation and usage: https://github.com/iljarotar/synth`,
 		s, _ := cmd.Flags().GetString("sample-rate")
 		in, _ := cmd.Flags().GetString("fade-in")
 		out, _ := cmd.Flags().GetString("fade-out")
+		d, _ := cmd.Flags().GetString("duration")
 
 		if file == "" {
 			cmd.Help()
@@ -36,7 +37,7 @@ documentation and usage: https://github.com/iljarotar/synth`,
 			fmt.Println("could not parse sample rate: %w", err)
 			return
 		}
-		c.Config.SampleRate = sampleRate
+		c.Config.SampleRate = float64(sampleRate)
 
 		fadeIn, err := utils.ParseFloat(in)
 		if err != nil {
@@ -51,6 +52,13 @@ documentation and usage: https://github.com/iljarotar/synth`,
 			return
 		}
 		c.Config.FadeOut = fadeOut
+
+		duration, err := utils.ParseInt(d)
+		if err != nil {
+			fmt.Println("could not parse duration: %w", err)
+			return
+		}
+		c.Config.Duration = duration
 
 		err = start(file)
 		if err != nil {
@@ -70,10 +78,12 @@ func init() {
 	sampleRate := fmt.Sprintf("%v", c.Default.SampleRate)
 	fadeIn := fmt.Sprintf("%v", c.Default.FadeIn)
 	fadeOut := fmt.Sprintf("%v", c.Default.FadeOut)
+	duration := fmt.Sprintf("%v", c.Config.Duration)
 
 	rootCmd.Flags().StringP("file", "f", "", "specify which file to load")
 	rootCmd.Flags().BoolP("help", "h", false, "print help")
 	rootCmd.Flags().StringP("sample-rate", "s", sampleRate, "specify sample rate")
+	rootCmd.Flags().StringP("duration", "d", duration, "specify duration (optional)")
 	rootCmd.Flags().String("fade-in", fadeIn, "length of the fade-in in seconds")
 	rootCmd.Flags().String("fade-out", fadeOut, "length of the fade-out in seconds")
 }
@@ -125,5 +135,6 @@ func start(file string) error {
 
 	ctl.Stop(c.Config.FadeOut)
 	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
+	ui.Clear()
 	return nil
 }
