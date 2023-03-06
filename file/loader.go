@@ -1,4 +1,4 @@
-package loader
+package file
 
 import (
 	"os"

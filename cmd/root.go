@@ -10,7 +10,7 @@ import (
 	"github.com/iljarotar/synth/audio"
 	c "github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/control"
-	l "github.com/iljarotar/synth/loader"
+	f "github.com/iljarotar/synth/file"
 	"github.com/iljarotar/synth/ui"
 	"github.com/iljarotar/synth/utils"
 	"github.com/spf13/cobra"
@@ -28,6 +28,7 @@ documentation and usage: https://github.com/iljarotar/synth`,
 		in, _ := cmd.Flags().GetString("fade-in")
 		out, _ := cmd.Flags().GetString("fade-out")
 		d, _ := cmd.Flags().GetString("duration")
+		record, _ := cmd.Flags().GetString("out")
 
 		if file == "" {
 			cmd.Help()
@@ -62,7 +63,7 @@ documentation and usage: https://github.com/iljarotar/synth`,
 		}
 		c.Config.Duration = duration
 
-		err = start(file)
+		err = start(file, record)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -82,15 +83,16 @@ func init() {
 	fadeOut := fmt.Sprintf("%v", c.Default.FadeOut)
 	duration := fmt.Sprintf("%v", c.Config.Duration)
 
-	rootCmd.Flags().StringP("file", "f", "", "specify which file to load")
+	rootCmd.Flags().StringP("file", "f", "", "path to your patch file")
+	rootCmd.Flags().StringP("out", "o", "", "name of the recording; if omitted no file will be written")
 	rootCmd.Flags().BoolP("help", "h", false, "print help")
-	rootCmd.Flags().StringP("sample-rate", "s", sampleRate, "specify sample rate")
-	rootCmd.Flags().StringP("duration", "d", duration, "specify duration (optional)")
+	rootCmd.Flags().StringP("sample-rate", "s", sampleRate, "sample rate")
+	rootCmd.Flags().StringP("duration", "d", duration, "duration (optional)")
 	rootCmd.Flags().String("fade-in", fadeIn, "length of the fade-in in seconds")
 	rootCmd.Flags().String("fade-out", fadeOut, "length of the fade-out in seconds")
 }
 
-func start(file string) error {
+func start(file, record string) error {
 	err := audio.Init()
 	if err != nil {
 		return err
@@ -98,8 +100,8 @@ func start(file string) error {
 	defer audio.Terminate()
 	ui.Clear()
 
-	input := make(chan struct{ Left, Right float32 })
-	ctx, err := audio.NewContext(input, c.Config.SampleRate)
+	speakerIn := make(chan struct{ Left, Right float32 })
+	ctx, err := audio.NewContext(speakerIn, c.Config.SampleRate)
 	if err != nil {
 		return err
 	}
@@ -110,14 +112,18 @@ func start(file string) error {
 		return err
 	}
 
+	recIn := make(chan struct{ Left, Right float32 })
+	rec := f.NewRecorder(recIn, speakerIn, record)
+	go rec.StartRecording()
+
 	exit := make(chan bool)
-	ctl := control.NewControl(input, exit)
+	ctl := control.NewControl(recIn, exit)
 	defer ctl.Close()
 
 	log := make(chan string)
 	logger := ui.NewLogger(log)
 
-	loader, err := l.NewLoader(ctl, logger, file)
+	loader, err := f.NewLoader(ctl, logger, file)
 	if err != nil {
 		return err
 	}
@@ -145,9 +151,10 @@ func start(file string) error {
 		ctl.Stop(0.05)
 	}
 
+	err = rec.StopRecording()
 	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
 	ui.Clear()
-	return nil
+	return err
 }
 
 func catchInterrupt(stop chan bool, sig chan os.Signal) {
