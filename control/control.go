@@ -24,10 +24,16 @@ func (c *Control) LoadSynth(synth s.Synth) {
 	*c.synth = synth
 }
 
+func (c *Control) Close() {
+	c.synth.Stop()
+}
+
 func (c *Control) Stop(fadeOut float64) {
 	c.synth.FadeOut(fadeOut)
 }
 
 func (c *Control) Start(fadeIn float64) {
+	// check if duration is set
+	// if yes, start goroutine, that will send to the screens exit channel, once the duration is over
 	c.synth.FadeIn(fadeIn)
 }

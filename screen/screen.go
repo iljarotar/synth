@@ -26,6 +26,7 @@ func Clear() {
 }
 
 func (s *Screen) Enter(exit chan bool) {
+	defer os.Stdin.Close()
 	go s.read()
 	s.resetScreen()
 
@@ -34,6 +35,7 @@ func (s *Screen) Enter(exit chan bool) {
 		case input := <-s.input:
 			if input == "q" {
 				s.quit <- true
+				return
 			} else {
 				s.resetScreen()
 			}
@@ -43,6 +45,7 @@ func (s *Screen) Enter(exit chan bool) {
 		case e := <-exit:
 			if e == true {
 				s.quit <- true
+				return
 			}
 		}
 	}

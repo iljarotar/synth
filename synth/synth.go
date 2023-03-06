@@ -40,6 +40,8 @@ func (s *Synth) Initialize() {
 }
 
 func (s *Synth) Play(input chan<- struct{ Left, Right float32 }) {
+	defer close(input)
+
 	for {
 		left, right := s.getCurrentValue()
 		left *= s.Volume
@@ -54,11 +56,19 @@ func (s *Synth) Play(input chan<- struct{ Left, Right float32 }) {
 		input <- y
 
 		select {
-		case <-s.next:
-			s.next <- true
+		case next := <-s.next:
+			if next {
+				s.next <- true
+			} else {
+				return
+			}
 		default:
 		}
 	}
+}
+
+func (s *Synth) Stop() {
+	s.next <- false
 }
 
 func (s *Synth) FadeOut(seconds float64) {

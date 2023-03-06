@@ -99,6 +99,7 @@ func start(file string) error {
 	}
 
 	ctl := control.NewControl(input)
+	defer ctl.Close()
 
 	log := make(chan string)
 	logger := s.NewLogger(log)
