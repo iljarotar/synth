@@ -7,8 +7,8 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/iljarotar/synth/control"
-	"github.com/iljarotar/synth/screen"
 	s "github.com/iljarotar/synth/synth"
+	"github.com/iljarotar/synth/ui"
 	"gopkg.in/yaml.v2"
 )
 
@@ -17,11 +17,11 @@ type Loader struct {
 	watch      *bool
 	lastLoaded time.Time
 	ctl        *control.Control
-	logger     *screen.Logger
+	logger     *ui.Logger
 	file       string
 }
 
-func NewLoader(ctl *control.Control, log *screen.Logger, file string) (*Loader, error) {
+func NewLoader(ctl *control.Control, log *ui.Logger, file string) (*Loader, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err

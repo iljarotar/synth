@@ -1,4 +1,4 @@
-package screen
+package ui
 
 type Logger struct {
 	log chan string

@@ -9,7 +9,7 @@ import (
 	c "github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/control"
 	l "github.com/iljarotar/synth/loader"
-	s "github.com/iljarotar/synth/screen"
+	"github.com/iljarotar/synth/ui"
 	"github.com/iljarotar/synth/utils"
 	"github.com/spf13/cobra"
 )
@@ -84,7 +84,7 @@ func start(file string) error {
 		return err
 	}
 	defer audio.Terminate()
-	s.Clear()
+	ui.Clear()
 
 	input := make(chan struct{ Left, Right float32 })
 	ctx, err := audio.NewContext(input, c.Config.SampleRate)
@@ -98,11 +98,12 @@ func start(file string) error {
 		return err
 	}
 
-	ctl := control.NewControl(input)
+	exit := make(chan bool)
+	ctl := control.NewControl(input, exit)
 	defer ctl.Close()
 
 	log := make(chan string)
-	logger := s.NewLogger(log)
+	logger := ui.NewLogger(log)
 
 	loader, err := l.NewLoader(ctl, logger, file)
 	if err != nil {
@@ -116,9 +117,8 @@ func start(file string) error {
 	}
 
 	quit := make(chan bool)
-	exit := make(chan bool)
-	screen := s.NewScreen(logger, quit)
-	go screen.Enter(exit)
+	u := ui.NewUI(logger, quit)
+	go u.Enter(exit)
 	ctl.Start(c.Config.FadeIn)
 
 	<-quit
