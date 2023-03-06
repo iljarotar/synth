@@ -56,9 +56,7 @@ func (l *Loader) Load() error {
 		return err
 	}
 
-	l.ctl.Stop(0.01)
 	l.ctl.LoadSynth(synth)
-	l.ctl.Start(0.01)
 
 	l.lastLoaded = time.Now()
 	return nil
@@ -85,10 +83,14 @@ func (l *Loader) StartWatching() {
 
 			// check last loaded time to prevent occasional double loading
 			if !event.Has(fsnotify.Rename) && time.Now().Sub(l.lastLoaded) > 500*time.Millisecond {
+				l.ctl.Stop(0.01)
+
 				err := l.Load()
 				if err != nil {
 					l.logger.Log("could not load file. error: " + err.Error())
 				}
+
+				l.ctl.Start(0.01)
 			}
 		case err, ok := <-l.watcher.Errors:
 			if !ok {
