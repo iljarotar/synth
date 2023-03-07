@@ -9,7 +9,7 @@ type config struct {
 var Default = config{
 	SampleRate: 44100,
 	FadeIn:     1,
-	FadeOut:    5,
+	FadeOut:    1,
 	Duration:   0,
 }
 
