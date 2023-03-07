@@ -1,8 +1,12 @@
 package file
 
+import c "github.com/iljarotar/synth/config"
+
+type sample [2]float32
+
 type Recorder struct {
 	in, out chan struct{ Left, Right float32 }
-	buffer  [][2]float32
+	buffer  []sample
 	file    string
 }
 
@@ -19,6 +23,10 @@ func (r *Recorder) StartRecording() {
 }
 
 func (r *Recorder) StopRecording() error {
-	test()
+	if r.file == "" {
+		return nil
+	}
+
+	writeWavFile(r.file, int(c.Config.SampleRate), r.buffer)
 	return nil
 }
