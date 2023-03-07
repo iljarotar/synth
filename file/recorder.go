@@ -27,6 +27,6 @@ func (r *Recorder) StopRecording() error {
 		return nil
 	}
 
-	writeWavFile(r.file, int(c.Config.SampleRate), r.buffer)
-	return nil
+	writer := newWaveWriter(r.buffer, int(c.Config.SampleRate))
+	return writer.write(r.file)
 }

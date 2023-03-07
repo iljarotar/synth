@@ -7,92 +7,147 @@ import (
 	"strings"
 )
 
-// file format
-var (
-	// header
-	chunkID   = []byte{0x52, 0x49, 0x46, 0x46} // RIFF
-	chunkSize = []byte{}                       // 36 + subchunk2Size
-	format    = []byte{0x57, 0x41, 0x56, 0x45} // WAVE
+type waveWriter struct {
+	file waveFile
+}
 
-	// subchunk1
-	subchunk1ID   = []byte{0x66, 0x6d, 0x74, 0x20} // FMT
-	subchunk1Size = []byte{0x10, 0x00, 0x00, 0x00} // 16
-	audioFormat   = []byte{0x01, 0x00}             // 1
-	numChannels   = []byte{0x02, 0x00}             // 2
-	sampleRate    = []byte{}
-	byteRate      = []byte{}           // sampleRate * numChannels * bitsPerSample/8
-	blockAlign    = []byte{0x04, 0x00} // numChannels * bitsPerSample/8
-	bitsPerSample = []byte{0x10, 0x00} // 16
+type waveFile struct {
+	header waveHeader
+	format waveFormat
+	data   waveData
+	bytes  []byte
+}
 
-	// subchunk2
-	subchunk2ID   = []byte{0x64, 0x61, 0x74, 0x61} // DATA
-	subchunk2Size = []byte{}                       // numSamples * numChannels * bitsPerSample/8
-	data          = []byte{}
-)
+type waveHeader struct {
+	chunkID   []byte
+	chunkSize []byte
+	format    []byte
+	bytes     []byte
+}
 
-func writeWavFile(file string, sRate int, samples []sample) {
+type waveFormat struct {
+	subchunkID    []byte
+	subchunkSize  []byte
+	audioFormat   []byte
+	numChannels   int
+	sampleRate    int
+	byteRate      []byte
+	blockAlign    []byte
+	bitsPerSample int
+	bytes         []byte
+}
+
+type waveData struct {
+	subchunkID   []byte
+	subchunkSize int
+	data         []byte
+	bytes        []byte
+}
+
+func newWaveWriter(samples []sample, sampleRate int) waveWriter {
+	writer := waveWriter{}
+	f := waveFile{}
+
+	// the order of these calls is important
+	f.getFormat(sampleRate)
+	f.getData(samples)
+	f.getHeader()
+	f.getBytes()
+
+	writer.file = f
+	return writer
+}
+
+func (w *waveWriter) write(file string) error {
 	if !strings.HasSuffix(file, ".wav") {
 		file += ".wav"
 	}
 
-	f, _ := os.Create(file)
+	f, err := os.Create(file)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
 	b := make([]byte, 0)
+	b = append(b, w.file.bytes...)
 
-	channels := 2
-	bits := 16
+	_, err = f.Write(b)
+	if err != nil {
+		return err
+	}
 
-	h := header(len(samples) * 4) // numSamples * numChannels * bitsPerSample/8
-	ch1 := subchunk1(sRate, channels, bits)
-	ch2 := subchunk2(channels, bits, samples)
-
-	b = append(b, h...)
-	b = append(b, ch1...)
-	b = append(b, ch2...)
-
-	f.Write(b)
-	f.Close()
+	return nil
 }
 
-func header(size int) []byte {
+func (f *waveFile) getBytes() {
 	b := make([]byte, 0)
-	s := 36 + size
-	chunkSize = intToBytes(s, 4)
 
-	b = append(b, chunkID...)
-	b = append(b, chunkSize...)
-	b = append(b, format...)
+	b = append(b, f.header.bytes...)
+	b = append(b, f.format.bytes...)
+	b = append(b, f.data.bytes...)
 
-	return b
+	f.bytes = b
 }
 
-func subchunk1(sRate, channels, bits int) []byte {
+func (f *waveFile) getHeader() {
 	b := make([]byte, 0)
-	sampleRate = intToBytes(sRate, 4)
-	bRate := sRate * channels * bits / 8
-	byteRate = intToBytes(bRate, 4)
 
-	b = append(b, subchunk1ID...)
-	b = append(b, subchunk1Size...)
-	b = append(b, audioFormat...)
-	b = append(b, numChannels...)
-	b = append(b, sampleRate...)
-	b = append(b, byteRate...)
-	b = append(b, blockAlign...)
-	b = append(b, bitsPerSample...)
+	f.header.chunkID = []byte{0x52, 0x49, 0x46, 0x46} // RIFF
+	f.header.format = []byte{0x57, 0x41, 0x56, 0x45}  // WAVE
+	size := 36 + f.data.subchunkSize
+	f.header.chunkSize = intToBytes(size, 4)
 
-	return b
+	b = append(b, f.header.chunkID...)
+	b = append(b, f.header.chunkSize...)
+	b = append(b, f.header.format...)
+
+	f.header.bytes = b
 }
 
-func subchunk2(channels, bits int, samples []sample) []byte {
+func (f *waveFile) getFormat(sampleRate int) {
 	b := make([]byte, 0)
-	b = append(b, subchunk2ID...)
 
-	s := len(samples) * channels * bits / 8
-	subchunk2Size = intToBytes(s, 4)
-	b = append(b, subchunk2Size...)
+	f.format.subchunkID = []byte{0x66, 0x6d, 0x74, 0x20}   // FMT
+	f.format.subchunkSize = []byte{0x10, 0x00, 0x00, 0x00} // 16
+	f.format.audioFormat = []byte{0x01, 0x00}              // 1
+	f.format.numChannels = 2
+	f.format.sampleRate = sampleRate
+
+	bytes := f.format.sampleRate * f.format.numChannels * f.format.bitsPerSample / 8
+	f.format.byteRate = intToBytes(bytes, 4)
+	f.format.blockAlign = []byte{0x04, 0x00} // 4
+	f.format.bitsPerSample = 16
+
+	sampleRateBytes := intToBytes(f.format.sampleRate, 4)
+	bitsBytes := intToBytes(f.format.bitsPerSample, 2)
+	channelsBytes := intToBytes(f.format.numChannels, 2)
+
+	b = append(b, f.format.subchunkID...)
+	b = append(b, f.format.subchunkSize...)
+	b = append(b, f.format.audioFormat...)
+	b = append(b, channelsBytes...)
+	b = append(b, sampleRateBytes...)
+	b = append(b, f.format.byteRate...)
+	b = append(b, f.format.blockAlign...)
+	b = append(b, bitsBytes...)
+
+	f.format.bytes = b
+}
+
+func (f *waveFile) getData(samples []sample) {
+	b := make([]byte, 0)
+
+	f.data.subchunkID = []byte{0x64, 0x61, 0x74, 0x61} // DATA
+	f.data.subchunkSize = len(samples) * f.format.numChannels * f.format.bitsPerSample / 8
+	f.data.data = getRawData(samples)
+	size := intToBytes(f.data.subchunkSize, 4)
+
+	b = append(b, f.data.subchunkID...)
+	b = append(b, size...)
 	b = append(b, getRawData(samples)...)
 
-	return b
+	f.data.bytes = b
 }
 
 func getRawData(samples []sample) []byte {
