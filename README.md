@@ -158,7 +158,7 @@ filters:
     ramp:
 ```
 
-Most of the fields are optional. A simple 440hz sine wave would look like this:
+Most of the fields are optional. A simple 440hz sine wave looks like this:
 
 ```yaml
 vol: 1
