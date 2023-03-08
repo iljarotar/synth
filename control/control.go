@@ -44,6 +44,6 @@ func (c *Control) Start(fadeIn float64) {
 }
 
 func (c *Control) watchDuration() {
-	time.Sleep(time.Duration(float64(config.Config.Duration)-config.Config.FadeOut) * time.Second)
+	time.Sleep(time.Duration(config.Config.Duration-config.Config.FadeOut) * time.Second)
 	c.exit <- true
 }

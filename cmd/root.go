@@ -57,13 +57,13 @@ documentation and usage: https://github.com/iljarotar/synth`,
 		}
 		c.Config.FadeOut = fadeOut
 
-		duration, err := utils.ParseInt(d)
+		duration, err := utils.ParseFloat(d)
 		if err != nil {
 			fmt.Println("could not parse duration:", err)
 			return
 		}
 
-		if duration*sampleRate > math.MaxInt32 {
+		if duration*float64(sampleRate) > math.MaxInt32 {
 			fmt.Printf("duration too long. maximum duration is floor(%v / samplerate)\n", math.MaxInt32)
 			return
 		}

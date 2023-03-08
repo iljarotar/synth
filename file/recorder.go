@@ -11,14 +11,22 @@ type Recorder struct {
 }
 
 func NewRecorder(in, out chan struct{ Left, Right float32 }, file string) Recorder {
-	return Recorder{in: in, out: out, file: file}
+	r := Recorder{in: in, out: out, file: file}
+	r.buffer = make([]sample, int(c.Config.SampleRate*c.Config.Duration))
+	return r
 }
 
 func (r *Recorder) StartRecording() {
 	defer close(r.out)
+	var i int
 	for y := range r.in {
-		r.buffer = append(r.buffer, [2]float32{y.Left, y.Right})
+		if len(r.buffer) < i+1 {
+			r.buffer = append(r.buffer, [2]float32{y.Left, y.Right})
+		} else {
+			r.buffer[i] = [2]float32{y.Left, y.Right}
+		}
 		r.out <- y
+		i++
 	}
 }
 

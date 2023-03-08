@@ -3,7 +3,7 @@ package config
 type config struct {
 	SampleRate      float64
 	FadeIn, FadeOut float64
-	Duration        int
+	Duration        float64
 }
 
 var Default = config{
