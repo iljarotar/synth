@@ -72,7 +72,7 @@ More examples can be found [here](https://github.com/iljarotar/synth-patches).
 
 | Synth       |                   |                                                            |
 | ----------- | ----------------- | ---------------------------------------------------------- |
-| Field       | Type              | Description                                                |
+| **Field**   | **Type**          | **Description**                                            |
 | vol         | Float             | main volume in range [0,1]                                 |
 | out         | String [0..*]     | names of the oscillators that will be sent to the speakers |
 | oscillators | Oscillator [0..*] | all oscillators                                            |
@@ -80,7 +80,7 @@ More examples can be found [here](https://github.com/iljarotar/synth-patches).
 
 | Oscillator |                |                                           |
 | ---------- | -------------- | ----------------------------------------- |
-| Field      | Type           | Description                               |
+| **Field**  | **Type**       | **Description**                           |
 | name       | String         | should be unique in the scope of the file |
 | type       | OscillatorType | wave form or noise                        |
 | freq       | Float [0..*]   | frequencies in range [0,20000]            |
@@ -100,23 +100,23 @@ More examples can be found [here](https://github.com/iljarotar/synth-patches).
 
 Note: Noise will not be affected by filters or frequency
 
-| Filter |        |                                            |
-| ------ | ------ | ------------------------------------------ |
-| Field  | Type   | Description                                |
-| name   | String | should be unique in the scope of the file  |
-| low    | Param  | low frequency cutoff                       |
-| high   | Param  | high frequency cutoff                      |
-| vol    | Param  | volume of unfiltered signal                |
-| ramp   | Float  | length of the linear ramp from cutoff to 0 |
+| Filter    |          |                                            |
+| --------- | -------- | ------------------------------------------ |
+| **Field** | **Type** | **Description**                            |
+| name      | String   | should be unique in the scope of the file  |
+| low       | Param    | low frequency cutoff                       |
+| high      | Param    | high frequency cutoff                      |
+| vol       | Param    | volume of unfiltered signal                |
+| ramp      | Float    | length of the linear ramp from cutoff to 0 |
 
 Note: All filters are bandpass filters. To create a highpass or lowpass filter just place one of the cutoffs outside of the audible range.
 
-| Param  |               |                                            |
-| ------ | ------------- | ------------------------------------------ |
-| Field  | Type          | Description                                |
-| val    | Float         | initial value of the respective param      |
-| mod    | String [0..*] | names of modulator oscillators             |
-| modamp | Float         | amplitude of the modulation in range [0,1] |
+| Param     |               |                                            |
+| --------- | ------------- | ------------------------------------------ |
+| **Field** | **Type**      | **Description**                            |
+| val       | Float         | initial value of the respective param      |
+| mod       | String [0..*] | names of modulator oscillators             |
+| modamp    | Float         | amplitude of the modulation in range [0,1] |
 
 ### Structure of a patch file
 
