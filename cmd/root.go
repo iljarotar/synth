@@ -89,12 +89,12 @@ func init() {
 	duration := fmt.Sprintf("%v", c.Config.Duration)
 
 	rootCmd.Flags().StringP("file", "f", "", "path to your patch file")
-	rootCmd.Flags().StringP("out", "o", "", "if provided recording will be written to the given file")
+	rootCmd.Flags().StringP("out", "o", "", "if provided, a recording will be written to the given file")
 	rootCmd.Flags().BoolP("help", "h", false, "print help")
 	rootCmd.Flags().StringP("sample-rate", "s", sampleRate, "sample rate")
-	rootCmd.Flags().StringP("duration", "d", duration, "duration in seconds excluding fade in and out")
-	rootCmd.Flags().String("fade-in", fadeIn, "length of the fade-in in seconds")
-	rootCmd.Flags().String("fade-out", fadeOut, "length of the fade-out in seconds")
+	rootCmd.Flags().StringP("duration", "d", duration, "duration in seconds excluding fade-in and fade-out")
+	rootCmd.Flags().String("fade-in", fadeIn, "fade-in in seconds")
+	rootCmd.Flags().String("fade-out", fadeOut, "fade-out in seconds")
 }
 
 func start(file, record string) error {
