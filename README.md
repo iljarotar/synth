@@ -109,7 +109,7 @@ Note: Noise will not be affected by filters or frequency
 | vol       | Param    | volume of unfiltered signal                |
 | ramp      | Float    | length of the linear ramp from cutoff to 0 |
 
-Note: All filters are bandpass filters. To create a highpass or lowpass filter just place one of the cutoffs outside of the audible range.
+Note: All filters are bandpass filters. To create a highpass or a lowpass filter just place one of the cutoffs outside of the audible range.
 
 | Param     |               |                                            |
 | --------- | ------------- | ------------------------------------------ |
