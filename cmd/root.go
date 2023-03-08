@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"math"
 	"os"
 	"os/signal"
 	"syscall"
@@ -63,8 +62,8 @@ documentation and usage: https://github.com/iljarotar/synth`,
 			return
 		}
 
-		if duration*float64(sampleRate) > math.MaxInt32 {
-			fmt.Printf("duration too long. maximum duration is floor(%v / samplerate)\n", math.MaxInt32)
+		if duration*float64(sampleRate) > 317520000 { // 2 hours if sample rate is 44100
+			fmt.Printf("duration too long. maximum duration is floor(%v / samplerate)\n", 317520000)
 			return
 		}
 		c.Config.Duration = duration
