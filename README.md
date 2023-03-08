@@ -114,7 +114,7 @@ Note: All filters are bandpass filters. To create a highpass or a lowpass filter
 | Param     |               |                                            |
 | --------- | ------------- | ------------------------------------------ |
 | **Field** | **Type**      | **Description**                            |
-| val       | Float         | initial value of the respective param      |
+| val       | Float         | initial value of the respective parameter  |
 | mod       | String [0..*] | names of modulator oscillators             |
 | modamp    | Float         | amplitude of the modulation in range [0,1] |
 
