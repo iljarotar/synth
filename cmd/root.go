@@ -62,8 +62,8 @@ documentation and usage: https://github.com/iljarotar/synth`,
 			return
 		}
 
-		if duration*float64(sampleRate) > 317520000 { // 2 hours if sample rate is 44100
-			fmt.Printf("duration too long. maximum duration is floor(%v / samplerate)\n", 317520000)
+		if duration > c.Config.GetMaxDuration() {
+			fmt.Printf("duration too long. maximum duration for sample rate %v, fade-in %vs and fade-out %vs is %vs\n", c.Config.SampleRate, c.Config.FadeIn, c.Config.FadeOut, c.Config.GetMaxDuration())
 			return
 		}
 		c.Config.Duration = duration
