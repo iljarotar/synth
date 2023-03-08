@@ -7,6 +7,11 @@ import (
 	"strings"
 )
 
+// references
+// https://dylanmeeus.github.io/posts/audio-from-scratch-pt2/
+// https://github.com/DylanMeeus/GoAudio/tree/master/wave
+// http://soundfile.sapp.org/doc/WaveFormat/
+
 var (
 	RIFF []byte = []byte{0x52, 0x49, 0x46, 0x46}
 	WAVE []byte = []byte{0x57, 0x41, 0x56, 0x45}
