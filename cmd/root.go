@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"os/signal"
 	"syscall"
@@ -37,28 +38,33 @@ documentation and usage: https://github.com/iljarotar/synth`,
 
 		sampleRate, err := utils.ParseInt(s)
 		if err != nil {
-			fmt.Println("could not parse sample rate: %w", err)
+			fmt.Println("could not parse sample rate:", err)
 			return
 		}
 		c.Config.SampleRate = float64(sampleRate)
 
 		fadeIn, err := utils.ParseFloat(in)
 		if err != nil {
-			fmt.Println("could not parse fade-in: %w", err)
+			fmt.Println("could not parse fade-in:", err)
 			return
 		}
 		c.Config.FadeIn = fadeIn
 
 		fadeOut, err := utils.ParseFloat(out)
 		if err != nil {
-			fmt.Println("could not parse fade-out: %w", err)
+			fmt.Println("could not parse fade-out:", err)
 			return
 		}
 		c.Config.FadeOut = fadeOut
 
 		duration, err := utils.ParseInt(d)
 		if err != nil {
-			fmt.Println("could not parse duration: %w", err)
+			fmt.Println("could not parse duration:", err)
+			return
+		}
+
+		if duration*sampleRate > math.MaxInt32 {
+			fmt.Printf("duration too long. maximum duration is floor(%v / samplerate)\n", math.MaxInt32)
 			return
 		}
 		c.Config.Duration = duration
@@ -84,10 +90,10 @@ func init() {
 	duration := fmt.Sprintf("%v", c.Config.Duration)
 
 	rootCmd.Flags().StringP("file", "f", "", "path to your patch file")
-	rootCmd.Flags().StringP("out", "o", "", "name of the recording; if omitted no file will be written")
+	rootCmd.Flags().StringP("out", "o", "", "if provided recording will be written to the given file")
 	rootCmd.Flags().BoolP("help", "h", false, "print help")
 	rootCmd.Flags().StringP("sample-rate", "s", sampleRate, "sample rate")
-	rootCmd.Flags().StringP("duration", "d", duration, "duration (optional)")
+	rootCmd.Flags().StringP("duration", "d", duration, "duration in seconds. if omitted playback will continue until stopped manually")
 	rootCmd.Flags().String("fade-in", fadeIn, "length of the fade-in in seconds")
 	rootCmd.Flags().String("fade-out", fadeOut, "length of the fade-out in seconds")
 }

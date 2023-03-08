@@ -7,6 +7,13 @@ import (
 	"strings"
 )
 
+var (
+	RIFF []byte = []byte{0x52, 0x49, 0x46, 0x46}
+	WAVE []byte = []byte{0x57, 0x41, 0x56, 0x45}
+	FMT  []byte = []byte{0x66, 0x6d, 0x74, 0x20}
+	DATA []byte = []byte{0x64, 0x61, 0x74, 0x61}
+)
+
 type waveWriter struct {
 	file waveFile
 }
@@ -93,8 +100,8 @@ func (f *waveFile) getBytes() {
 func (f *waveFile) getHeader() {
 	b := make([]byte, 0)
 
-	f.header.chunkID = []byte{0x52, 0x49, 0x46, 0x46} // RIFF
-	f.header.format = []byte{0x57, 0x41, 0x56, 0x45}  // WAVE
+	f.header.chunkID = RIFF
+	f.header.format = WAVE
 	size := 36 + f.data.subchunkSize
 	f.header.chunkSize = intToBytes(size, 4)
 
@@ -108,7 +115,7 @@ func (f *waveFile) getHeader() {
 func (f *waveFile) getFormat(sampleRate int) {
 	b := make([]byte, 0)
 
-	f.format.subchunkID = []byte{0x66, 0x6d, 0x74, 0x20}   // FMT
+	f.format.subchunkID = FMT
 	f.format.subchunkSize = []byte{0x10, 0x00, 0x00, 0x00} // 16
 	f.format.audioFormat = []byte{0x01, 0x00}              // 1
 	f.format.numChannels = 2
@@ -138,7 +145,7 @@ func (f *waveFile) getFormat(sampleRate int) {
 func (f *waveFile) getData(samples []sample) {
 	b := make([]byte, 0)
 
-	f.data.subchunkID = []byte{0x64, 0x61, 0x74, 0x61} // DATA
+	f.data.subchunkID = DATA
 	f.data.subchunkSize = len(samples) * f.format.numChannels * f.format.bitsPerSample / 8
 	f.data.data = getRawData(samples)
 	size := intToBytes(f.data.subchunkSize, 4)
