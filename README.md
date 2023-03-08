@@ -134,4 +134,4 @@ The data types of a patch file are the following
 | mod    | String [0..*] | names of modulator oscillators             |
 | modamp | Float         | amplitude of the modulation in range [0,1] |
 
-Check out the examples in the examples directory to see how these types are expressed in the `yaml` format.
+Check out the examples in the `examples` directory to see how these types are expressed in the `yaml` format.
