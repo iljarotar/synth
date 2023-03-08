@@ -121,7 +121,7 @@ Note: All filters are bandpass filters. To create a highpass or a lowpass filter
 ### Structure of a patch file
 
 ```yaml
-vol: 1
+vol:
 out:
 oscillators:
   - name:
