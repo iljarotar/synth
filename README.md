@@ -4,15 +4,13 @@ This is a simple modular-like command line synthesizer written in [golang](https
 
 ## Installation
 
-<small>Note: I have tested the synth only on a Fedora x86_64 machine. If you encounter any problems during installation or any unexpected behavior in runtime, please let me know.</small>
+Note: I have tested the synth only on a Fedora x86_64 machine. If you encounter any problems during installation or any unexpected behavior in runtime, please let me know.
 
 To run the synthesizer you will need to install [portaudio](http://portaudio.com/docs/v19-doxydocs/tutorial_start.html). On Fedora it is simply
 
 ```
 sudo dnf -y install portaudio
 ```
-
-To install the synthesizer you have two options.
 
 ### Install with Go
 
@@ -28,18 +26,6 @@ git clone git@github.com:iljarotar/synth.git
 ```
 cd synth
 go install
-```
-
-### Download the binary
-
-<small>Note: Currently binaries are only available for linux amd64.</small>
-
-1. Download the binary from the [releases](https://github.com/iljarotar/synth/releases) page
-2. Make it executable
-
-```
-chmod +x synth_linux_amd64
-mv synth_linux_amd64 <SOMEWHERE_INSIDE_YOUR_PATH>/synth
 ```
 
 ---
@@ -82,6 +68,8 @@ synth -f examples/a-major.yaml
 
 More examples can be found [here](https://github.com/iljarotar/synth-patches).
 
+---
+
 ## Writing a patch file
 
 The data types of a patch file are the following
@@ -114,7 +102,7 @@ The data types of a patch file are the following
 | InvertedSawtooth |
 | Noise            |
 
-<small>Note: Noise will not be affected by filters or frequency</small>
+Note: Noise will not be affected by filters or frequency
 
 | Filter |        |                                            |
 | ------ | ------ | ------------------------------------------ |
@@ -125,7 +113,7 @@ The data types of a patch file are the following
 | vol    | Param  | volume of unfiltered signal                |
 | ramp   | Float  | length of the linear ramp from cutoff to 0 |
 
-<small>Note: All filters are bandpass filters. To create a highpass or lowpass filter just place one of the cutoffs outside of the audible range.</small>
+Note: All filters are bandpass filters. To create a highpass or lowpass filter just place one of the cutoffs outside of the audible range.
 
 | Param  |               |                                            |
 | ------ | ------------- | ------------------------------------------ |
