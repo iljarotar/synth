@@ -28,8 +28,6 @@ cd synth
 go install
 ```
 
----
-
 ## Usage
 
 ### How it works
@@ -67,8 +65,6 @@ synth -f examples/a-major.yaml
 ```
 
 More examples can be found [here](https://github.com/iljarotar/synth-patches).
-
----
 
 ## Writing a patch file
 
