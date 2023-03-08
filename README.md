@@ -68,7 +68,7 @@ More examples can be found [here](https://github.com/iljarotar/synth-patches).
 
 ## Writing a patch file
 
-The data types of a patch file are the following
+### Data types
 
 | Synth       |                   |                                                            |
 | ----------- | ----------------- | ---------------------------------------------------------- |
@@ -118,4 +118,55 @@ Note: All filters are bandpass filters. To create a highpass or lowpass filter j
 | mod    | String [0..*] | names of modulator oscillators             |
 | modamp | Float         | amplitude of the modulation in range [0,1] |
 
-Check out the examples in the `examples` directory to see how these types are expressed in the `yaml` format.
+### Structure of a patch file
+
+```yaml
+vol: 1
+out:
+oscillators:
+  - name:
+    type:
+    freq:
+    amp:
+      val:
+      mod:
+      modamp:
+    pan:
+      val:
+      mod:
+      modamp:
+    phase:
+      val:
+      mod:
+      modamp:
+    filters:
+
+filters:
+  - name:
+    low:
+      val:
+      mod:
+      modamp:
+    high:
+      val:
+      mod:
+      modamp:
+    vol:
+      val:
+      mod:
+      modamp:
+    ramp:
+```
+
+Most of the fields are optional. A simple 440hz sine wave would look like this:
+
+```yaml
+vol: 1
+out: [osc]
+oscillators:
+  - name: osc
+    type: Sine
+    freq: [440]
+    amp:
+      val: 1
+```
