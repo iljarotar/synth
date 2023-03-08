@@ -1,4 +1,4 @@
-vol: 0.7
+vol: 1
 out: [chord, noise]
 oscillators:
   - name: noise
@@ -6,49 +6,51 @@ oscillators:
     amp:
       val: 0.01
       mod: [amp-mod]
+      modamp: 0.01
     pan:
       mod: [pan-mod]
+      modamp: 1
 
   - name: chord
     type: Sine
     freq: [220, 275, 330, 415]
     amp:
-      val: 0.5
+      val: 1
     phase:
       mod: [pm]
+      modamp: 0.2
     filters: [f1]
-    pan:
-      val: -0.6
 
   - name: f1-mod
     type: Sine
     freq: [0.3]
     amp:
-      val: 90
+      val: 1
 
   - name: amp-mod
     type: Sine
     freq: [0.13]
     amp:
-      val: 0.01
+      val: 1
 
   - name: pm
     type: Sine
-    freq: [1.5]
+    freq: [1.7]
     amp:
-      val: 0.0003
+      val: 1
 
   - name: pan-mod
     type: Sine
     freq: [0.1]
     amp:
-      val: 2
+      val: 1
 
 filters:
   - name: f1
     high:
-      val: 350
+      val: 300
       mod: [f1-mod]
+      modamp: 100
     vol:
-      val: 0.5
+      val: 1
     ramp: 100

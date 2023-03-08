@@ -1,27 +1,58 @@
-# Command line synth in golang
+# Synth
+
+This is a simple modular-like command line synthesizer written in [golang](https://go.dev/).
 
 ## Installation
 
-1. Get the binary [here](https://github.com/iljarotar/synth/releases)
-2. Make it executable with `chmod +x synth`
-3. Put it into some directory inside your `$PATH`
-4. Install [portaudio](http://portaudio.com/)
+<small>Note: I have tested the synth only on a Fedora x86_64 machine. If you encounter any problems during installation or any unexpected behavior in runtime, please let me know.</small>
 
-To listen to an example clone this repository and run
+To run the synthesizer you will need to install [portaudio](http://portaudio.com/docs/v19-doxydocs/tutorial_start.html). On Fedora it is simply
 
-```bash
-synth -f examples/a-major.yaml
 ```
+sudo dnf -y install portaudio
+```
+
+To install the synthesizer you have two options.
+
+### Install with Go
+
+1. Install and setup [Go](https://go.dev/doc/install)
+2. Clone the repository
+
+```
+git clone git@github.com:iljarotar/synth.git
+```
+
+3. Install
+
+```
+cd synth
+go install
+```
+
+### Download the binary
+
+<small>Note: Currently binaries are only available for linux amd64.</small>
+
+1. Download the binary from the [releases](https://github.com/iljarotar/synth/releases) page
+2. Make it executable
+
+```
+chmod +x synth_linux_amd64
+mv synth_linux_amd64 <SOMEWHERE_INSIDE_YOUR_PATH>/synth
+```
+
+---
 
 ## Usage
 
-Starting the synth with
+### How it works
 
-```bash
-synth
-```
+The synth is not meant to be played, but to be programmed by providing a patch file. A patch is a `yaml` file, that tells the synth, which oscillators, filters, etc. should be created and how they should be connected. When you tell the synth to load a file, if will start playing immediately. During playback a hot reload is possible, so if you change and save the patch file, it will be applied instantly. But the transition will be audible, that's why it isn't meant to be "played".
 
-outputs
+### Command line interface
+
+Type `synth` and you should get an output like this
 
 ```
 command line synthesizer
@@ -32,127 +63,75 @@ Usage:
   synth [flags]
 
 Flags:
-  -f, --file string          specify which file to load
+  -d, --duration string      duration in seconds. if omitted playback will continue until stopped manually (default "0")
+      --fade-in string       length of the fade-in in seconds (default "1")
+      --fade-out string      length of the fade-out in seconds (default "1")
+  -f, --file string          path to your patch file
   -h, --help                 print help
-  -s, --sample-rate string   specify sample rate
+  -o, --out string           if provided recording will be written to the given file
+  -s, --sample-rate string   sample rate (default "44100")
 ```
 
-Loading a file with
+To listen to an example run
 
-```bash
-synth -f <PATH_TO_YAML_FILE>
+```
+git clone git@github.com:iljarotar/synth.git
+cd synth
+synth -f examples/a-major.yaml
 ```
 
-starts playing the file, if the format is correct. If you change and save the file, while the synth is running, it will instantly reload the patch.
+More examples can be found [here](https://github.com/iljarotar/synth-patches).
 
-Optionally you can pass a sample rate
+## Writing a patch file
 
-```bash
-synth -f <PATH_TO_YAML_FILE> -s 44100
-```
+The data types of a patch file are the following
 
-44100 Hz is the default sample rate. 1000 Hz is the minimum.
+| Synth       |                   |                                                            |
+| ----------- | ----------------- | ---------------------------------------------------------- |
+| Field       | Type              | Description                                                |
+| vol         | Float             | main volume in range [0,1]                                 |
+| out         | String [0..*]     | names of the oscillators that will be sent to the speakers |
+| oscillators | Oscillator [0..*] | all oscillators                                            |
+| filters     | Filter [0..*]     | all filters                                                |
 
----
+| Oscillator |                |                                           |
+| ---------- | -------------- | ----------------------------------------- |
+| Field      | Type           | Description                               |
+| name       | String         | should be unique in the scope of the file |
+| type       | OscillatorType | wave form or noise                        |
+| freq       | Float [0..*]   | frequencies in range [0,20000]            |
+| amp        | Param          | amplitude in range [0,1]                  |
+| phase      | Param          | phase in range [-1,1]                     |
+| filters    | String [0..*]  | names of filters to be applied            |
+| pan        | Param          | stereo balance in range [-1,1]            |
 
-## Creating a patch
+| OscillatorType   |
+| ---------------- |
+| Sine             |
+| Triangle         |
+| Square           |
+| Sawtooth         |
+| InvertedSawtooth |
+| Noise            |
 
-The basic structure of a patch looks like this
+<small>Note: Noise will not be affected by filters or frequency</small>
 
-```yaml
-vol: # should not exceed 1
-out: # list of oscillators
-oscillators:
-  - name: # choose any name
-    type: # oscillator type
-    freq: # list of frequencies
-    pan:
-      val: # initial pan in the interval [-1;1]
-      mod: # list of oscillators
-    amp:
-      val: # amplitude value (should not exceed 1)
-      mod: # list of oscillators
-    phase:
-      val: # initial phase shift
-      mod: # list of oscillators
-    filters: # list of filters
+| Filter |        |                                            |
+| ------ | ------ | ------------------------------------------ |
+| Field  | Type   | Description                                |
+| name   | String | should be unique in the scope of the file  |
+| low    | Param  | low frequency cutoff                       |
+| high   | Param  | high frequency cutoff                      |
+| vol    | Param  | volume of unfiltered signal                |
+| ramp   | Float  | length of the linear ramp from cutoff to 0 |
 
-  # add as many oscillators as you need here
+<small>Note: All filters are bandpass filters. To create a highpass or lowpass filter just place one of the cutoffs outside of the audible range.</small>
 
-filters:
-  - name: # choose any name
-    ramp: # length of linear ramp
-    low:
-      val: # lower frequency limit
-      mod: # list of oscillators
-    high:
-      val: # higher frequency limit
-      mod: #list of oscillators
-    vol:
-      val: # volume of frequencies between low and high
-      mod: # list of oscillators
+| Param  |               |                                            |
+| ------ | ------------- | ------------------------------------------ |
+| Field  | Type          | Description                                |
+| val    | Float         | initial value of the respective param      |
+| mod    | String [0..*] | names of modulator oscillators             |
+| modamp | Float         | amplitude of the modulation in range [0,1] |
 
-
-  # add as many filters as you need here
-```
-
-### Synth
-
-The `out` parameter is a list of oscillators, that will be sent to the speaker.
-
-### Oscillators
-
-Possible oscillator types are  
-`Sine`  
-`Square`  
-`Triangle`  
-`Sawtooth`  
-`InvertedSawtooth`  
-`Noise`
-
-Stereo panning  
-`-1` signal will be on left channel only  
-`1` signal will be on right channel only
-
-Everything in between will place the signal somewhere between the left and the right channel according to the ratio.
-
-### Filters
-
-All Filters are band pass filters with a frequency range between `low` and `high`.
-
-### Examples
-
-Most of the parameters are optional. A very simple patch may look like this
-
-```yaml
-volume: 1
-out: [my-oscillator]
-oscillators:
-  - name: my-oscillator
-    type: Sine
-    freq: [440]
-    amp:
-      val: 1
-```
-
-### Modulation
-
-The `mod` field of the `amp`, `phase`, `pan`, `low`, `high` or `vol` parameters is a list of oscillators, that will modulate that respective paramter. Here is an example of a tremolo effect.
-
-```yaml
-volume: 1
-out: [my-oscillator]
-oscillators:
-  - name: my-oscillator
-    type: Sine
-    freq: [440]
-    amp:
-      val: 0.5
-      mod: [modulator]
-
-  - name: modulator
-    type: Sine
-    freq: [4]
-    amp:
-      val: 0.1
-```
+Check out the examples in the examples directory to see how these types are expressed in the `yaml` format.

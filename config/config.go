@@ -1,17 +1,16 @@
 package config
 
-const defaultSampleRate = 44100
-
 type config struct {
-	sampleRate float64
+	SampleRate      float64
+	FadeIn, FadeOut float64
+	Duration        float64
 }
 
-var Instance = config{sampleRate: defaultSampleRate}
-
-func (c *config) SetSampleRate(sampleRate float64) {
-	c.sampleRate = sampleRate
+var Default = config{
+	SampleRate: 44100,
+	FadeIn:     1,
+	FadeOut:    1,
+	Duration:   0,
 }
 
-func (c *config) SampleRate() float64 {
-	return c.sampleRate
-}
+var Config = config{}

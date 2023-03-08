@@ -1,18 +1,19 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
+	"math"
 	"os"
-	"strconv"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/iljarotar/synth/audio"
-	"github.com/iljarotar/synth/config"
+	c "github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/control"
-	l "github.com/iljarotar/synth/loader"
-	"github.com/iljarotar/synth/screen"
-	s "github.com/iljarotar/synth/synth"
+	f "github.com/iljarotar/synth/file"
+	"github.com/iljarotar/synth/ui"
+	"github.com/iljarotar/synth/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -25,22 +26,50 @@ documentation and usage: https://github.com/iljarotar/synth`,
 	Run: func(cmd *cobra.Command, args []string) {
 		file, _ := cmd.Flags().GetString("file")
 		s, _ := cmd.Flags().GetString("sample-rate")
+		in, _ := cmd.Flags().GetString("fade-in")
+		out, _ := cmd.Flags().GetString("fade-out")
+		d, _ := cmd.Flags().GetString("duration")
+		record, _ := cmd.Flags().GetString("out")
 
 		if file == "" {
 			cmd.Help()
 			return
 		}
 
-		if s != "" {
-			sRate, err := parseSampleRate(s)
-			if err != nil {
-				fmt.Println("could not parse sample rate. please provide an integer")
-				return
-			}
-			config.Instance.SetSampleRate(sRate)
+		sampleRate, err := utils.ParseInt(s)
+		if err != nil {
+			fmt.Println("could not parse sample rate:", err)
+			return
+		}
+		c.Config.SampleRate = float64(sampleRate)
+
+		fadeIn, err := utils.ParseFloat(in)
+		if err != nil {
+			fmt.Println("could not parse fade-in:", err)
+			return
+		}
+		c.Config.FadeIn = fadeIn
+
+		fadeOut, err := utils.ParseFloat(out)
+		if err != nil {
+			fmt.Println("could not parse fade-out:", err)
+			return
+		}
+		c.Config.FadeOut = fadeOut
+
+		duration, err := utils.ParseFloat(d)
+		if err != nil {
+			fmt.Println("could not parse duration:", err)
+			return
 		}
 
-		err := start(file)
+		if duration*float64(sampleRate) > math.MaxInt32 {
+			fmt.Printf("duration too long. maximum duration is floor(%v / samplerate)\n", math.MaxInt32)
+			return
+		}
+		c.Config.Duration = duration
+
+		err = start(file, record)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -55,21 +84,30 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().StringP("file", "f", "", "specify which file to load")
+	sampleRate := fmt.Sprintf("%v", c.Default.SampleRate)
+	fadeIn := fmt.Sprintf("%v", c.Default.FadeIn)
+	fadeOut := fmt.Sprintf("%v", c.Default.FadeOut)
+	duration := fmt.Sprintf("%v", c.Config.Duration)
+
+	rootCmd.Flags().StringP("file", "f", "", "path to your patch file")
+	rootCmd.Flags().StringP("out", "o", "", "if provided recording will be written to the given file")
 	rootCmd.Flags().BoolP("help", "h", false, "print help")
-	rootCmd.Flags().StringP("sample-rate", "s", "", "specify sample rate")
+	rootCmd.Flags().StringP("sample-rate", "s", sampleRate, "sample rate")
+	rootCmd.Flags().StringP("duration", "d", duration, "duration in seconds. if omitted playback will continue until stopped manually")
+	rootCmd.Flags().String("fade-in", fadeIn, "length of the fade-in in seconds")
+	rootCmd.Flags().String("fade-out", fadeOut, "length of the fade-out in seconds")
 }
 
-func start(file string) error {
+func start(file, record string) error {
 	err := audio.Init()
 	if err != nil {
 		return err
 	}
 	defer audio.Terminate()
-	screen.Clear()
+	ui.Clear()
 
-	input := make(chan struct{ Left, Right float32 })
-	ctx, err := audio.NewContext(input, config.Instance.SampleRate())
+	speakerIn := make(chan struct{ Left, Right float32 })
+	ctx, err := audio.NewContext(speakerIn, c.Config.SampleRate)
 	if err != nil {
 		return err
 	}
@@ -80,39 +118,52 @@ func start(file string) error {
 		return err
 	}
 
-	ctl := control.NewControl(input)
-	ctl.Start()
+	recIn := make(chan struct{ Left, Right float32 })
+	rec := f.NewRecorder(recIn, speakerIn, record)
+	go rec.StartRecording()
+
+	exit := make(chan bool)
+	ctl := control.NewControl(recIn, exit)
+	defer ctl.Close()
 
 	log := make(chan string)
-	logger := screen.NewLogger(log)
+	logger := ui.NewLogger(log)
 
-	loader, err := l.NewLoader(ctl, logger)
+	loader, err := f.NewLoader(ctl, logger, file)
 	if err != nil {
 		return err
 	}
 	defer loader.Close()
 
-	var synth s.Synth
-	err = loader.Load(file, &synth)
+	err = loader.Load()
 	if err != nil {
 		return err
 	}
 
-	done := make(chan bool)
-	s := screen.NewScreen(logger, done)
-	go s.Enter()
-	<-done
+	quit := make(chan bool)
+	u := ui.NewUI(logger, quit)
+	go u.Enter(exit)
 
-	ctl.Stop()
-	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
-	return nil
-}
+	sig := make(chan os.Signal, 2)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	interrupt := make(chan bool)
+	go catchInterrupt(interrupt, sig)
+	ctl.Start(c.Config.FadeIn)
 
-func parseSampleRate(input string) (float64, error) {
-	sampleRate, err := strconv.Atoi(input)
-	if err != nil {
-		return 0, errors.New("could not parse sample rate. please provide an integer")
+	select {
+	case <-quit:
+		ctl.Stop(c.Config.FadeOut)
+	case <-interrupt:
+		ctl.Stop(0.05)
 	}
 
-	return float64(sampleRate), nil
+	err = rec.StopRecording()
+	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
+	ui.Clear()
+	return err
+}
+
+func catchInterrupt(stop chan bool, sig chan os.Signal) {
+	<-sig
+	stop <- true
 }

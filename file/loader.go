@@ -1,4 +1,4 @@
-package loader
+package file
 
 import (
 	"os"
@@ -7,30 +7,34 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/iljarotar/synth/control"
-	"github.com/iljarotar/synth/screen"
-	"github.com/iljarotar/synth/synth"
 	s "github.com/iljarotar/synth/synth"
+	"github.com/iljarotar/synth/ui"
 	"gopkg.in/yaml.v2"
 )
 
 type Loader struct {
-	currentFile string
-	watcher     *fsnotify.Watcher
-	watch       *bool
-	lastLoaded  time.Time
-	ctl         *control.Control
-	logger      *screen.Logger
+	watcher    *fsnotify.Watcher
+	watch      *bool
+	lastLoaded time.Time
+	ctl        *control.Control
+	logger     *ui.Logger
+	file       string
 }
 
-func NewLoader(ctl *control.Control, log *screen.Logger) (*Loader, error) {
+func NewLoader(ctl *control.Control, log *ui.Logger, file string) (*Loader, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
 	}
 
 	watch := true
-	l := Loader{watcher: watcher, watch: &watch, ctl: ctl, logger: log}
+	l := Loader{watcher: watcher, watch: &watch, ctl: ctl, logger: log, file: file}
 	go l.StartWatching()
+
+	err = l.Watch(l.file)
+	if err != nil {
+		return nil, err
+	}
 
 	return &l, nil
 }
@@ -40,31 +44,21 @@ func (l *Loader) Close() error {
 	return l.watcher.Close()
 }
 
-func (l *Loader) Load(file string, synth *s.Synth) error {
-	// to prevent clipping when write event is sent twice for the same change
-	if time.Now().Sub(l.lastLoaded) < 500*time.Millisecond {
-		return nil
-	}
-
-	data, err := os.ReadFile(file)
+func (l *Loader) Load() error {
+	data, err := os.ReadFile(l.file)
 	if err != nil {
 		return err
 	}
 
-	err = l.Watch(file)
+	var synth s.Synth
+	err = yaml.Unmarshal(data, &synth)
 	if err != nil {
 		return err
 	}
 
-	err = yaml.Unmarshal(data, synth)
-	if err != nil {
-		return err
-	}
+	l.ctl.LoadSynth(synth)
 
 	l.lastLoaded = time.Now()
-	l.currentFile = file
-	l.ctl.LoadSynth(*synth)
-
 	return nil
 }
 
@@ -87,18 +81,22 @@ func (l *Loader) StartWatching() {
 
 			time.Sleep(time.Millisecond * 50) // to prevent occasional empty file loading
 
-			if !event.Has(fsnotify.Rename) {
-				var s synth.Synth
-				err := l.Load(l.currentFile, &s)
+			// check last loaded time to prevent occasional double loading
+			if !event.Has(fsnotify.Rename) && time.Now().Sub(l.lastLoaded) > 500*time.Millisecond {
+				l.ctl.Stop(0.01)
+
+				err := l.Load()
 				if err != nil {
 					l.logger.Log("could not load file. error: " + err.Error())
 				}
+
+				l.ctl.Start(0.01)
 			}
 		case err, ok := <-l.watcher.Errors:
 			if !ok {
 				return
 			}
-			l.logger.Log("could not load file. error: " + err.Error())
+			l.logger.Log("an error occurred. please restart synth. error: " + err.Error())
 		}
 	}
 }
