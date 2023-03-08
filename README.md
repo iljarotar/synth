@@ -47,12 +47,12 @@ Usage:
   synth [flags]
 
 Flags:
-  -d, --duration string      duration in seconds excluding fade in and out (default "0")
-      --fade-in string       length of the fade-in in seconds (default "1")
-      --fade-out string      length of the fade-out in seconds (default "1")
+  -d, --duration string      duration in seconds excluding fade-in and fade-out (default "0")
+      --fade-in string       fade-in in seconds (default "1")
+      --fade-out string      fade-out in seconds (default "1")
   -f, --file string          path to your patch file
   -h, --help                 print help
-  -o, --out string           if provided recording will be written to the given file
+  -o, --out string           if provided, a recording will be written to the given file
   -s, --sample-rate string   sample rate (default "44100")
 ```
 
