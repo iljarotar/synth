@@ -37,13 +37,11 @@ func (c *Control) Stop(fadeOut float64) {
 }
 
 func (c *Control) Start(fadeIn float64) {
-	if config.Config.Duration > 0 {
-		go c.watchDuration()
-	}
+	go c.watchDuration()
 	c.synth.FadeIn(fadeIn)
 }
 
 func (c *Control) watchDuration() {
-	time.Sleep(time.Duration(config.Config.Duration-config.Config.FadeOut) * time.Second)
+	time.Sleep(time.Duration(config.Config.Duration) * time.Second)
 	c.exit <- true
 }

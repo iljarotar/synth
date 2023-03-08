@@ -93,7 +93,7 @@ func init() {
 	rootCmd.Flags().StringP("out", "o", "", "if provided recording will be written to the given file")
 	rootCmd.Flags().BoolP("help", "h", false, "print help")
 	rootCmd.Flags().StringP("sample-rate", "s", sampleRate, "sample rate")
-	rootCmd.Flags().StringP("duration", "d", duration, "duration in seconds. if omitted playback will continue until stopped manually")
+	rootCmd.Flags().StringP("duration", "d", duration, "duration in seconds excluding fade in and out")
 	rootCmd.Flags().String("fade-in", fadeIn, "length of the fade-in in seconds")
 	rootCmd.Flags().String("fade-out", fadeOut, "length of the fade-out in seconds")
 }

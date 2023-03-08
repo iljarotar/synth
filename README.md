@@ -63,7 +63,7 @@ Usage:
   synth [flags]
 
 Flags:
-  -d, --duration string      duration in seconds. if omitted playback will continue until stopped manually (default "0")
+  -d, --duration string      duration in seconds excluding fade in and out (default "0")
       --fade-in string       length of the fade-in in seconds (default "1")
       --fade-out string      length of the fade-out in seconds (default "1")
   -f, --file string          path to your patch file

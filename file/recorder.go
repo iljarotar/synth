@@ -21,10 +21,9 @@ func (r *Recorder) StartRecording() {
 	var i int
 	for y := range r.in {
 		if len(r.buffer) < i+1 {
-			r.buffer = append(r.buffer, [2]float32{y.Left, y.Right})
-		} else {
-			r.buffer[i] = [2]float32{y.Left, y.Right}
+			return
 		}
+		r.buffer[i] = [2]float32{y.Left, y.Right}
 		r.out <- y
 		i++
 	}
