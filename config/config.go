@@ -15,7 +15,7 @@ var Default = config{
 	SampleRate: 44100,
 	FadeIn:     1,
 	FadeOut:    1,
-	Duration:   0,
+	Duration:   -1,
 }
 
 var Config = config{}

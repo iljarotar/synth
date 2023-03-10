@@ -86,13 +86,13 @@ func init() {
 	sampleRate := fmt.Sprintf("%v", c.Default.SampleRate)
 	fadeIn := fmt.Sprintf("%v", c.Default.FadeIn)
 	fadeOut := fmt.Sprintf("%v", c.Default.FadeOut)
-	duration := fmt.Sprintf("%v", c.Config.Duration)
+	duration := fmt.Sprintf("%v", c.Default.Duration)
 
 	rootCmd.Flags().StringP("file", "f", "", "path to your patch file")
-	rootCmd.Flags().StringP("out", "o", "", "if provided, a recording will be written to the given file")
+	rootCmd.Flags().StringP("out", "o", "", "if provided, a .wav file with the given name will be recorded")
 	rootCmd.Flags().BoolP("help", "h", false, "print help")
 	rootCmd.Flags().StringP("sample-rate", "s", sampleRate, "sample rate")
-	rootCmd.Flags().StringP("duration", "d", duration, "duration in seconds excluding fade-in and fade-out")
+	rootCmd.Flags().StringP("duration", "d", duration, "duration in seconds excluding fade-in and fade-out. a negative duration will cause the synth to play until stopped manually")
 	rootCmd.Flags().String("fade-in", fadeIn, "fade-in in seconds")
 	rootCmd.Flags().String("fade-out", fadeOut, "fade-out in seconds")
 }

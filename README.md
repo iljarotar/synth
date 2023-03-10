@@ -47,12 +47,12 @@ Usage:
   synth [flags]
 
 Flags:
-  -d, --duration string      duration in seconds excluding fade-in and fade-out (default "0")
+  -d, --duration string      duration in seconds excluding fade-in and fade-out. a negative duration will cause the synth to play until stopped manually (default "-1")
       --fade-in string       fade-in in seconds (default "1")
       --fade-out string      fade-out in seconds (default "1")
   -f, --file string          path to your patch file
   -h, --help                 print help
-  -o, --out string           if provided, a recording will be written to the given file
+  -o, --out string           if provided, a .wav file with the given name will be recorded
   -s, --sample-rate string   sample rate (default "44100")
 ```
 
@@ -65,6 +65,8 @@ synth -f examples/a-major.yaml
 ```
 
 More examples can be found [here](https://github.com/iljarotar/synth-patches).
+
+Note: If you want to record the output, you must specify a non-negative duration. Otherwise you will get am empty .wav file.
 
 ## Writing a patch file
 
