@@ -9,6 +9,7 @@ import (
 	"github.com/iljarotar/synth/control"
 	s "github.com/iljarotar/synth/synth"
 	"github.com/iljarotar/synth/ui"
+	"golang.org/x/exp/slices"
 	"gopkg.in/yaml.v2"
 )
 
@@ -31,11 +32,6 @@ func NewLoader(ctl *control.Control, log *ui.Logger, file string) (*Loader, erro
 	l := Loader{watcher: watcher, watch: &watch, ctl: ctl, logger: log, file: file}
 	go l.StartWatching()
 
-	err = l.Watch(l.file)
-	if err != nil {
-		return nil, err
-	}
-
 	return &l, nil
 }
 
@@ -45,6 +41,11 @@ func (l *Loader) Close() error {
 }
 
 func (l *Loader) Load() error {
+	err := l.Watch(l.file)
+	if err != nil {
+		return err
+	}
+
 	data, err := os.ReadFile(l.file)
 	if err != nil {
 		return err
@@ -66,6 +67,10 @@ func (l *Loader) Watch(file string) error {
 	filePath, err := filepath.Abs(file)
 	if err != nil {
 		return err
+	}
+
+	if slices.Contains(l.watcher.WatchList(), file) {
+		l.watcher.Remove(file)
 	}
 
 	return l.watcher.Add(filePath)
