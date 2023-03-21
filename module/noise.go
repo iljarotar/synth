@@ -20,7 +20,7 @@ type Noise struct {
 func (n *Noise) Initialize() {
 	rand.Seed(time.Now().Unix())
 	n.limitParams()
-	n.Current = stereo(noise(), n.pan)
+	n.Current = stereo(noise()*n.Amp.Val, n.pan)
 }
 
 func (n *Noise) Next(oscMap OscillatorsMap) {
@@ -30,15 +30,14 @@ func (n *Noise) Next(oscMap OscillatorsMap) {
 }
 
 func (n *Noise) limitParams() {
-	n.Amp.ModAmp = utils.Limit(n.Amp.ModAmp, ampModLimits.low, ampModLimits.high)
+	n.Amp.ModAmp = utils.Limit(n.Amp.ModAmp, modLimits.low, modLimits.high)
 	n.Amp.Val = utils.Limit(n.Amp.Val, ampLimits.low, ampLimits.high)
 
-	n.Pan.ModAmp = utils.Limit(n.Pan.ModAmp, panModLimits.low, panModLimits.high)
+	n.Pan.ModAmp = utils.Limit(n.Pan.ModAmp, modLimits.low, modLimits.high)
 	n.Pan.Val = utils.Limit(n.Pan.Val, panLimits.low, panLimits.high)
 	n.pan = n.Pan.Val
 }
 
 func noise() float64 {
-	y := rand.Float64()*2 - 1
-	return y
+	return rand.Float64()*2 - 1
 }
