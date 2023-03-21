@@ -16,7 +16,6 @@ const (
 	Sine             OscillatorType = "Sine"
 	Square           OscillatorType = "Square"
 	Triangle         OscillatorType = "Triangle"
-	Noise            OscillatorType = "Noise"
 )
 
 type limits struct {
@@ -36,7 +35,7 @@ type output struct {
 	Mono, Left, Right float64
 }
 
-type Oscillators map[string]*Oscillator
+type OscillatorsMap map[string]*Oscillator
 
 type Oscillator struct {
 	Name    string         `yaml:"name"`
@@ -52,29 +51,24 @@ type Oscillator struct {
 }
 
 func (o *Oscillator) Initialize() {
-	o.signal = NewSignalFunc(o.Type)
-	o.limit()
+	o.signal = newSignalFunc(o.Type)
+	o.limitParams()
 
 	var y float64
 	for _, f := range o.Freq {
-		y += o.partial(f, o.Phase.Val, o.Amp.Val, make(Filters))
+		y += o.partial(f, o.Phase.Val, o.Amp.Val, make(FiltersMap))
 	}
 
 	if l := len(o.Freq); l > 0 {
 		y /= float64(l)
 	}
 
-	o.Current = o.stereo(y)
+	o.Current = stereo(y, o.pan)
 }
 
-func (o *Oscillator) Next(oscMap Oscillators, filtersMap Filters, phase float64) {
+func (o *Oscillator) Next(oscMap OscillatorsMap, filtersMap FiltersMap, phase float64) {
 	o.pan = utils.Limit(o.Pan.Val+modulate(o.Pan.Mod, oscMap)*o.Pan.ModAmp, panLimits.low, panLimits.high)
 	amp := utils.Limit(o.Amp.Val+modulate(o.Amp.Mod, oscMap)*o.Amp.ModAmp, ampLimits.low, ampLimits.high)
-
-	if o.Type == Noise {
-		o.Current = o.stereo((o.signal(0) * amp)) // noise doesn't care about phase
-		return
-	}
 
 	// phase shift should not be limitted
 	shift := o.Phase.Val + modulate(o.Phase.Mod, oscMap)*o.Phase.ModAmp
@@ -90,10 +84,10 @@ func (o *Oscillator) Next(oscMap Oscillators, filtersMap Filters, phase float64)
 		y /= float64(l)
 	}
 
-	o.Current = o.stereo(y)
+	o.Current = stereo(y, o.pan)
 }
 
-func (o *Oscillator) limit() {
+func (o *Oscillator) limitParams() {
 	o.Amp.ModAmp = utils.Limit(o.Amp.ModAmp, ampModLimits.low, ampModLimits.high)
 	o.Amp.Val = utils.Limit(o.Amp.Val, ampLimits.low, ampLimits.high)
 
@@ -109,7 +103,7 @@ func (o *Oscillator) limit() {
 	}
 }
 
-func modulate(modulators []string, oscMap Oscillators) float64 {
+func modulate(modulators []string, oscMap OscillatorsMap) float64 {
 	var y float64
 
 	for _, m := range modulators {
@@ -122,7 +116,7 @@ func modulate(modulators []string, oscMap Oscillators) float64 {
 	return y
 }
 
-func (o *Oscillator) applyFilters(filtersMap Filters, freq float64) float64 {
+func (o *Oscillator) applyFilters(filtersMap FiltersMap, freq float64) float64 {
 	var max float64
 
 	for _, f := range o.Filters {
@@ -140,7 +134,7 @@ func (o *Oscillator) applyFilters(filtersMap Filters, freq float64) float64 {
 	return max
 }
 
-func (o *Oscillator) partial(freq, phase, amp float64, filtersMap Filters) float64 {
+func (o *Oscillator) partial(freq, phase, amp float64, filtersMap FiltersMap) float64 {
 	a := amp
 
 	if len(o.Filters) > 0 {
@@ -150,12 +144,12 @@ func (o *Oscillator) partial(freq, phase, amp float64, filtersMap Filters) float
 	return o.signal(freq*phase) * a
 }
 
-func (o *Oscillator) stereo(x float64) output {
+func stereo(x, pan float64) output {
 	out := output{}
-	pan := utils.Percentage(o.pan, -1, 1)
+	p := utils.Percentage(pan, -1, 1)
 	out.Mono = x
-	out.Right = x * pan
-	out.Left = x * (1 - pan)
+	out.Right = x * p
+	out.Left = x * (1 - p)
 
 	return out
 }

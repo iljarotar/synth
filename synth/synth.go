@@ -13,9 +13,11 @@ type Synth struct {
 	Out                []string             `yaml:"out"`
 	Oscillators        []*module.Oscillator `yaml:"oscillators"`
 	Filters            []*module.Filter     `yaml:"filters"`
+	Noise              []*module.Noise      `yaml:"noise"`
 	Phase              float64
-	oscMap             module.Oscillators
-	filtersMap         module.Filters
+	oscMap             module.OscillatorsMap
+	filtersMap         module.FiltersMap
+	noiseMap           module.NoiseMap
 	step, volumeMemory float64
 	next               chan bool
 }
@@ -35,8 +37,13 @@ func (s *Synth) Initialize() {
 		f.Initialize()
 	}
 
+	for _, n := range s.Noise {
+		n.Initialize()
+	}
+
 	s.makeOscillatorsMap()
 	s.makeFiltersMap()
+	s.makeNoiseMap()
 }
 
 func (s *Synth) Play(input chan<- struct{ Left, Right float32 }) {
@@ -107,6 +114,12 @@ func (s *Synth) getCurrentValue() (left, right float64) {
 			left += osc.Current.Left
 			right += osc.Current.Right
 		}
+
+		noise, ok := s.noiseMap[o]
+		if ok {
+			left += noise.Current.Left
+			right += noise.Current.Right
+		}
 	}
 
 	return left, right
@@ -122,11 +135,15 @@ func (s *Synth) updateCurrentValues() {
 		f.Next(s.oscMap)
 	}
 
+	for _, n := range s.Noise {
+		n.Next(s.oscMap)
+	}
+
 	s.Phase += s.step
 }
 
 func (s *Synth) makeOscillatorsMap() {
-	oscMap := make(module.Oscillators)
+	oscMap := make(module.OscillatorsMap)
 
 	for _, osc := range s.Oscillators {
 		oscMap[osc.Name] = osc
@@ -136,13 +153,23 @@ func (s *Synth) makeOscillatorsMap() {
 }
 
 func (s *Synth) makeFiltersMap() {
-	filtersMap := make(module.Filters)
+	filtersMap := make(module.FiltersMap)
 
 	for _, f := range s.Filters {
 		filtersMap[f.Name] = f
 	}
 
 	s.filtersMap = filtersMap
+}
+
+func (s *Synth) makeNoiseMap() {
+	noiseMap := make(module.NoiseMap)
+
+	for _, noise := range s.Noise {
+		noiseMap[noise.Name] = noise
+	}
+
+	s.noiseMap = noiseMap
 }
 
 func secondsToStep(seconds, delta float64) float64 {

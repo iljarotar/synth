@@ -1,8 +1,7 @@
 vol: 1
 out: [chord, noise]
-oscillators:
+noise:
   - name: noise
-    type: Noise
     amp:
       val: 0.01
       mod: [amp-mod]
@@ -11,6 +10,7 @@ oscillators:
       mod: [pan-mod]
       modamp: 1
 
+oscillators:
   - name: chord
     type: Sine
     freq: [220, 275, 330, 415]

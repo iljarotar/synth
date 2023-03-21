@@ -7,7 +7,7 @@ var (
 	volumeLimits limits = limits{low: 0, high: 1}
 )
 
-type Filters map[string]*Filter
+type FiltersMap map[string]*Filter
 
 type Filter struct {
 	Name           string  `yaml:"name"`
@@ -31,7 +31,7 @@ func (f *Filter) Initialize() {
 	f.high = f.High.Val
 }
 
-func (f *Filter) Next(oscMap Oscillators) {
+func (f *Filter) Next(oscMap OscillatorsMap) {
 	f.low = utils.Limit(f.Low.Val+modulate(f.Low.Mod, oscMap)*f.Low.ModAmp, cutoffLimits.low, cutoffLimits.high)
 	f.high = utils.Limit(f.High.Val+modulate(f.High.Mod, oscMap)*f.High.ModAmp, cutoffLimits.low, cutoffLimits.high)
 	f.vol = utils.Limit(f.Volume.Val+modulate(f.Volume.Mod, oscMap)*f.Volume.ModAmp, volumeLimits.low, volumeLimits.high)

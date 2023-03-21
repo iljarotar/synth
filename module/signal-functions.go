@@ -8,7 +8,7 @@ import (
 
 type SignalFunc func(x float64) float64
 
-func NewSignalFunc(oscType OscillatorType) SignalFunc {
+func newSignalFunc(oscType OscillatorType) SignalFunc {
 	switch oscType {
 	case Sine:
 		return SineSignalFunc()
@@ -20,8 +20,6 @@ func NewSignalFunc(oscType OscillatorType) SignalFunc {
 		return TriangleSignalFunc()
 	case InvertedSawtooth:
 		return InvertedSawtoothSignalFunc()
-	case Noise:
-		return NoiseSignalFunc()
 	default:
 		return NoSignalFunc()
 	}

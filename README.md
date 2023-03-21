@@ -72,19 +72,20 @@ Note: If you want to record the output, you must specify a non-negative duration
 
 ### Data types
 
-| Synth       |                   |                                                            |
-| ----------- | ----------------- | ---------------------------------------------------------- |
-| **Field**   | **Type**          | **Description**                                            |
-| vol         | Float             | main volume in range [0,1]                                 |
-| out         | String [0..*]     | names of the oscillators that will be sent to the speakers |
-| oscillators | Oscillator [0..*] | all oscillators                                            |
-| filters     | Filter [0..*]     | all filters                                                |
+| Synth       |                   |                                                                                     |
+| ----------- | ----------------- | ----------------------------------------------------------------------------------- |
+| **Field**   | **Type**          | **Description**                                                                     |
+| vol         | Float             | main volume in range [0,1]                                                          |
+| out         | String [0..*]     | names of the oscillators and the noise generators that will be sent to the speakers |
+| oscillators | Oscillator [0..*] | all oscillators                                                                     |
+| filters     | Filter [0..*]     | all filters                                                                         |
+| noise       | Noise [0..*]      | all noise generators                                                                |
 
 | Oscillator |                |                                           |
 | ---------- | -------------- | ----------------------------------------- |
 | **Field**  | **Type**       | **Description**                           |
 | name       | String         | should be unique in the scope of the file |
-| type       | OscillatorType | wave form or noise                        |
+| type       | OscillatorType | wave form                                 |
 | freq       | Float [0..*]   | frequencies in range [0,20000]            |
 | amp        | Param          | amplitude in range [0,1]                  |
 | phase      | Param          | phase in range [-1,1]                     |
@@ -98,9 +99,13 @@ Note: If you want to record the output, you must specify a non-negative duration
 | Square           |
 | Sawtooth         |
 | InvertedSawtooth |
-| Noise            |
 
-Note: Noise will not be affected by filters or frequency
+| Noise     |          |                                           |
+| --------- | -------- | ----------------------------------------- |
+| **Field** | **Type** | **Description**                           |
+| name      | String   | should be unique in the scope of the file |
+| amp       | Param    | amplitude in range [0,1]                  |
+| pan       | Param    | stereo balance in range [-1,1]            |
 
 | Filter    |          |                                            |
 | --------- | -------- | ------------------------------------------ |
