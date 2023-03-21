@@ -1,12 +1,17 @@
 # Synth
 
-This is a simple modular-like command line synthesizer written in [golang](https://go.dev/).
+This is a simple modular-like command line synthesizer written in
+[golang](https://go.dev/).
 
 ## Installation
 
-Note: I have tested the synth only on a Fedora x86_64 machine. If you encounter any problems during installation or any unexpected behavior in runtime, please let me know.
+Note: I have tested the synth only on a Fedora x86_64 machine. If you encounter
+any problems during installation or any unexpected behavior in runtime, please
+let me know.
 
-To run the synthesizer you will need to install [portaudio](http://portaudio.com/docs/v19-doxydocs/tutorial_start.html). On Fedora it is simply
+To run the synthesizer you will need to install
+[portaudio](http://portaudio.com/docs/v19-doxydocs/tutorial_start.html). On
+Fedora it is simply
 
 ```
 sudo dnf -y install portaudio
@@ -32,7 +37,13 @@ go install
 
 ### How it works
 
-The synth is not meant to be played, but to be programmed by providing a patch file. A patch is a `yaml` file, that tells the synth, which oscillators, filters, etc. should be created and how they should be connected. When you tell the synth to load a file, if will start playing immediately. During playback a hot reload is possible, so if you change and save the patch file, it will be applied instantly. But the transition will be audible, that's why it isn't meant to be "played".
+The synth is not meant to be played, but to be programmed by providing a patch
+file. A patch is a `yaml` file, that tells the synth, which oscillators,
+filters, etc. should be created and how they should be connected. When you tell
+the synth to load a file, if will start playing immediately. During playback a
+hot reload is possible, so if you change and save the patch file, it will be
+applied instantly. But the transition will be audible, that's why it isn't meant
+to be "played".
 
 ### Command line interface
 
@@ -66,20 +77,21 @@ synth -f examples/a-major.yaml
 
 More examples can be found [here](https://github.com/iljarotar/synth-patches).
 
-Note: If you want to record the output, you must specify a non-negative duration. Otherwise you will get am empty .wav file.
+Note: If you want to record the output, you must specify a non-negative
+duration. Otherwise you will get am empty .wav file.
 
 ## Writing a patch file
 
 ### Data types
 
-| Synth       |                   |                                                                                     |
-| ----------- | ----------------- | ----------------------------------------------------------------------------------- |
-| **Field**   | **Type**          | **Description**                                                                     |
-| vol         | Float             | main volume in range [0,1]                                                          |
-| out         | String [0..*]     | names of the oscillators and the noise generators that will be sent to the speakers |
-| oscillators | Oscillator [0..*] | all oscillators                                                                     |
-| filters     | Filter [0..*]     | all filters                                                                         |
-| noise       | Noise [0..*]      | all noise generators                                                                |
+| Synth       |                   |                                                                                           |
+| ----------- | ----------------- | ----------------------------------------------------------------------------------------- |
+| **Field**   | **Type**          | **Description**                                                                           |
+| vol         | Float             | main volume in range [0,1]                                                                |
+| out         | String [0..*]     | names of all oscillators and noise generators, whose outputs will be sent to the speakers |
+| oscillators | Oscillator [0..*] | all oscillators                                                                           |
+| filters     | Filter [0..*]     | all filters                                                                               |
+| noise       | Noise [0..*]      | all noise generators                                                                      |
 
 | Oscillator |                |                                           |
 | ---------- | -------------- | ----------------------------------------- |
@@ -116,7 +128,8 @@ Note: If you want to record the output, you must specify a non-negative duration
 | vol       | Param    | volume of unfiltered signal                |
 | ramp      | Float    | length of the linear ramp from cutoff to 0 |
 
-Note: All filters are bandpass filters. To create a highpass or a lowpass filter just place one of the cutoffs outside of the audible range.
+Note: All filters are bandpass filters. To create a highpass or a lowpass filter
+just place one of the cutoffs outside of the audible range.
 
 | Param     |               |                                            |
 | --------- | ------------- | ------------------------------------------ |
