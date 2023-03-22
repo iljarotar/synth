@@ -13,11 +13,11 @@ func (t OscillatorType) String() string {
 }
 
 const (
-	Sawtooth         OscillatorType = "Sawtooth"
-	InvertedSawtooth OscillatorType = "InvertedSawtooth"
-	Sine             OscillatorType = "Sine"
-	Square           OscillatorType = "Square"
-	Triangle         OscillatorType = "Triangle"
+	Sawtooth        OscillatorType = "Sawtooth"
+	ReverseSawtooth OscillatorType = "ReverseSawtooth"
+	Sine            OscillatorType = "Sine"
+	Square          OscillatorType = "Square"
+	Triangle        OscillatorType = "Triangle"
 )
 
 type limits struct {
@@ -39,51 +39,54 @@ type output struct {
 type OscillatorsMap map[string]*Oscillator
 
 type Oscillator struct {
-	Name    string         `yaml:"name"`
-	Type    OscillatorType `yaml:"type"`
-	Freq    Param          `yaml:"freq"`
-	Amp     Param          `yaml:"amp"`
-	Phase   float64        `yaml:"phase"`
-	Filters []string       `yaml:"filters"`
-	Pan     Param          `yaml:"pan"`
-	signal  SignalFunc
-	Current output
-	pan     float64
+	Name     string         `yaml:"name"`
+	Type     OscillatorType `yaml:"type"`
+	Freq     Param          `yaml:"freq"`
+	Amp      Param          `yaml:"amp"`
+	Phase    float64        `yaml:"phase"`
+	Filters  []string       `yaml:"filters"`
+	Pan      Param          `yaml:"pan"`
+	signal   SignalFunc
+	Integral SignalFunc
+	Current  output
+	pan, Phi float64
 }
 
 func (o *Oscillator) Initialize() {
 	o.signal = newSignalFunc(o.Type)
+	o.Integral = newIntegralFunc(o.Type)
 	o.limitParams()
 	o.calculateCurrentValue(o.Amp.Val, 0, 0, make(FiltersMap))
 }
 
-func (o *Oscillator) Next(oscMap OscillatorsMap, filtersMap FiltersMap, phase float64) {
+func (o *Oscillator) Next(oscMap OscillatorsMap, filtersMap FiltersMap, x float64) {
 	o.pan = utils.Limit(o.Pan.Val+modulate(o.Pan.Mod, oscMap)*o.Pan.ModAmp, panLimits.low, panLimits.high)
 	amp := utils.Limit(o.Amp.Val+modulate(o.Amp.Mod, oscMap)*o.Amp.ModAmp, ampLimits.low, ampLimits.high)
 	fm := o.fm(oscMap)
-	o.calculateCurrentValue(amp, phase, fm, filtersMap)
+	o.calculateCurrentValue(amp, x, fm, filtersMap)
 }
 
 func (o *Oscillator) fm(oscMap OscillatorsMap) float64 {
 	var y float64
 
-	for _, o := range o.Freq.Mod {
-		osc, ok := oscMap[o]
+	for _, osc := range o.Freq.Mod {
+		mod, ok := oscMap[osc]
 		if ok {
-			y += osc.Current.Mono / osc.Freq.Val
+			y += mod.Integral(mod.Phi) / mod.Freq.Val
 		}
 	}
 
 	return y * o.Freq.ModAmp
 }
 
-func (o *Oscillator) calculateCurrentValue(amp, phase, fm float64, filtersMap FiltersMap) {
+func (o *Oscillator) calculateCurrentValue(amp, x, fm float64, filtersMap FiltersMap) {
 	if len(o.Filters) > 0 {
 		amp *= o.applyFilters(filtersMap, o.Freq.Val)
 	}
 
 	shift := o.Phase / o.Freq.Val
-	y := o.signal(2*math.Pi*o.Freq.Val*(phase+shift)+fm) * amp
+	o.Phi = 2*math.Pi*o.Freq.Val*(x+shift) + fm
+	y := o.signal(o.Phi) * amp
 
 	o.Current = stereo(y, o.pan)
 }

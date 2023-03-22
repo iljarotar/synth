@@ -104,13 +104,13 @@ duration. Otherwise you will get am empty .wav file.
 | filters    | String [0..*]  | names of filters to be applied            |
 | pan        | Param          | stereo balance in range [-1,1]            |
 
-| OscillatorType   |
-| ---------------- |
-| Sine             |
-| Triangle         |
-| Square           |
-| Sawtooth         |
-| InvertedSawtooth |
+| OscillatorType  |
+| --------------- |
+| Sine            |
+| Triangle        |
+| Square          |
+| Sawtooth        |
+| ReverseSawtooth |
 
 | Noise     |          |                                           |
 | --------- | -------- | ----------------------------------------- |

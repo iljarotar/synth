@@ -16,8 +16,25 @@ func newSignalFunc(oscType OscillatorType) SignalFunc {
 		return SawtoothSignalFunc()
 	case Triangle:
 		return TriangleSignalFunc()
-	case InvertedSawtooth:
+	case ReverseSawtooth:
 		return InvertedSawtoothSignalFunc()
+	default:
+		return NoSignalFunc()
+	}
+}
+
+func newIntegralFunc(oscType OscillatorType) SignalFunc {
+	switch oscType {
+	case Sine:
+		return NegativeCosineSignalFunc()
+	case Square:
+		return ShiftedTriangleSignalFunc()
+	case Sawtooth:
+		return NoSignalFunc()
+	case Triangle:
+		return SineSignalFunc()
+	case ReverseSawtooth:
+		return NoSignalFunc()
 	default:
 		return NoSignalFunc()
 	}
@@ -28,6 +45,14 @@ func NoSignalFunc() SignalFunc {
 		return 0
 	}
 	return f
+}
+
+func NegativeCosineSignalFunc() SignalFunc {
+	cos := func(x float64) float64 {
+		return -math.Cos(x)
+	}
+
+	return cos
 }
 
 func SineSignalFunc() SignalFunc {
@@ -53,6 +78,14 @@ func SquareSignalFunc() SignalFunc {
 func TriangleSignalFunc() SignalFunc {
 	triangle := func(x float64) float64 {
 		return 2 / math.Pi * math.Asin(math.Sin(x))
+	}
+
+	return triangle
+}
+
+func ShiftedTriangleSignalFunc() SignalFunc {
+	triangle := func(x float64) float64 {
+		return 2/math.Pi*math.Acos(math.Cos(x)) - 1
 	}
 
 	return triangle
