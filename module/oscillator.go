@@ -23,16 +23,16 @@ const (
 type OscillatorsMap map[string]*Oscillator
 
 type Oscillator struct {
-	Name     string         `yaml:"name"`
-	Type     OscillatorType `yaml:"type"`
-	Freq     Param          `yaml:"freq"`
-	Amp      Param          `yaml:"amp"`
-	Phase    float64        `yaml:"phase"`
-	Pan      Param          `yaml:"pan"`
-	signal   SignalFunc
-	Integral SignalFunc
-	Current  output
-	pan, Phi float64
+	Name        string         `yaml:"name"`
+	Type        OscillatorType `yaml:"type"`
+	Freq        Param          `yaml:"freq"`
+	Amp         Param          `yaml:"amp"`
+	Phase       float64        `yaml:"phase"`
+	Pan         Param          `yaml:"pan"`
+	signal      SignalFunc
+	Integral    SignalFunc
+	Current     output
+	A, Phi, pan float64
 }
 
 func (o *Oscillator) Initialize() {
@@ -44,9 +44,9 @@ func (o *Oscillator) Initialize() {
 
 func (o *Oscillator) Next(oscMap OscillatorsMap, x float64) {
 	o.pan = utils.Limit(o.Pan.Val+modulate(o.Pan.Mod, oscMap)*o.Pan.ModAmp, panLimits.low, panLimits.high)
-	amp := utils.Limit(o.Amp.Val+modulate(o.Amp.Mod, oscMap)*o.Amp.ModAmp, ampLimits.low, ampLimits.high)
+	o.A = utils.Limit(o.Amp.Val+modulate(o.Amp.Mod, oscMap)*o.Amp.ModAmp, ampLimits.low, ampLimits.high)
 	fm := o.fm(oscMap)
-	o.calculateCurrentValue(amp, x, fm)
+	o.calculateCurrentValue(o.A, x, fm)
 }
 
 func (o *Oscillator) fm(oscMap OscillatorsMap) float64 {
@@ -55,7 +55,7 @@ func (o *Oscillator) fm(oscMap OscillatorsMap) float64 {
 	for _, osc := range o.Freq.Mod {
 		mod, ok := oscMap[osc]
 		if ok {
-			y += mod.Integral(mod.Phi) / mod.Freq.Val
+			y += mod.A * mod.Integral(mod.Phi) / mod.Freq.Val
 		}
 	}
 
@@ -66,7 +66,6 @@ func (o *Oscillator) calculateCurrentValue(amp, x, fm float64) {
 	shift := o.Phase / o.Freq.Val // shift is a fraction of one period
 	o.Phi = 2*math.Pi*o.Freq.Val*(x+shift) + fm
 	y := o.signal(o.Phi) * amp
-
 	o.Current = stereo(y, o.pan)
 }
 
