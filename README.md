@@ -129,6 +129,17 @@ duration. Otherwise you will get am empty .wav file.
 ```yaml
 vol:
 out:
+noise:
+  - name:
+    amp:
+      val:
+      mod:
+      modamp:
+    pan:
+      val:
+      mod:
+      modamp:
+      
 oscillators:
   - name:
     type:
