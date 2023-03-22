@@ -17,7 +17,7 @@ func newSignalFunc(oscType OscillatorType) SignalFunc {
 	case Triangle:
 		return TriangleSignalFunc()
 	case ReverseSawtooth:
-		return InvertedSawtoothSignalFunc()
+		return ReverseSawtoothSignalFunc()
 	default:
 		return NoSignalFunc()
 	}
@@ -26,15 +26,15 @@ func newSignalFunc(oscType OscillatorType) SignalFunc {
 func newIntegralFunc(oscType OscillatorType) SignalFunc {
 	switch oscType {
 	case Sine:
-		return NegativeCosineSignalFunc()
+		return IntegralSineSignalFunc()
 	case Square:
-		return ShiftedTriangleSignalFunc()
+		return IntegralSquareSignalFunc()
 	case Sawtooth:
-		return NoSignalFunc()
+		return IntegralSawtoothSignalFunc()
 	case Triangle:
 		return SineSignalFunc()
 	case ReverseSawtooth:
-		return NoSignalFunc()
+		return IntegralReverseSawtoothSignalFunc()
 	default:
 		return NoSignalFunc()
 	}
@@ -47,20 +47,20 @@ func NoSignalFunc() SignalFunc {
 	return f
 }
 
-func NegativeCosineSignalFunc() SignalFunc {
-	cos := func(x float64) float64 {
-		return -math.Cos(x)
-	}
-
-	return cos
-}
-
 func SineSignalFunc() SignalFunc {
 	sine := func(x float64) float64 {
 		return math.Sin(x)
 	}
 
 	return sine
+}
+
+func IntegralSineSignalFunc() SignalFunc {
+	integral := func(x float64) float64 {
+		return -math.Cos(x)
+	}
+
+	return integral
 }
 
 func SquareSignalFunc() SignalFunc {
@@ -75,6 +75,14 @@ func SquareSignalFunc() SignalFunc {
 	return square
 }
 
+func IntegralSquareSignalFunc() SignalFunc {
+	integral := func(x float64) float64 {
+		return 2/math.Pi*math.Acos(math.Cos(x)) - 1
+	}
+
+	return integral
+}
+
 func TriangleSignalFunc() SignalFunc {
 	triangle := func(x float64) float64 {
 		return 2 / math.Pi * math.Asin(math.Sin(x))
@@ -83,26 +91,34 @@ func TriangleSignalFunc() SignalFunc {
 	return triangle
 }
 
-func ShiftedTriangleSignalFunc() SignalFunc {
-	triangle := func(x float64) float64 {
-		return 2/math.Pi*math.Acos(math.Cos(x)) - 1
-	}
-
-	return triangle
-}
-
 func SawtoothSignalFunc() SignalFunc {
 	sawtooth := func(x float64) float64 {
-		return 2*(x/(2*math.Pi)-math.Floor(1/2+x/(2*math.Pi))) - 1
+		return 2 * (x/(2*math.Pi) - math.Floor(1/2+x/(2*math.Pi)))
 	}
 
 	return sawtooth
 }
 
-func InvertedSawtoothSignalFunc() SignalFunc {
+func IntegralSawtoothSignalFunc() SignalFunc {
+	integral := func(x float64) float64 {
+		return -math.Sqrt(1 - math.Pow(math.Sin(x/2), 2))
+	}
+
+	return integral
+}
+
+func ReverseSawtoothSignalFunc() SignalFunc {
 	sawtooth := func(x float64) float64 {
-		return 1 - 2*(x/(2*math.Pi)-math.Floor(1/2+x/(2*math.Pi)))
+		return 1 - 2*(x/(2*math.Pi)-math.Floor(1/2+x/(2*math.Pi))) - 1
 	}
 
 	return sawtooth
+}
+
+func IntegralReverseSawtoothSignalFunc() SignalFunc {
+	integral := func(x float64) float64 {
+		return math.Sqrt(1 - math.Pow(math.Sin(x/2), 2))
+	}
+
+	return integral
 }

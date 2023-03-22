@@ -68,7 +68,7 @@ func (o *Oscillator) calculateCurrentValue(amp, x, fm float64, filtersMap Filter
 		amp *= o.applyFilters(filtersMap, o.Freq.Val)
 	}
 
-	shift := o.Phase / o.Freq.Val
+	shift := o.Phase / o.Freq.Val // shift is a fraction of one period
 	o.Phi = 2*math.Pi*o.Freq.Val*(x+shift) + fm
 	y := o.signal(o.Phi) * amp
 
