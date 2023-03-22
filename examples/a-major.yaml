@@ -44,7 +44,7 @@ oscillators:
     freq:
       val: 415
       mod: [fm]
-      modamp: 0.9
+      modamp: 1
     amp:
       val: 1
     filters: [f1]
