@@ -38,12 +38,12 @@ go install
 ### How it works
 
 The synth is not meant to be played, but to be programmed by providing a patch
-file. A patch is a `yaml` file, that tells the synth, which oscillators,
-filters, etc. should be created and how they should be connected. When you tell
-the synth to load a file, if will start playing immediately. During playback a
-hot reload is possible, so if you change and save the patch file, it will be
-applied instantly. But the transition will be audible, that's why it isn't meant
-to be "played".
+file. A patch is a `yaml` file, that tells the synth, which oscillators and
+noise generators should be created and how they should be connected. When you
+tell the synth to load a file, if will start playing immediately. During
+playback a hot reload is possible, so if you change and save the patch file, it
+will be applied instantly. But the transition will be audible, that's why it
+isn't meant to be "played".
 
 ### Command line interface
 
@@ -90,7 +90,6 @@ duration. Otherwise you will get am empty .wav file.
 | vol         | Float             | main volume in range [0,1]                                                                |
 | out         | String [0..*]     | names of all oscillators and noise generators, whose outputs will be sent to the speakers |
 | oscillators | Oscillator [0..*] | all oscillators                                                                           |
-| filters     | Filter [0..*]     | all filters                                                                               |
 | noise       | Noise [0..*]      | all noise generators                                                                      |
 
 | Oscillator |                |                                           |
@@ -101,7 +100,6 @@ duration. Otherwise you will get am empty .wav file.
 | freq       | Param          | frequency in range [0,20000]              |
 | amp        | Param          | amplitude in range [0,1]                  |
 | phase      | Float          | phase in range [-1,1]                     |
-| filters    | String [0..*]  | names of filters to be applied            |
 | pan        | Param          | stereo balance in range [-1,1]            |
 
 | OscillatorType  |
@@ -118,18 +116,6 @@ duration. Otherwise you will get am empty .wav file.
 | name      | String   | should be unique in the scope of the file |
 | amp       | Param    | amplitude in range [0,1]                  |
 | pan       | Param    | stereo balance in range [-1,1]            |
-
-| Filter    |          |                                            |
-| --------- | -------- | ------------------------------------------ |
-| **Field** | **Type** | **Description**                            |
-| name      | String   | should be unique in the scope of the file  |
-| low       | Param    | low frequency cutoff                       |
-| high      | Param    | high frequency cutoff                      |
-| vol       | Param    | volume of unfiltered signal                |
-| ramp      | Float    | length of the linear ramp from cutoff to 0 |
-
-Note: All filters are bandpass filters. To create a highpass or a lowpass filter
-just place one of the cutoffs outside of the audible range.
 
 | Param     |               |                                            |
 | --------- | ------------- | ------------------------------------------ |
@@ -159,23 +145,6 @@ oscillators:
       mod:
       modamp:
     phase:
-    filters:
-
-filters:
-  - name:
-    low:
-      val:
-      mod:
-      modamp:
-    high:
-      val:
-      mod:
-      modamp:
-    vol:
-      val:
-      mod:
-      modamp:
-    ramp:
 ```
 
 Most of the fields are optional. A simple 440hz sine wave looks like this:

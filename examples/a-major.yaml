@@ -17,7 +17,6 @@ oscillators:
       val: 220
     amp:
       val: 1
-    filters: [f1]
 
   - name: third
     type: Sine
@@ -27,7 +26,6 @@ oscillators:
       modamp: 0.5
     amp:
       val: 0.8
-    filters: [f1]
 
   - name: fifth
     type: Sine
@@ -37,7 +35,6 @@ oscillators:
       modamp: 0.8
     amp:
       val: 0.8
-    filters: [f1]
 
   - name: seventh
     type: Sine
@@ -45,14 +42,6 @@ oscillators:
       val: 415
       mod: [fm]
       modamp: 1
-    amp:
-      val: 1
-    filters: [f1]
-
-  - name: f1-mod
-    type: Sine
-    freq: 
-      val: 0.2
     amp:
       val: 1
 
@@ -76,13 +65,3 @@ oscillators:
       val: 0.1
     amp:
       val: 1
-
-filters:
-  - name: f1
-    high:
-      val: 300
-      mod: [f1-mod]
-      modamp: 120
-    vol:
-      val: 1
-    ramp: 100
