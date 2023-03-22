@@ -98,9 +98,9 @@ duration. Otherwise you will get am empty .wav file.
 | **Field**  | **Type**       | **Description**                           |
 | name       | String         | should be unique in the scope of the file |
 | type       | OscillatorType | wave form                                 |
-| freq       | Float [0..*]   | frequencies in range [0,20000]            |
+| freq       | Param          | frequency in range [0,20000]              |
 | amp        | Param          | amplitude in range [0,1]                  |
-| phase      | Param          | phase in range [-1,1]                     |
+| phase      | Float          | phase in range [-1,1]                     |
 | filters    | String [0..*]  | names of filters to be applied            |
 | pan        | Param          | stereo balance in range [-1,1]            |
 
@@ -135,7 +135,7 @@ just place one of the cutoffs outside of the audible range.
 | --------- | ------------- | ------------------------------------------ |
 | **Field** | **Type**      | **Description**                            |
 | val       | Float         | initial value of the respective parameter  |
-| mod       | String [0..*] | names of modulator oscillators             |
+| mod       | String [0..*] | names of modulating oscillators            |
 | modamp    | Float         | amplitude of the modulation in range [0,1] |
 
 ### Structure of a patch file
@@ -147,6 +147,9 @@ oscillators:
   - name:
     type:
     freq:
+      val:
+      mod:
+      modamp:
     amp:
       val:
       mod:
@@ -156,9 +159,6 @@ oscillators:
       mod:
       modamp:
     phase:
-      val:
-      mod:
-      modamp:
     filters:
 
 filters:
@@ -186,7 +186,8 @@ out: [osc]
 oscillators:
   - name: osc
     type: Sine
-    freq: [440]
+    freq: 
+      val: 440
     amp:
       val: 1
 ```

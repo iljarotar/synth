@@ -2,8 +2,6 @@ package module
 
 import (
 	"math"
-	"math/rand"
-	"time"
 )
 
 type SignalFunc func(x float64) float64
@@ -34,7 +32,7 @@ func NoSignalFunc() SignalFunc {
 
 func SineSignalFunc() SignalFunc {
 	sine := func(x float64) float64 {
-		return math.Sin(2 * math.Pi * x)
+		return math.Sin(x)
 	}
 
 	return sine
@@ -42,7 +40,7 @@ func SineSignalFunc() SignalFunc {
 
 func SquareSignalFunc() SignalFunc {
 	square := func(x float64) float64 {
-		y := math.Sin(2 * math.Pi * x)
+		y := math.Sin(x)
 		if y > 0 {
 			return 1
 		}
@@ -54,7 +52,7 @@ func SquareSignalFunc() SignalFunc {
 
 func TriangleSignalFunc() SignalFunc {
 	triangle := func(x float64) float64 {
-		return 2 / math.Pi * math.Asin(math.Sin(2*math.Pi*x))
+		return 2 / math.Pi * math.Asin(math.Sin(x))
 	}
 
 	return triangle
@@ -62,7 +60,7 @@ func TriangleSignalFunc() SignalFunc {
 
 func SawtoothSignalFunc() SignalFunc {
 	sawtooth := func(x float64) float64 {
-		return 2*(x-math.Floor(1/2+x)) - 1
+		return 2*(x/(2*math.Pi)-math.Floor(1/2+x/(2*math.Pi))) - 1
 	}
 
 	return sawtooth
@@ -70,18 +68,8 @@ func SawtoothSignalFunc() SignalFunc {
 
 func InvertedSawtoothSignalFunc() SignalFunc {
 	sawtooth := func(x float64) float64 {
-		return 1 - 2*(x-math.Floor(1/2+x))
+		return 1 - 2*(x/(2*math.Pi)-math.Floor(1/2+x/(2*math.Pi)))
 	}
 
 	return sawtooth
-}
-
-func NoiseSignalFunc() SignalFunc {
-	rand.Seed(time.Now().Unix())
-	noise := func(x float64) float64 {
-		y := rand.Float64()*2 - 1
-		return y
-	}
-
-	return noise
 }
