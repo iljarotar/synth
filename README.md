@@ -135,7 +135,7 @@ just place one of the cutoffs outside of the audible range.
 | --------- | ------------- | ------------------------------------------ |
 | **Field** | **Type**      | **Description**                            |
 | val       | Float         | initial value of the respective parameter  |
-| mod       | String [0..*] | names of modulator oscillators             |
+| mod       | String [0..*] | names of modulating oscillators            |
 | modamp    | Float         | amplitude of the modulation in range [0,1] |
 
 ### Structure of a patch file
