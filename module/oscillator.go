@@ -59,6 +59,10 @@ func (o *Oscillator) fm(oscMap OscillatorsMap) float64 {
 		}
 	}
 
+	if len(o.Freq.Mod) > 0 {
+		y /= float64(len(o.Freq.Mod))
+	}
+
 	return y * o.Freq.ModAmp
 }
 
