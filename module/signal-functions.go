@@ -77,7 +77,7 @@ func SquareSignalFunc() SignalFunc {
 
 func IntegralSquareSignalFunc() SignalFunc {
 	integral := func(x float64) float64 {
-		return 2/math.Pi*math.Acos(math.Cos(x)) - 1
+		return math.Acos(math.Cos(x))
 	}
 
 	return integral
@@ -101,7 +101,7 @@ func SawtoothSignalFunc() SignalFunc {
 
 func IntegralSawtoothSignalFunc() SignalFunc {
 	integral := func(x float64) float64 {
-		return -math.Sqrt(1 - math.Pow(math.Sin(x/2), 2))
+		return -math.Pi / 2 * math.Sqrt(1-math.Pow(math.Sin(x/2), 2))
 	}
 
 	return integral
@@ -117,7 +117,7 @@ func ReverseSawtoothSignalFunc() SignalFunc {
 
 func IntegralReverseSawtoothSignalFunc() SignalFunc {
 	integral := func(x float64) float64 {
-		return math.Sqrt(1 - math.Pow(math.Sin(x/2), 2))
+		return math.Pi / 2 * math.Sqrt(1-math.Pow(math.Sin(x/2), 2))
 	}
 
 	return integral
