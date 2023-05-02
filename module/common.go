@@ -2,8 +2,18 @@ package module
 
 import "github.com/iljarotar/synth/utils"
 
+type Param struct {
+	Val    float64  `yaml:"val"`
+	Mod    []string `yaml:"mod"`
+	ModAmp float64  `yaml:"modamp"`
+}
+
 type limits struct {
 	high, low float64
+}
+
+type output struct {
+	Mono, Left, Right float64
 }
 
 var (
@@ -13,10 +23,6 @@ var (
 	phaseLimits limits = limits{low: -1, high: 1}
 	freqLimits  limits = limits{low: 0, high: 20000}
 )
-
-type output struct {
-	Mono, Left, Right float64
-}
 
 func modulate(modulators []string, oscMap OscillatorsMap) float64 {
 	var y float64
