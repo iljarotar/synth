@@ -38,17 +38,21 @@ type Oscillator struct {
 func (o *Oscillator) Initialize() {
 	o.signal = newSignalFunc(o.Type)
 	o.limitParams()
-	o.calculateCurrentValue(o.Amp.Val, 0, 0, 0)
+
+	y := o.signalValue(o.Amp.Val, 0, 0)
+	o.Current = stereo(y, o.Pan.Val)
 }
 
 func (o *Oscillator) Next(oscMap OscillatorsMap, x float64) {
 	pan := utils.Limit(o.Pan.Val+modulate(o.Pan.Mod, oscMap)*o.Pan.ModAmp, panLimits.low, panLimits.high)
 	amp := utils.Limit(o.Amp.Val+modulate(o.Amp.Mod, oscMap)*o.Amp.ModAmp, ampLimits.low, ampLimits.high)
-	fm := o.fm(oscMap)
-	o.calculateCurrentValue(x, amp, pan, fm)
+	offset := o.getOffset(oscMap)
+
+	y := o.signalValue(x, amp, offset)
+	o.Current = stereo(y, pan)
 }
 
-func (o *Oscillator) fm(oscMap OscillatorsMap) float64 {
+func (o *Oscillator) getOffset(oscMap OscillatorsMap) float64 {
 	var y float64
 
 	for _, osc := range o.Freq.Mod {
@@ -65,12 +69,13 @@ func (o *Oscillator) fm(oscMap OscillatorsMap) float64 {
 	return y * o.Freq.ModAmp
 }
 
-func (o *Oscillator) calculateCurrentValue(x, amp, pan, fm float64) {
+func (o *Oscillator) signalValue(x, amp, offset float64) float64 {
 	shift := o.Phase / o.Freq.Val // shift is a fraction of one period
-	phi := 2*math.Pi*o.Freq.Val*(x+shift) + fm
+	phi := 2*math.Pi*o.Freq.Val*(x+shift) + offset
 	y := o.signal(phi) * amp
-	o.Current = stereo(y, pan)
-	o.Integral += o.Current.Mono / config.Config.SampleRate
+	o.Integral += y / config.Config.SampleRate
+
+	return y
 }
 
 func (o *Oscillator) limitParams() {
