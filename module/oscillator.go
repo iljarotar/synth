@@ -71,9 +71,11 @@ func (o *Oscillator) getOffset(oscMap OscillatorsMap) float64 {
 
 func (o *Oscillator) signalValue(x, amp, offset float64) float64 {
 	shift := o.Phase / o.Freq.Val // shift is a fraction of one period
-	phi := 2*math.Pi*o.Freq.Val*(x+shift) + offset
+	phi := 2 * math.Pi * (o.Freq.Val*(x+shift) + offset)
 	y := o.signal(phi) * amp
-	o.Integral += y / config.Config.SampleRate
+
+	avg := (y + o.Current.Mono) / 2
+	o.Integral += avg / config.Config.SampleRate
 
 	return y
 }
