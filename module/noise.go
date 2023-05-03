@@ -22,9 +22,9 @@ func (n *Noise) Initialize() {
 	n.Current = stereo(noise()*n.Amp.Val, n.Pan.Val)
 }
 
-func (n *Noise) Next(oscMap OscillatorsMap) {
-	pan := utils.Limit(n.Pan.Val+modulate(n.Pan.Mod, oscMap)*n.Pan.ModAmp, panLimits.low, panLimits.high)
-	amp := utils.Limit(n.Amp.Val+modulate(n.Amp.Mod, oscMap)*n.Amp.ModAmp, ampLimits.low, ampLimits.high)
+func (n *Noise) Next(oscMap OscillatorsMap, customMap CustomMap) {
+	pan := utils.Limit(n.Pan.Val+modulate(n.Pan.Mod, oscMap, customMap)*n.Pan.ModAmp, panLimits.low, panLimits.high)
+	amp := utils.Limit(n.Amp.Val+modulate(n.Amp.Mod, oscMap, customMap)*n.Amp.ModAmp, ampLimits.low, ampLimits.high)
 	n.Current = stereo(noise()*amp, pan)
 }
 

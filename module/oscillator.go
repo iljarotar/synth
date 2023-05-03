@@ -39,26 +39,31 @@ func (o *Oscillator) Initialize() {
 	o.signal = newSignalFunc(o.Type)
 	o.limitParams()
 
-	y := o.signalValue(o.Amp.Val, 0, 0)
+	y := o.signalValue(0, o.Amp.Val, 0)
 	o.Current = stereo(y, o.Pan.Val)
 }
 
-func (o *Oscillator) Next(oscMap OscillatorsMap, x float64) {
-	pan := utils.Limit(o.Pan.Val+modulate(o.Pan.Mod, oscMap)*o.Pan.ModAmp, panLimits.low, panLimits.high)
-	amp := utils.Limit(o.Amp.Val+modulate(o.Amp.Mod, oscMap)*o.Amp.ModAmp, ampLimits.low, ampLimits.high)
-	offset := o.getOffset(oscMap)
+func (o *Oscillator) Next(x float64, oscMap OscillatorsMap, customMap CustomMap) {
+	pan := utils.Limit(o.Pan.Val+modulate(o.Pan.Mod, oscMap, customMap)*o.Pan.ModAmp, panLimits.low, panLimits.high)
+	amp := utils.Limit(o.Amp.Val+modulate(o.Amp.Mod, oscMap, customMap)*o.Amp.ModAmp, ampLimits.low, ampLimits.high)
+	offset := o.getOffset(oscMap, customMap)
 
 	y := o.signalValue(x, amp, offset)
 	o.Current = stereo(y, pan)
 }
 
-func (o *Oscillator) getOffset(oscMap OscillatorsMap) float64 {
+func (o *Oscillator) getOffset(oscMap OscillatorsMap, customMap CustomMap) float64 {
 	var y float64
 
-	for _, osc := range o.Freq.Mod {
-		mod, ok := oscMap[osc]
+	for _, mod := range o.Freq.Mod {
+		osc, ok := oscMap[mod]
 		if ok {
-			y += mod.Integral
+			y += osc.Integral
+		}
+
+		c, ok := customMap[mod]
+		if ok {
+			y += c.Integral
 		}
 	}
 

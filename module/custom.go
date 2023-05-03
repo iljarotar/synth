@@ -1,6 +1,11 @@
 package module
 
-import "github.com/iljarotar/synth/utils"
+import (
+	"math"
+
+	"github.com/iljarotar/synth/config"
+	"github.com/iljarotar/synth/utils"
+)
 
 type CustomMap map[string]*Custom
 
@@ -16,6 +21,19 @@ type Custom struct {
 
 func (c *Custom) Initialize() {
 	c.limitParams()
+	c.Data = utils.Normalize(c.Data, -1, 1)
+
+	y := c.signalValue(0, c.Amp.Val, c.Freq.Val)
+	c.Current = stereo(y, c.Pan.Val)
+}
+
+func (c *Custom) Next(x float64, oscMap OscillatorsMap, cMap CustomMap) {
+	pan := utils.Limit(c.Pan.Val+modulate(c.Pan.Mod, oscMap, cMap)*c.Pan.ModAmp, panLimits.low, panLimits.high)
+	amp := utils.Limit(c.Amp.Val+modulate(c.Amp.Mod, oscMap, cMap)*c.Amp.ModAmp, ampLimits.low, ampLimits.high)
+	freq := utils.Limit(c.Freq.Val+modulate(c.Freq.Mod, oscMap, cMap)*c.Freq.ModAmp, freqLimits.low, freqLimits.high)
+
+	y := c.signalValue(x, amp, freq)
+	c.Current = stereo(y, pan)
 }
 
 func (c *Custom) limitParams() {
@@ -29,22 +47,12 @@ func (c *Custom) limitParams() {
 	c.Freq.Val = utils.Limit(c.Freq.Val, freqLimits.low, freqLimits.high)
 }
 
-func (c *Custom) normalize() {
-	var min, max float64
+func (c *Custom) signalValue(x, amp, freq float64) float64 {
+	idx := int(math.Floor(x * freq))
+	val := c.Data[idx%len(c.Data)]
+	y := amp * val
 
-	for _, d := range c.Data {
-		if d > max {
-			max = d
-			continue
-		}
-		if d < min {
-			min = d
-		}
-	}
+	c.Integral += y / config.Config.SampleRate
 
-	// r := max - min
-
-	// for _, d := range c.Data {
-	// 	d =
-	// }
+	return y
 }

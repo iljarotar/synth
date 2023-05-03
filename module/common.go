@@ -24,13 +24,18 @@ var (
 	freqLimits  limits = limits{low: 0, high: 20000}
 )
 
-func modulate(modulators []string, oscMap OscillatorsMap) float64 {
+func modulate(modulators []string, oscMap OscillatorsMap, customMap CustomMap) float64 {
 	var y float64
 
-	for _, m := range modulators {
-		mod, ok := oscMap[m]
+	for _, mod := range modulators {
+		osc, ok := oscMap[mod]
 		if ok {
-			y += mod.Current.Mono
+			y += osc.Current.Mono
+		}
+
+		c, ok := customMap[mod]
+		if ok {
+			y += c.Current.Mono
 		}
 	}
 
