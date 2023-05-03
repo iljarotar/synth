@@ -13,9 +13,11 @@ type Synth struct {
 	Out                []string             `yaml:"out"`
 	Oscillators        []*module.Oscillator `yaml:"oscillators"`
 	Noise              []*module.Noise      `yaml:"noise"`
+	Custom             []*module.Custom     `yaml:"custom"`
 	Phase              float64
 	oscMap             module.OscillatorsMap
 	noiseMap           module.NoiseMap
+	customMap          module.CustomMap
 	step, volumeMemory float64
 	next               chan bool
 }
@@ -35,8 +37,13 @@ func (s *Synth) Initialize() {
 		n.Initialize()
 	}
 
+	for _, c := range s.Custom {
+		c.Initialize()
+	}
+
 	s.makeOscillatorsMap()
 	s.makeNoiseMap()
+	s.makeCustomMap()
 }
 
 func (s *Synth) Play(input chan<- struct{ Left, Right float32 }) {
@@ -113,6 +120,12 @@ func (s *Synth) getCurrentValue() (left, right float64) {
 			left += noise.Current.Left
 			right += noise.Current.Right
 		}
+
+		custom, ok := s.customMap[o]
+		if ok {
+			left += custom.Current.Left
+			right += custom.Current.Right
+		}
 	}
 
 	return left, right
@@ -121,11 +134,15 @@ func (s *Synth) getCurrentValue() (left, right float64) {
 func (s *Synth) updateCurrentValues() {
 	for _, o := range s.Oscillators {
 		osc := o
-		osc.Next(s.oscMap, s.Phase)
+		osc.Next(s.Phase, s.oscMap, s.customMap)
 	}
 
 	for _, n := range s.Noise {
-		n.Next(s.oscMap)
+		n.Next(s.oscMap, s.customMap)
+	}
+
+	for _, c := range s.Custom {
+		c.Next(s.Phase, s.oscMap, s.customMap)
 	}
 
 	s.Phase += s.step
@@ -149,6 +166,16 @@ func (s *Synth) makeNoiseMap() {
 	}
 
 	s.noiseMap = noiseMap
+}
+
+func (s *Synth) makeCustomMap() {
+	cMap := make(module.CustomMap)
+
+	for _, custom := range s.Custom {
+		cMap[custom.Name] = custom
+	}
+
+	s.customMap = cMap
 }
 
 func secondsToStep(seconds, delta float64) float64 {

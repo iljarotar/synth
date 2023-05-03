@@ -14,19 +14,18 @@ type Noise struct {
 	Amp     Param  `yaml:"amp"`
 	Pan     Param  `yaml:"pan"`
 	Current output
-	pan     float64
 }
 
 func (n *Noise) Initialize() {
 	rand.Seed(time.Now().Unix())
 	n.limitParams()
-	n.Current = stereo(noise()*n.Amp.Val, n.pan)
+	n.Current = stereo(noise()*n.Amp.Val, n.Pan.Val)
 }
 
-func (n *Noise) Next(oscMap OscillatorsMap) {
-	n.pan = utils.Limit(n.Pan.Val+modulate(n.Pan.Mod, oscMap)*n.Pan.ModAmp, panLimits.low, panLimits.high)
-	amp := utils.Limit(n.Amp.Val+modulate(n.Amp.Mod, oscMap)*n.Amp.ModAmp, ampLimits.low, ampLimits.high)
-	n.Current = stereo(noise()*amp, n.pan)
+func (n *Noise) Next(oscMap OscillatorsMap, customMap CustomMap) {
+	pan := utils.Limit(n.Pan.Val+modulate(n.Pan.Mod, oscMap, customMap)*n.Pan.ModAmp, panLimits.low, panLimits.high)
+	amp := utils.Limit(n.Amp.Val+modulate(n.Amp.Mod, oscMap, customMap)*n.Amp.ModAmp, ampLimits.low, ampLimits.high)
+	n.Current = stereo(noise()*amp, pan)
 }
 
 func (n *Noise) limitParams() {
@@ -35,7 +34,6 @@ func (n *Noise) limitParams() {
 
 	n.Pan.ModAmp = utils.Limit(n.Pan.ModAmp, modLimits.low, modLimits.high)
 	n.Pan.Val = utils.Limit(n.Pan.Val, panLimits.low, panLimits.high)
-	n.pan = n.Pan.Val
 }
 
 func noise() float64 {
