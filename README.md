@@ -84,13 +84,13 @@ duration. Otherwise you will get am empty .wav file.
 
 ### Data types
 
-| Synth       |                   |                                                                                           |
-| ----------- | ----------------- | ----------------------------------------------------------------------------------------- |
-| **Field**   | **Type**          | **Description**                                                                           |
-| vol         | Float             | main volume in range [0,1]                                                                |
-| out         | String [0..*]     | names of all oscillators and noise generators, whose outputs will be sent to the speakers |
-| oscillators | Oscillator [0..*] | all oscillators                                                                           |
-| noise       | Noise [0..*]      | all noise generators                                                                      |
+| Synth       |                   |                                                                                                           |
+| ----------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
+| **Field**   | **Type**          | **Description**                                                                                           |
+| vol         | Float             | main volume in range [0,1]                                                                                |
+| out         | String [0..*]     | names of all oscillators, noise generators and custom signals, whose outputs will be sent to the speakers |
+| oscillators | Oscillator [0..*] | all oscillators                                                                                           |
+| noise       | Noise [0..*]      | all noise generators                                                                                      |
 
 | Oscillator |                |                                           |
 | ---------- | -------------- | ----------------------------------------- |
@@ -117,12 +117,21 @@ duration. Otherwise you will get am empty .wav file.
 | amp       | Param    | amplitude in range [0,1]                  |
 | pan       | Param    | stereo balance in range [-1,1]            |
 
-| Param     |               |                                            |
-| --------- | ------------- | ------------------------------------------ |
-| **Field** | **Type**      | **Description**                            |
-| val       | Float         | initial value of the respective parameter  |
-| mod       | String [0..*] | names of modulating oscillators            |
-| modamp    | Float         | amplitude of the modulation in range [0,1] |
+| Custom    |              |                                           |
+| --------- | ------------ | ----------------------------------------- |
+| **Field** | **Type**     | **Description**                           |
+| name      | String       | should be unique in the scope of the file |
+| amp       | Param        | amplitude in range [0,1]                  |
+| pan       | Param        | stereo balance in range [-1,1]            |
+| freq      | Param        | beats per second [0,20000]                |
+| data      | Float [0..*] | custom values                             |
+
+| Param     |               |                                                    |
+| --------- | ------------- | -------------------------------------------------- |
+| **Field** | **Type**      | **Description**                                    |
+| val       | Float         | initial value of the respective parameter          |
+| mod       | String [0..*] | names of modulating oscillators and custom signals |
+| modamp    | Float         | amplitude of the modulation in range [0,1]         |
 
 ### Structure of a patch file
 
