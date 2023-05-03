@@ -165,6 +165,22 @@ oscillators:
       mod:
       modamp:
     phase:
+
+custom:
+  - name:
+    freq:
+      val:
+      mod:
+      modamp:
+    amp:
+      val:
+      mod:
+      modamp:
+    pan:
+      val:
+      mod:
+      modamp:
+    data: []
 ```
 
 Most of the fields are optional. A simple 440hz sine wave looks like this:
