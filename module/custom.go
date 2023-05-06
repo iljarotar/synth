@@ -48,7 +48,7 @@ func (c *Custom) limitParams() {
 }
 
 func (c *Custom) signalValue(x, amp, freq float64) float64 {
-	idx := int(math.Floor(x * freq))
+	idx := int(math.Floor(x * float64(len(c.Data)) * freq))
 	val := c.Data[idx%len(c.Data)]
 	y := amp * val
 

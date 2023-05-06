@@ -123,7 +123,7 @@ duration. Otherwise you will get am empty .wav file.
 | name      | String       | should be unique in the scope of the file |
 | amp       | Param        | amplitude in range [0,1]                  |
 | pan       | Param        | stereo balance in range [-1,1]            |
-| freq      | Param        | beats per second [0,20000]                |
+| freq      | Param        | periods per second [0,20000]              |
 | data      | Float [0..*] | custom values                             |
 
 | Param     |               |                                                    |
