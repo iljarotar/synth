@@ -39,6 +39,10 @@ func modulate(modulators []string, oscMap OscillatorsMap, customMap CustomMap) f
 		}
 	}
 
+	if len(modulators) > 0 {
+		y /= float64(len(modulators))
+	}
+
 	return y
 }
 
