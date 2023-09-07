@@ -15,6 +15,10 @@ type Filter struct {
 }
 
 func (f *Filter) Initialize() {
+	if f.Order < 0 {
+		f.Order = 0
+	}
+
 	if f.LowCutoff == 0 && f.HighCutoff == 0 {
 		f.weights = make([]float64, 0) // disable filter
 		f.Order = 0
