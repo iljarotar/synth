@@ -13,6 +13,7 @@ type Noise struct {
 	Name    string `yaml:"name"`
 	Amp     Param  `yaml:"amp"`
 	Pan     Param  `yaml:"pan"`
+	Filter  Filter `yaml:"filter"`
 	Current output
 }
 
@@ -20,12 +21,14 @@ func (n *Noise) Initialize() {
 	rand.Seed(time.Now().Unix())
 	n.limitParams()
 	n.Current = stereo(noise()*n.Amp.Val, n.Pan.Val)
+	n.Filter.Initialize()
 }
 
 func (n *Noise) Next(oscMap OscillatorsMap, customMap CustomMap) {
 	pan := utils.Limit(n.Pan.Val+modulate(n.Pan.Mod, oscMap, customMap)*n.Pan.ModAmp, panLimits.low, panLimits.high)
 	amp := utils.Limit(n.Amp.Val+modulate(n.Amp.Mod, oscMap, customMap)*n.Amp.ModAmp, ampLimits.low, ampLimits.high)
-	n.Current = stereo(noise()*amp, pan)
+
+	n.Current = stereo(n.Filter.Tap(noise())*amp, pan)
 }
 
 func (n *Noise) limitParams() {
@@ -34,6 +37,9 @@ func (n *Noise) limitParams() {
 
 	n.Pan.ModAmp = utils.Limit(n.Pan.ModAmp, modLimits.low, modLimits.high)
 	n.Pan.Val = utils.Limit(n.Pan.Val, panLimits.low, panLimits.high)
+
+	n.Filter.LowCutoff = utils.Limit(n.Filter.LowCutoff, freqLimits.low, freqLimits.high)
+	n.Filter.HighCutoff = utils.Limit(n.Filter.HighCutoff, freqLimits.low, freqLimits.high)
 }
 
 func noise() float64 {
