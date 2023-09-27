@@ -9,6 +9,9 @@ noise:
     pan:
       mod: [pan-mod]
       modamp: 1
+    filter:
+      order: 50
+      lowcutoff: 800
 
 oscillators:
   - name: root

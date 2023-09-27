@@ -163,6 +163,10 @@ noise:
       val:
       mod:
       modamp:
+    filter:
+      order:
+      lowcutoff:
+      highcutoff:
       
 oscillators:
   - name:
