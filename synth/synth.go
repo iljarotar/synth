@@ -14,7 +14,7 @@ type Synth struct {
 	Oscillators        []*module.Oscillator `yaml:"oscillators"`
 	Noise              []*module.Noise      `yaml:"noise"`
 	Custom             []*module.Custom     `yaml:"custom"`
-	Phase              float64
+	Time               float64
 	oscMap             module.OscillatorsMap
 	noiseMap           module.NoiseMap
 	customMap          module.CustomMap
@@ -53,11 +53,6 @@ func (s *Synth) Play(input chan<- struct{ Left, Right float32 }) {
 		left, right := s.getCurrentValue()
 		left *= s.Volume
 		right *= s.Volume
-
-		if l := len(s.Out); l > 0 {
-			left /= float64(l)
-			right /= float64(l)
-		}
 
 		y := struct{ Left, Right float32 }{Left: float32(left), Right: float32(right)}
 		input <- y
@@ -134,7 +129,7 @@ func (s *Synth) getCurrentValue() (left, right float64) {
 func (s *Synth) updateCurrentValues() {
 	for _, o := range s.Oscillators {
 		osc := o
-		osc.Next(s.Phase, s.oscMap, s.customMap)
+		osc.Next(s.Time, s.oscMap, s.customMap)
 	}
 
 	for _, n := range s.Noise {
@@ -142,10 +137,10 @@ func (s *Synth) updateCurrentValues() {
 	}
 
 	for _, c := range s.Custom {
-		c.Next(s.Phase, s.oscMap, s.customMap)
+		c.Next(s.Time, s.oscMap, s.customMap)
 	}
 
-	s.Phase += s.step
+	s.Time += s.step
 }
 
 func (s *Synth) makeOscillatorsMap() {

@@ -67,10 +67,6 @@ func (o *Oscillator) getOffset(oscMap OscillatorsMap, customMap CustomMap) float
 		}
 	}
 
-	if len(o.Freq.Mod) > 0 {
-		y /= float64(len(o.Freq.Mod))
-	}
-
 	return y * o.Freq.ModAmp
 }
 

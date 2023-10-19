@@ -9,8 +9,8 @@ import (
 
 type Filter struct {
 	Order           int     `yaml:"order"`
-	LowCutoff       float64 `yaml:"lowcutoff"`
-	HighCutoff      float64 `yaml:"highcutoff"`
+	LowCutoff       float64 `yaml:"low-cutoff"`
+	HighCutoff      float64 `yaml:"high-cutoff"`
 	weights, buffer []float64
 }
 

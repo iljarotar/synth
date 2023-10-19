@@ -1,70 +1,37 @@
 vol: 1
-out: [root, third, fifth, seventh, noise]
-noise:
-  - name: noise
-    amp:
-      val: 0.03
-      mod: [amp-mod]
-      modamp: 0.03
-    pan:
-      mod: [pan-mod]
-      modamp: 1
-    filter:
-      order: 50
-      lowcutoff: 800
+out: [n1, o1, o2, o3, o4]
+noise: 
+  - name: n1
+    amp: {val: 0.01}
+    filter: {order: 200, low-cutoff: 300, high-cutoff: 500}
 
 oscillators:
-  - name: root
+  - name: o1
     type: Sine
-    freq: 
-      val: 220
-    amp:
-      val: 1
+    freq: {val: 220}
+    amp: {val: 0.1}
 
-  - name: third
+  - name: o2
     type: Sine
-    freq:
-      val: 275
-      mod: [fm]
-      modamp: 0.5
-    amp:
-      val: 0.8
+    freq: {val: 275}
+    amp: {val: 0.1}
 
-  - name: fifth
+  - name: o3
     type: Sine
-    freq:
-      val: 330
-      mod: [fm]
-      modamp: 0.8
-    amp:
-      val: 0.8
+    freq: {val: 330}
+    amp: {val: 0.1}
 
-  - name: seventh
+  - name: o4
     type: Sine
-    freq:
-      val: 415
-      mod: [fm]
-      modamp: 1
-    amp:
-      val: 1
+    freq: {val: 415.5, mod: [m1, m2], mod-amp: 5}
+    amp: {val: 0.1}
 
-  - name: amp-mod
+  - name: m1
     type: Sine
-    freq: 
-      val: 0.13
-    amp:
-      val: 1
+    freq: {val: 1}
+    amp: {val: 0.5}
 
-  - name: fm
+  - name: m2
     type: Sine
-    freq: 
-      val: 1.7
-    amp:
-      val: 1
-
-  - name: pan-mod
-    type: Sine
-    freq: 
-      val: 0.1
-    amp:
-      val: 1
+    freq: {val: 0.43}
+    amp: {val: 0.5}
