@@ -5,16 +5,8 @@ This is a simple modular-like command line synthesizer written in
 
 ## Installation
 
-> Note: I have tested the synth only on Fedora. If you encounter any problems
-> during installation or any unexpected behavior in runtime, please let me know.
-
-To run the synthesizer you will need to install
-[portaudio](http://portaudio.com/docs/v19-doxydocs/tutorial_start.html). On
-Fedora it is
-
-```
-sudo dnf -y install portaudio
-```
+To run the synthesizer you might also need to install
+[portaudio](http://portaudio.com/docs/v19-doxydocs/tutorial_start.html).
 
 ### Install with Go
 
@@ -120,17 +112,17 @@ More examples can be found [here](https://github.com/iljarotar/synth-patches).
 | ---------- | -------- | ---------------------------------------------------------- |
 | **Field**  | **Type** | **Description**                                            |
 | order      | Integer  | order of the FIR filter                                    |
-| lowcutoff  | Float    | cutoff frequency of the highpass filter in range [0,20000] |
-| highcutoff | Float    | cutoff frequency of the lowpass filter in range [0,20000]  |
+| low-cutoff  | Float    | cutoff frequency of the highpass filter in range [0,20000] |
+| high-cutoff | Float    | cutoff frequency of the lowpass filter in range [0,20000]  |
 
-If both lowcutoff and highcutoff are 0, the filter is disabled. If lowcutoff is
-0, the filter is a lowpass filter transitioning at the highcutoff frequency. If
-highcutoff is 0, the filter is a highpass filter transitioning at the lowcutoff
+If both `low-cutoff` and `high-cutoff` are 0, the filter is disabled. If `low-cutoff` is
+0, the filter is a lowpass filter transitioning at the `high-cutoff` frequency. If
+`high-cutoff` is 0, the filter is a highpass filter transitioning at the `low-cutoff`
 frequency.
 
-A higher order improves the filter's precision, but it also makes it more
+A higher `order` improves the filter's precision, but it also makes it more
 expensive in terms of computation. If the sound becomes glitchy, decreasing the
-filter order might be necessary.
+filter `order` might be necessary.
 
 | Custom    |              |                                           |
 | --------- | ------------ | ----------------------------------------- |
@@ -146,7 +138,7 @@ filter order might be necessary.
 | **Field** | **Type**      | **Description**                                    |
 | val       | Float         | initial value of the respective parameter          |
 | mod       | String [0..*] | names of modulating oscillators and custom signals |
-| modamp    | Float         | amplitude of the modulation in range [0,1]         |
+| mod-amp    | Float         | amplitude of the modulation in range [0,1]         |
 
 ### Structure of a patch file
 
@@ -158,15 +150,15 @@ noise:
     amp:
       val:
       mod:
-      modamp:
+      mod-amp:
     pan:
       val:
       mod:
-      modamp:
+      mod-amp:
     filter:
       order:
-      lowcutoff:
-      highcutoff:
+      low-cutoff:
+      high-cutoff:
       
 oscillators:
   - name:
@@ -174,15 +166,15 @@ oscillators:
     freq:
       val:
       mod:
-      modamp:
+      mod-amp:
     amp:
       val:
       mod:
-      modamp:
+      mod-amp:
     pan:
       val:
       mod:
-      modamp:
+      mod-amp:
     phase:
 
 custom:
@@ -190,15 +182,15 @@ custom:
     freq:
       val:
       mod:
-      modamp:
+      mod-amp:
     amp:
       val:
       mod:
-      modamp:
+      mod-amp:
     pan:
       val:
       mod:
-      modamp:
+      mod-amp:
     data: []
 ```
 

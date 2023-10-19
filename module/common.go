@@ -5,7 +5,7 @@ import "github.com/iljarotar/synth/utils"
 type Param struct {
 	Val    float64  `yaml:"val"`
 	Mod    []string `yaml:"mod"`
-	ModAmp float64  `yaml:"modamp"`
+	ModAmp float64  `yaml:"mod-amp"`
 }
 
 type limits struct {
@@ -37,10 +37,6 @@ func modulate(modulators []string, oscMap OscillatorsMap, customMap CustomMap) f
 		if ok {
 			y += c.Current.Mono
 		}
-	}
-
-	if len(modulators) > 0 {
-		y /= float64(len(modulators))
 	}
 
 	return y
