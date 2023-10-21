@@ -2,6 +2,28 @@ package module
 
 import "github.com/iljarotar/synth/utils"
 
+type Module struct {
+	integral float64
+	current  output
+}
+
+type IModule interface {
+	Initialize()
+	Next(t float64, modMap ModulesMap)
+	Integral() float64
+	Current() output
+}
+
+type ModulesMap map[string]IModule
+
+func (m *Module) Integral() float64 {
+	return m.integral
+}
+
+func (m *Module) Current() output {
+	return m.current
+}
+
 type Param struct {
 	Val    float64  `yaml:"val"`
 	Mod    []string `yaml:"mod"`
@@ -24,18 +46,13 @@ var (
 	freqLimits  limits = limits{low: 0, high: 20000}
 )
 
-func modulate(modulators []string, oscMap OscillatorsMap, customMap CustomMap) float64 {
+func modulate(modulators []string, modMap ModulesMap) float64 {
 	var y float64
 
-	for _, mod := range modulators {
-		osc, ok := oscMap[mod]
+	for _, m := range modulators {
+		mod, ok := modMap[m]
 		if ok {
-			y += osc.Current.Mono
-		}
-
-		c, ok := customMap[mod]
-		if ok {
-			y += c.Current.Mono
+			y += mod.Current().Mono
 		}
 	}
 

@@ -10,25 +10,25 @@ import (
 type NoiseMap map[string]*Noise
 
 type Noise struct {
-	Name    string `yaml:"name"`
-	Amp     Param  `yaml:"amp"`
-	Pan     Param  `yaml:"pan"`
-	Filter  Filter `yaml:"filter"`
-	Current output
+	Module
+	Name   string `yaml:"name"`
+	Amp    Param  `yaml:"amp"`
+	Pan    Param  `yaml:"pan"`
+	Filter Filter `yaml:"filter"`
 }
 
 func (n *Noise) Initialize() {
 	rand.Seed(time.Now().Unix())
 	n.limitParams()
-	n.Current = stereo(noise()*n.Amp.Val, n.Pan.Val)
+	n.current = stereo(noise()*n.Amp.Val, n.Pan.Val)
 	n.Filter.Initialize()
 }
 
-func (n *Noise) Next(oscMap OscillatorsMap, customMap CustomMap) {
-	pan := utils.Limit(n.Pan.Val+modulate(n.Pan.Mod, oscMap, customMap)*n.Pan.ModAmp, panLimits.low, panLimits.high)
-	amp := utils.Limit(n.Amp.Val+modulate(n.Amp.Mod, oscMap, customMap)*n.Amp.ModAmp, ampLimits.low, ampLimits.high)
+func (n *Noise) Next(_ float64, modMap ModulesMap) {
+	pan := utils.Limit(n.Pan.Val+modulate(n.Pan.Mod, modMap)*n.Pan.ModAmp, panLimits.low, panLimits.high)
+	amp := utils.Limit(n.Amp.Val+modulate(n.Amp.Mod, modMap)*n.Amp.ModAmp, ampLimits.low, ampLimits.high)
 
-	n.Current = stereo(n.Filter.Tap(noise())*amp, pan)
+	n.current = stereo(n.Filter.Tap(noise())*amp, pan)
 }
 
 func (n *Noise) limitParams() {

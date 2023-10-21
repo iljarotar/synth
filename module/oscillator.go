@@ -24,15 +24,14 @@ const (
 type OscillatorsMap map[string]*Oscillator
 
 type Oscillator struct {
-	Name     string         `yaml:"name"`
-	Type     OscillatorType `yaml:"type"`
-	Freq     Param          `yaml:"freq"`
-	Amp      Param          `yaml:"amp"`
-	Phase    float64        `yaml:"phase"`
-	Pan      Param          `yaml:"pan"`
-	signal   SignalFunc
-	Integral float64
-	Current  output
+	Module
+	Name   string         `yaml:"name"`
+	Type   OscillatorType `yaml:"type"`
+	Freq   Param          `yaml:"freq"`
+	Amp    Param          `yaml:"amp"`
+	Phase  float64        `yaml:"phase"`
+	Pan    Param          `yaml:"pan"`
+	signal SignalFunc
 }
 
 func (o *Oscillator) Initialize() {
@@ -40,43 +39,38 @@ func (o *Oscillator) Initialize() {
 	o.limitParams()
 
 	y := o.signalValue(0, o.Amp.Val, 0)
-	o.Current = stereo(y, o.Pan.Val)
+	o.current = stereo(y, o.Pan.Val)
 }
 
-func (o *Oscillator) Next(x float64, oscMap OscillatorsMap, customMap CustomMap) {
-	pan := utils.Limit(o.Pan.Val+modulate(o.Pan.Mod, oscMap, customMap)*o.Pan.ModAmp, panLimits.low, panLimits.high)
-	amp := utils.Limit(o.Amp.Val+modulate(o.Amp.Mod, oscMap, customMap)*o.Amp.ModAmp, ampLimits.low, ampLimits.high)
-	offset := o.getOffset(oscMap, customMap)
+func (o *Oscillator) Next(t float64, modMap ModulesMap) {
+	pan := utils.Limit(o.Pan.Val+modulate(o.Pan.Mod, modMap)*o.Pan.ModAmp, panLimits.low, panLimits.high)
+	amp := utils.Limit(o.Amp.Val+modulate(o.Amp.Mod, modMap)*o.Amp.ModAmp, ampLimits.low, ampLimits.high)
+	offset := o.getOffset(modMap)
 
-	y := o.signalValue(x, amp, offset)
-	o.Current = stereo(y, pan)
+	y := o.signalValue(t, amp, offset)
+	o.current = stereo(y, pan)
 }
 
-func (o *Oscillator) getOffset(oscMap OscillatorsMap, customMap CustomMap) float64 {
+func (o *Oscillator) getOffset(modMap ModulesMap) float64 {
 	var y float64
 
-	for _, mod := range o.Freq.Mod {
-		osc, ok := oscMap[mod]
+	for _, m := range o.Freq.Mod {
+		mod, ok := modMap[m]
 		if ok {
-			y += osc.Integral
-		}
-
-		c, ok := customMap[mod]
-		if ok {
-			y += c.Integral
+			y += mod.Integral()
 		}
 	}
 
 	return y * o.Freq.ModAmp
 }
 
-func (o *Oscillator) signalValue(x, amp, offset float64) float64 {
+func (o *Oscillator) signalValue(t, amp, offset float64) float64 {
 	shift := o.Phase / o.Freq.Val // shift is a fraction of one period
-	phi := 2 * math.Pi * (o.Freq.Val*(x+shift) + offset)
+	phi := 2 * math.Pi * (o.Freq.Val*(t+shift) + offset)
 	y := o.signal(phi) * amp
 
-	avg := (y + o.Current.Mono) / 2
-	o.Integral += avg / config.Config.SampleRate
+	avg := (y + o.Current().Mono) / 2
+	o.integral += avg / config.Config.SampleRate
 
 	return y
 }
