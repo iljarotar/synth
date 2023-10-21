@@ -7,8 +7,6 @@ import (
 	"github.com/iljarotar/synth/utils"
 )
 
-type NoiseMap map[string]*Noise
-
 type Noise struct {
 	Module
 	Name   string `yaml:"name"`

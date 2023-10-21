@@ -9,11 +9,11 @@ import (
 )
 
 type Synth struct {
-	Volume             float64              `yaml:"vol"`
-	Out                []string             `yaml:"out"`
-	Oscillators        []*module.Oscillator `yaml:"oscillators"`
-	Noise              []*module.Noise      `yaml:"noise"`
-	Custom             []*module.Custom     `yaml:"custom"`
+	Volume             float64                `yaml:"vol"`
+	Out                []string               `yaml:"out"`
+	Oscillators        []*module.Oscillator   `yaml:"oscillators"`
+	Noises             []*module.Noise        `yaml:"noises"`
+	CustomSignals      []*module.CustomSignal `yaml:"custom-signals"`
 	Time               float64
 	modMap             module.ModulesMap
 	step, volumeMemory float64
@@ -31,11 +31,11 @@ func (s *Synth) Initialize() {
 		osc.Initialize()
 	}
 
-	for _, n := range s.Noise {
+	for _, n := range s.Noises {
 		n.Initialize()
 	}
 
-	for _, c := range s.Custom {
+	for _, c := range s.CustomSignals {
 		c.Initialize()
 	}
 
@@ -116,11 +116,11 @@ func (s *Synth) updateCurrentValues() {
 		osc.Next(s.Time, s.modMap)
 	}
 
-	for _, n := range s.Noise {
+	for _, n := range s.Noises {
 		n.Next(s.Time, s.modMap)
 	}
 
-	for _, c := range s.Custom {
+	for _, c := range s.CustomSignals {
 		c.Next(s.Time, s.modMap)
 	}
 
@@ -134,11 +134,11 @@ func (s *Synth) makeModulesMap() {
 		modMap[osc.Name] = osc
 	}
 
-	for _, noise := range s.Noise {
+	for _, noise := range s.Noises {
 		modMap[noise.Name] = noise
 	}
 
-	for _, custom := range s.Custom {
+	for _, custom := range s.CustomSignals {
 		modMap[custom.Name] = custom
 	}
 

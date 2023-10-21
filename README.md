@@ -74,13 +74,14 @@ More examples can be found [here](https://github.com/iljarotar/synth-patches).
 
 ### Data types
 
-| Synth       |                   |                                                                                                           |
-| ----------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
-| **Field**   | **Type**          | **Description**                                                                                           |
-| vol         | Float             | main volume in range [0,1]                                                                                |
-| out         | String [0..*]     | names of all oscillators, noise generators and custom signals, whose outputs will be sent to the speakers |
-| oscillators | Oscillator [0..*] | all oscillators                                                                                           |
-| noise       | Noise [0..*]      | all noise generators                                                                                      |
+| Synth          |                     |                                                                                                           |
+| -------------- | ------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Field**      | **Type**            | **Description**                                                                                           |
+| vol            | Float               | main volume in range [0,1]                                                                                |
+| out            | String [0..*]       | names of all oscillators, noise generators and custom signals, whose outputs will be sent to the speakers |
+| oscillators    | Oscillator [0..*]   | all oscillators                                                                                           |
+| noises         | Noise [0..*]        | all noise generators                                                                                      |
+| custom-signals | CustomSignal [0..*] | all custom signals                                                                                        |
 
 | Oscillator |                |                                           |
 | ---------- | -------------- | ----------------------------------------- |
@@ -108,44 +109,44 @@ More examples can be found [here](https://github.com/iljarotar/synth-patches).
 | pan       | Param    | stereo balance in range [-1,1]            |
 | filter    | Filter   | a lowpass, highpass or bandpass filter    |
 
-| Filter     |          |                                                            |
-| ---------- | -------- | ---------------------------------------------------------- |
-| **Field**  | **Type** | **Description**                                            |
-| order      | Integer  | order of the FIR filter                                    |
+| Filter      |          |                                                            |
+| ----------- | -------- | ---------------------------------------------------------- |
+| **Field**   | **Type** | **Description**                                            |
+| order       | Integer  | order of the FIR filter                                    |
 | low-cutoff  | Float    | cutoff frequency of the highpass filter in range [0,20000] |
 | high-cutoff | Float    | cutoff frequency of the lowpass filter in range [0,20000]  |
 
-If both `low-cutoff` and `high-cutoff` are 0, the filter is disabled. If `low-cutoff` is
-0, the filter is a lowpass filter transitioning at the `high-cutoff` frequency. If
-`high-cutoff` is 0, the filter is a highpass filter transitioning at the `low-cutoff`
-frequency.
+If both `low-cutoff` and `high-cutoff` are 0, the filter is disabled. If
+`low-cutoff` is 0, the filter is a lowpass filter transitioning at the
+`high-cutoff` frequency. If `high-cutoff` is 0, the filter is a highpass filter
+transitioning at the `low-cutoff` frequency.
 
 A higher `order` improves the filter's precision, but it also makes it more
 expensive in terms of computation. If the sound becomes glitchy, decreasing the
 filter `order` might be necessary.
 
-| Custom    |              |                                           |
-| --------- | ------------ | ----------------------------------------- |
-| **Field** | **Type**     | **Description**                           |
-| name      | String       | should be unique in the scope of the file |
-| amp       | Param        | amplitude in range [0,1]                  |
-| pan       | Param        | stereo balance in range [-1,1]            |
-| freq      | Param        | periods per second [0,20000]              |
-| data      | Float [0..*] | custom values                             |
+| CustomSignal |              |                                           |
+| ------------ | ------------ | ----------------------------------------- |
+| **Field**    | **Type**     | **Description**                           |
+| name         | String       | should be unique in the scope of the file |
+| amp          | Param        | amplitude in range [0,1]                  |
+| pan          | Param        | stereo balance in range [-1,1]            |
+| freq         | Param        | periods per second [0,20000]              |
+| data         | Float [0..*] | custom values                             |
 
 | Param     |               |                                                    |
 | --------- | ------------- | -------------------------------------------------- |
 | **Field** | **Type**      | **Description**                                    |
 | val       | Float         | initial value of the respective parameter          |
 | mod       | String [0..*] | names of modulating oscillators and custom signals |
-| mod-amp    | Float         | amplitude of the modulation in range [0,1]         |
+| mod-amp   | Float         | amplitude of the modulation in range [0,1]         |
 
 ### Structure of a patch file
 
 ```yaml
 vol:
 out:
-noise:
+noises:
   - name:
     amp:
       val:
@@ -177,7 +178,7 @@ oscillators:
       mod-amp:
     phase:
 
-custom:
+custom-signals:
   - name:
     freq:
       val:
