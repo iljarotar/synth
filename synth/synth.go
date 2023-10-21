@@ -15,9 +15,7 @@ type Synth struct {
 	Noise              []*module.Noise      `yaml:"noise"`
 	Custom             []*module.Custom     `yaml:"custom"`
 	Time               float64
-	oscMap             module.OscillatorsMap
-	noiseMap           module.NoiseMap
-	customMap          module.CustomMap
+	modMap             module.ModulesMap
 	step, volumeMemory float64
 	next               chan bool
 }
@@ -41,13 +39,11 @@ func (s *Synth) Initialize() {
 		c.Initialize()
 	}
 
-	s.makeOscillatorsMap()
-	s.makeNoiseMap()
-	s.makeCustomMap()
+	s.makeModulesMap()
 }
 
-func (s *Synth) Play(input chan<- struct{ Left, Right float32 }) {
-	defer close(input)
+func (s *Synth) Play(output chan<- struct{ Left, Right float32 }) {
+	defer close(output)
 
 	for {
 		left, right := s.getCurrentValue()
@@ -55,7 +51,7 @@ func (s *Synth) Play(input chan<- struct{ Left, Right float32 }) {
 		right *= s.Volume
 
 		y := struct{ Left, Right float32 }{Left: float32(left), Right: float32(right)}
-		input <- y
+		output <- y
 
 		select {
 		case next := <-s.next:
@@ -104,22 +100,10 @@ func (s *Synth) getCurrentValue() (left, right float64) {
 	left, right = 0, 0
 
 	for _, o := range s.Out {
-		osc, ok := s.oscMap[o]
+		mod, ok := s.modMap[o]
 		if ok {
-			left += osc.Current.Left
-			right += osc.Current.Right
-		}
-
-		noise, ok := s.noiseMap[o]
-		if ok {
-			left += noise.Current.Left
-			right += noise.Current.Right
-		}
-
-		custom, ok := s.customMap[o]
-		if ok {
-			left += custom.Current.Left
-			right += custom.Current.Right
+			left += mod.Current().Left
+			right += mod.Current().Right
 		}
 	}
 
@@ -129,48 +113,36 @@ func (s *Synth) getCurrentValue() (left, right float64) {
 func (s *Synth) updateCurrentValues() {
 	for _, o := range s.Oscillators {
 		osc := o
-		osc.Next(s.Time, s.oscMap, s.customMap)
+		osc.Next(s.Time, s.modMap)
 	}
 
 	for _, n := range s.Noise {
-		n.Next(s.oscMap, s.customMap)
+		n.Next(s.Time, s.modMap)
 	}
 
 	for _, c := range s.Custom {
-		c.Next(s.Time, s.oscMap, s.customMap)
+		c.Next(s.Time, s.modMap)
 	}
 
 	s.Time += s.step
 }
 
-func (s *Synth) makeOscillatorsMap() {
-	oscMap := make(module.OscillatorsMap)
+func (s *Synth) makeModulesMap() {
+	modMap := make(module.ModulesMap)
 
 	for _, osc := range s.Oscillators {
-		oscMap[osc.Name] = osc
+		modMap[osc.Name] = osc
 	}
-
-	s.oscMap = oscMap
-}
-
-func (s *Synth) makeNoiseMap() {
-	noiseMap := make(module.NoiseMap)
 
 	for _, noise := range s.Noise {
-		noiseMap[noise.Name] = noise
+		modMap[noise.Name] = noise
 	}
-
-	s.noiseMap = noiseMap
-}
-
-func (s *Synth) makeCustomMap() {
-	cMap := make(module.CustomMap)
 
 	for _, custom := range s.Custom {
-		cMap[custom.Name] = custom
+		modMap[custom.Name] = custom
 	}
 
-	s.customMap = cMap
+	s.modMap = modMap
 }
 
 func secondsToStep(seconds, delta float64) float64 {
