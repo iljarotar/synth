@@ -7,9 +7,7 @@ import (
 	"github.com/iljarotar/synth/utils"
 )
 
-type CustomMap map[string]*Custom
-
-type Custom struct {
+type CustomSignal struct {
 	Module
 	Name string    `yaml:"name"`
 	Data []float64 `yaml:"data"`
@@ -18,7 +16,7 @@ type Custom struct {
 	Pan  Param     `yaml:"pan"`
 }
 
-func (c *Custom) Initialize() {
+func (c *CustomSignal) Initialize() {
 	c.limitParams()
 	c.Data = utils.Normalize(c.Data, -1, 1)
 
@@ -26,7 +24,7 @@ func (c *Custom) Initialize() {
 	c.current = stereo(y, c.Pan.Val)
 }
 
-func (c *Custom) Next(t float64, modMap ModulesMap) {
+func (c *CustomSignal) Next(t float64, modMap ModulesMap) {
 	pan := utils.Limit(c.Pan.Val+modulate(c.Pan.Mod, modMap)*c.Pan.ModAmp, panLimits.low, panLimits.high)
 	amp := utils.Limit(c.Amp.Val+modulate(c.Amp.Mod, modMap)*c.Amp.ModAmp, ampLimits.low, ampLimits.high)
 	freq := utils.Limit(c.Freq.Val+modulate(c.Freq.Mod, modMap)*c.Freq.ModAmp, freqLimits.low, freqLimits.high)
@@ -35,7 +33,7 @@ func (c *Custom) Next(t float64, modMap ModulesMap) {
 	c.current = stereo(y, pan)
 }
 
-func (c *Custom) limitParams() {
+func (c *CustomSignal) limitParams() {
 	c.Amp.ModAmp = utils.Limit(c.Amp.ModAmp, modLimits.low, modLimits.high)
 	c.Amp.Val = utils.Limit(c.Amp.Val, ampLimits.low, ampLimits.high)
 
@@ -46,12 +44,12 @@ func (c *Custom) limitParams() {
 	c.Freq.Val = utils.Limit(c.Freq.Val, freqLimits.low, freqLimits.high)
 }
 
-func (c *Custom) signalValue(t, amp, freq float64) float64 {
+func (c *CustomSignal) signalValue(t, amp, freq float64) float64 {
 	idx := int(math.Floor(t * float64(len(c.Data)) * freq))
 	var val float64
 
-	if len(c.Data) > 0 {
-		val = c.Data[idx%len(c.Data)]
+	if l := len(c.Data); l > 0 {
+		val = c.Data[idx%l]
 	}
 
 	y := amp * val

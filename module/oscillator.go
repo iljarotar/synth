@@ -21,8 +21,6 @@ const (
 	Triangle        OscillatorType = "Triangle"
 )
 
-type OscillatorsMap map[string]*Oscillator
-
 type Oscillator struct {
 	Module
 	Name   string         `yaml:"name"`

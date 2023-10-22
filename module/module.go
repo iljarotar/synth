@@ -44,6 +44,7 @@ var (
 	panLimits   limits = limits{low: -1, high: 1}
 	phaseLimits limits = limits{low: -1, high: 1}
 	freqLimits  limits = limits{low: 0, high: 20000}
+	bpmLimits   limits = limits{low: 0, high: 1000000} // upper limit is arbitrary
 )
 
 func modulate(modulators []string, modMap ModulesMap) float64 {
