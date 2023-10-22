@@ -48,8 +48,8 @@ func (c *CustomSignal) signalValue(t, amp, freq float64) float64 {
 	idx := int(math.Floor(t * float64(len(c.Data)) * freq))
 	var val float64
 
-	if len(c.Data) > 0 {
-		val = c.Data[idx%len(c.Data)]
+	if l := len(c.Data); l > 0 {
+		val = c.Data[idx%l]
 	}
 
 	y := amp * val
