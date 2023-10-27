@@ -41,8 +41,8 @@ func (o *Oscillator) Initialize() {
 }
 
 func (o *Oscillator) Next(t float64, modMap ModulesMap) {
-	pan := utils.Limit(o.Pan.Val+modulate(o.Pan.Mod, modMap)*o.Pan.ModAmp, panLimits.low, panLimits.high)
-	amp := utils.Limit(o.Amp.Val+modulate(o.Amp.Mod, modMap)*o.Amp.ModAmp, ampLimits.low, ampLimits.high)
+	pan := utils.Limit(o.Pan.Val+modulate(o.Pan.Mod, modMap)*o.Pan.ModAmp, panLimits.min, panLimits.max)
+	amp := utils.Limit(o.Amp.Val+modulate(o.Amp.Mod, modMap)*o.Amp.ModAmp, ampLimits.min, ampLimits.max)
 	offset := o.getOffset(modMap)
 
 	y := o.signalValue(t, amp, offset)
@@ -74,14 +74,14 @@ func (o *Oscillator) signalValue(t, amp, offset float64) float64 {
 }
 
 func (o *Oscillator) limitParams() {
-	o.Amp.ModAmp = utils.Limit(o.Amp.ModAmp, modLimits.low, modLimits.high)
-	o.Amp.Val = utils.Limit(o.Amp.Val, ampLimits.low, ampLimits.high)
+	o.Amp.ModAmp = utils.Limit(o.Amp.ModAmp, modLimits.min, modLimits.max)
+	o.Amp.Val = utils.Limit(o.Amp.Val, ampLimits.min, ampLimits.max)
 
-	o.Phase = utils.Limit(o.Phase, phaseLimits.low, phaseLimits.high)
+	o.Phase = utils.Limit(o.Phase, phaseLimits.min, phaseLimits.max)
 
-	o.Pan.ModAmp = utils.Limit(o.Pan.ModAmp, modLimits.low, modLimits.high)
-	o.Pan.Val = utils.Limit(o.Pan.Val, panLimits.low, panLimits.high)
+	o.Pan.ModAmp = utils.Limit(o.Pan.ModAmp, modLimits.min, modLimits.max)
+	o.Pan.Val = utils.Limit(o.Pan.Val, panLimits.min, panLimits.max)
 
-	o.Freq.ModAmp = utils.Limit(o.Freq.ModAmp, freqLimits.low, freqLimits.high)
-	o.Freq.Val = utils.Limit(o.Freq.Val, freqLimits.low, freqLimits.high)
+	o.Freq.ModAmp = utils.Limit(o.Freq.ModAmp, freqLimits.min, freqLimits.max)
+	o.Freq.Val = utils.Limit(o.Freq.Val, freqLimits.min, freqLimits.max)
 }
