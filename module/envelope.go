@@ -13,8 +13,9 @@ type Envelope struct {
 	SustainLevel Param    `yaml:"sustain-level"`
 	Trigger      []string `yaml:"trigger"`
 	Threshold    Param    `yaml:"threshold"`
-	lastInput    float64  // TODO: use to check if from last to current input the threshold was exceeded; if so -> trigger
-	triggeredAt  float64  // TODO: keep track of the last time the envelope was triggered
+	lastInput    float64
+	triggeredAt  float64
+	triggered    bool
 }
 
 type envelopeConfig struct {
@@ -52,7 +53,8 @@ func (e *Envelope) Next(t float64, modMap ModulesMap) {
 		Threshold:    threshold,
 	}
 
-	y := getCurrentValue(t, envelope)
+	e.checkTrigger(t, threshold)
+	y := e.getCurrentValue(t, envelope)
 	e.current = output{Mono: y, Left: 0, Right: 0}
 }
 
@@ -79,7 +81,68 @@ func (e *Envelope) limitParams() {
 	e.Threshold.ModAmp = utils.Limit(e.Threshold.ModAmp, modLimits.min, modLimits.max)
 }
 
-func getCurrentValue(t float64, envelope envelopeConfig) float64 {
-	// TODO: implement
-	return 0
+func (e *Envelope) checkTrigger(t, threshold float64) {
+	// TODO: check lastInput against sum of current outputs of all trigger modules
+	// if lastInput was below threshold and the new sum is above the theshold, set triggered to true and triggeredAt to t
+}
+
+func (e *Envelope) getCurrentValue(t float64, envelope envelopeConfig) float64 {
+	if !e.triggered {
+		return 0
+	}
+
+	var f stageFunc
+	attackEnd := e.triggeredAt + envelope.Attack
+	decayEnd := attackEnd + envelope.Decay
+	sustainEnd := decayEnd + envelope.Sustain
+	releaseEnd := sustainEnd + envelope.Release
+
+	switch {
+	case t >= e.triggeredAt && t < attackEnd:
+		f = attackFunc(envelope, e.triggeredAt)
+
+	case t >= attackEnd && t < decayEnd:
+		f = decayFunc(envelope, e.triggeredAt)
+
+	case t >= decayEnd && t < sustainEnd:
+		return envelope.SustainLevel
+
+	case t >= sustainEnd && t < releaseEnd:
+		f = releaseFunc(envelope, e.triggeredAt)
+
+	default:
+		e.triggered = false
+		return 0
+	}
+
+	return f(t)
+}
+
+type stageFunc func(t float64) float64
+
+func attackFunc(envelope envelopeConfig, triggeredAt float64) stageFunc {
+	m := envelope.Peak / envelope.Attack
+	c := -m * triggeredAt
+
+	return func(t float64) float64 {
+		return m*t + c
+	}
+}
+
+func decayFunc(envelope envelopeConfig, triggeredAt float64) stageFunc {
+	m := -(envelope.Peak - envelope.SustainLevel) / envelope.Decay
+	c := -m*(triggeredAt+envelope.Attack) + envelope.Peak
+
+	return func(t float64) float64 {
+		return m*t + c
+	}
+}
+
+func releaseFunc(envelope envelopeConfig, triggeredAt float64) stageFunc {
+	m := -envelope.SustainLevel / envelope.Release
+	c := -m*(triggeredAt+envelope.Attack+envelope.Decay+envelope.SustainLevel) + envelope.SustainLevel
+
+	return func(t float64) float64 {
+		return m*t + c
+	}
 }
