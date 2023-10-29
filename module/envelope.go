@@ -17,6 +17,7 @@ type Envelope struct {
 	SustainLevel Param    `yaml:"sustain-level"`
 	Trigger      []string `yaml:"trigger"`
 	Threshold    Param    `yaml:"threshold"`
+	Negative     bool     `yaml:"negative"`
 	lastInput    float64
 	triggeredAt  float64
 	triggered    bool
@@ -96,7 +97,7 @@ func (e *Envelope) checkTrigger(t, threshold float64, modMap ModulesMap) {
 
 	sum = math.Abs(sum)
 
-	if e.lastInput < threshold && sum >= threshold || !e.triggered && sum >= threshold {
+	if e.lastInput < threshold && sum >= threshold {
 		e.triggered = true
 		e.triggeredAt = t
 	}
@@ -131,6 +132,10 @@ func (e *Envelope) getCurrentValue(t float64, envelope envelopeConfig) float64 {
 	default:
 		e.triggered = false
 		return 0
+	}
+
+	if e.Negative {
+		return -f(t)
 	}
 
 	return f(t)
