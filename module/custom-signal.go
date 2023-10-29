@@ -25,23 +25,23 @@ func (c *CustomSignal) Initialize() {
 }
 
 func (c *CustomSignal) Next(t float64, modMap ModulesMap) {
-	pan := utils.Limit(c.Pan.Val+modulate(c.Pan.Mod, modMap)*c.Pan.ModAmp, panLimits.low, panLimits.high)
-	amp := utils.Limit(c.Amp.Val+modulate(c.Amp.Mod, modMap)*c.Amp.ModAmp, ampLimits.low, ampLimits.high)
-	freq := utils.Limit(c.Freq.Val+modulate(c.Freq.Mod, modMap)*c.Freq.ModAmp, freqLimits.low, freqLimits.high)
+	pan := utils.Limit(c.Pan.Val+modulate(c.Pan.Mod, modMap)*c.Pan.ModAmp, panLimits.min, panLimits.max)
+	amp := utils.Limit(c.Amp.Val+modulate(c.Amp.Mod, modMap)*c.Amp.ModAmp, ampLimits.min, ampLimits.max)
+	freq := utils.Limit(c.Freq.Val+modulate(c.Freq.Mod, modMap)*c.Freq.ModAmp, freqLimits.min, freqLimits.max)
 
 	y := c.signalValue(t, amp, freq)
 	c.current = stereo(y, pan)
 }
 
 func (c *CustomSignal) limitParams() {
-	c.Amp.ModAmp = utils.Limit(c.Amp.ModAmp, modLimits.low, modLimits.high)
-	c.Amp.Val = utils.Limit(c.Amp.Val, ampLimits.low, ampLimits.high)
+	c.Amp.ModAmp = utils.Limit(c.Amp.ModAmp, modLimits.min, modLimits.max)
+	c.Amp.Val = utils.Limit(c.Amp.Val, ampLimits.min, ampLimits.max)
 
-	c.Pan.ModAmp = utils.Limit(c.Pan.ModAmp, modLimits.low, modLimits.high)
-	c.Pan.Val = utils.Limit(c.Pan.Val, panLimits.low, panLimits.high)
+	c.Pan.ModAmp = utils.Limit(c.Pan.ModAmp, modLimits.min, modLimits.max)
+	c.Pan.Val = utils.Limit(c.Pan.Val, panLimits.min, panLimits.max)
 
-	c.Freq.ModAmp = utils.Limit(c.Freq.ModAmp, freqLimits.low, freqLimits.high)
-	c.Freq.Val = utils.Limit(c.Freq.Val, freqLimits.low, freqLimits.high)
+	c.Freq.ModAmp = utils.Limit(c.Freq.ModAmp, freqLimits.min, freqLimits.max)
+	c.Freq.Val = utils.Limit(c.Freq.Val, freqLimits.min, freqLimits.max)
 }
 
 func (c *CustomSignal) signalValue(t, amp, freq float64) float64 {

@@ -144,12 +144,26 @@ filter `order` might be necessary.
 | bpm           | Param    | beats per minute [0,1000000]              |
 | text          | String   | arbitrary text                            |
 
-| Param     |               |                                                    |
-| --------- | ------------- | -------------------------------------------------- |
-| **Field** | **Type**      | **Description**                                    |
-| val       | Float         | initial value of the respective parameter          |
-| mod       | String [0..*] | names of modulating oscillators and custom signals |
-| mod-amp   | Float         | amplitude of the modulation in range [0,1]         |
+| Envelope      |               |                                           |
+| ------------- | ------------- | ----------------------------------------- |
+| **Field**     | **Type**      | **Description**                           |
+| name          | String        | should be unique in the scope of the file |
+| attak         | Param         | attack time in seconds [0,10000]          |
+| decay         | Param         | decay time in seconds [0,10000]           |
+| sustain       | Param         | sustain time in seconds [0,10000]         |
+| release       | Param         | release time in seconds [0,10000]         |
+| peak          | Param         | peak amplitude [0,1]                      |
+| sustain-level | Param         | sustain amplitude [0,1]                   |
+| threshold     | Param         | trigger treshold [0,1]                    |
+| triggers      | String [0..*] | names of triggering modules               |
+| negative      | Boolean       | if true, the envelope's sign is inverted  |
+
+| Param     |               |                                            |
+| --------- | ------------- | ------------------------------------------ |
+| **Field** | **Type**      | **Description**                            |
+| val       | Float         | initial value of the respective parameter  |
+| mod       | String [0..*] | names of modulating modules                |
+| mod-amp   | Float         | amplitude of the modulation in range [0,1] |
 
 ### Structure of a patch file
 
@@ -219,6 +233,39 @@ text-processors:
       mod:
       mod-amp:
     text:
+
+envelopes:
+  - name:
+    attack:
+      val:
+      mod:
+      mod-amp:
+    decay:
+      val:
+      mod:
+      mod-amp:
+    sustain:
+      val:
+      mod:
+      mod-amp:
+    release:
+      val:
+      mod:
+      mod-amp:
+    peak:
+      val:
+      mod:
+      mod-amp:
+    sustain-level:
+      val:
+      mod:
+      mod-amp:
+    threshold:
+      val:
+      mod:
+      mod-amp:
+    triggers: []
+    negative:
 ```
 
 Most of the fields are optional. A simple 440hz sine wave looks like this:

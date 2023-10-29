@@ -31,7 +31,7 @@ type Param struct {
 }
 
 type limits struct {
-	high, low float64
+	max, min float64
 }
 
 type output struct {
@@ -39,12 +39,13 @@ type output struct {
 }
 
 var (
-	ampLimits   limits = limits{low: 0, high: 1}
-	modLimits   limits = limits{low: 0, high: 1}
-	panLimits   limits = limits{low: -1, high: 1}
-	phaseLimits limits = limits{low: -1, high: 1}
-	freqLimits  limits = limits{low: 0, high: 20000}
-	bpmLimits   limits = limits{low: 0, high: 1000000} // upper limit is arbitrary
+	ampLimits      limits = limits{min: 0, max: 1}
+	modLimits      limits = limits{min: 0, max: 1}
+	panLimits      limits = limits{min: -1, max: 1}
+	phaseLimits    limits = limits{min: -1, max: 1}
+	freqLimits     limits = limits{min: 0, max: 20000}
+	bpmLimits      limits = limits{min: 0, max: 1000000}
+	envelopeLimits limits = limits{min: 0, max: 10000}
 )
 
 func modulate(modulators []string, modMap ModulesMap) float64 {
