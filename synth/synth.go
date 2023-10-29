@@ -15,6 +15,7 @@ type Synth struct {
 	Noises             []*module.Noise         `yaml:"noises"`
 	CustomSignals      []*module.CustomSignal  `yaml:"custom-signals"`
 	TextProcessors     []*module.TextProcessor `yaml:"text-processors"`
+	Envelopes          []*module.Envelope      `yaml:"envelopes"`
 	Time               float64
 	modMap             module.ModulesMap
 	step, volumeMemory float64
@@ -42,6 +43,10 @@ func (s *Synth) Initialize() {
 
 	for _, p := range s.TextProcessors {
 		p.Initialize()
+	}
+
+	for _, e := range s.Envelopes {
+		e.Initialize()
 	}
 
 	s.makeModulesMap()
@@ -133,6 +138,10 @@ func (s *Synth) updateCurrentValues() {
 		p.Next(s.Time, s.modMap)
 	}
 
+	for _, e := range s.Envelopes {
+		e.Next(s.Time, s.modMap)
+	}
+
 	s.Time += s.step
 }
 
@@ -153,6 +162,10 @@ func (s *Synth) makeModulesMap() {
 
 	for _, p := range s.TextProcessors {
 		modMap[p.Name] = p
+	}
+
+	for _, e := range s.Envelopes {
+		modMap[e.Name] = e
 	}
 
 	s.modMap = modMap

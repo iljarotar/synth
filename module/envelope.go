@@ -1,6 +1,10 @@
 package module
 
-import "github.com/iljarotar/synth/utils"
+import (
+	"math"
+
+	"github.com/iljarotar/synth/utils"
+)
 
 type Envelope struct {
 	Module
@@ -53,7 +57,7 @@ func (e *Envelope) Next(t float64, modMap ModulesMap) {
 		Threshold:    threshold,
 	}
 
-	e.checkTrigger(t, threshold)
+	e.checkTrigger(t, threshold, modMap)
 	y := e.getCurrentValue(t, envelope)
 	e.current = output{Mono: y, Left: 0, Right: 0}
 }
@@ -81,9 +85,23 @@ func (e *Envelope) limitParams() {
 	e.Threshold.ModAmp = utils.Limit(e.Threshold.ModAmp, modLimits.min, modLimits.max)
 }
 
-func (e *Envelope) checkTrigger(t, threshold float64) {
-	// TODO: check lastInput against sum of current outputs of all trigger modules
-	// if lastInput was below threshold and the new sum is above the theshold, set triggered to true and triggeredAt to t
+func (e *Envelope) checkTrigger(t, threshold float64, modMap ModulesMap) {
+	var sum float64
+	for _, trigger := range e.Trigger {
+		mod, ok := modMap[trigger]
+		if ok {
+			sum += mod.Current().Mono
+		}
+	}
+
+	sum = math.Abs(sum)
+
+	if e.lastInput < threshold && sum >= threshold || !e.triggered && sum >= threshold {
+		e.triggered = true
+		e.triggeredAt = t
+	}
+
+	e.lastInput = sum
 }
 
 func (e *Envelope) getCurrentValue(t float64, envelope envelopeConfig) float64 {
@@ -140,7 +158,7 @@ func decayFunc(envelope envelopeConfig, triggeredAt float64) stageFunc {
 
 func releaseFunc(envelope envelopeConfig, triggeredAt float64) stageFunc {
 	m := -envelope.SustainLevel / envelope.Release
-	c := -m*(triggeredAt+envelope.Attack+envelope.Decay+envelope.SustainLevel) + envelope.SustainLevel
+	c := -m*(triggeredAt+envelope.Attack+envelope.Decay+envelope.Sustain) + envelope.SustainLevel
 
 	return func(t float64) float64 {
 		return m*t + c
