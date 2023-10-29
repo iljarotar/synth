@@ -15,7 +15,7 @@ type Envelope struct {
 	Release      Param    `yaml:"release"`
 	Peak         Param    `yaml:"peak"`
 	SustainLevel Param    `yaml:"sustain-level"`
-	Trigger      []string `yaml:"trigger"`
+	Triggers     []string `yaml:"triggers"`
 	Threshold    Param    `yaml:"threshold"`
 	Negative     bool     `yaml:"negative"`
 	lastInput    float64
@@ -88,7 +88,7 @@ func (e *Envelope) limitParams() {
 
 func (e *Envelope) checkTrigger(t, threshold float64, modMap ModulesMap) {
 	var sum float64
-	for _, trigger := range e.Trigger {
+	for _, trigger := range e.Triggers {
 		mod, ok := modMap[trigger]
 		if ok {
 			sum += mod.Current().Mono

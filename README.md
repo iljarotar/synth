@@ -155,7 +155,7 @@ filter `order` might be necessary.
 | peak          | Param         | peak amplitude [0,1]                      |
 | sustain-level | Param         | sustain amplitude [0,1]                   |
 | threshold     | Param         | trigger treshold [0,1]                    |
-| trigger       | String [0..*] | names of triggering modules               |
+| triggers      | String [0..*] | names of triggering modules               |
 | negative      | Boolean       | if true, the envelope's sign is inverted  |
 
 | Param     |               |                                            |
@@ -233,6 +233,39 @@ text-processors:
       mod:
       mod-amp:
     text:
+
+envelopes:
+  - name:
+    attack:
+      val:
+      mod:
+      mod-amp:
+    decay:
+      val:
+      mod:
+      mod-amp:
+    sustain:
+      val:
+      mod:
+      mod-amp:
+    release:
+      val:
+      mod:
+      mod-amp:
+    peak:
+      val:
+      mod:
+      mod-amp:
+    sustain-level:
+      val:
+      mod:
+      mod-amp:
+    threshold:
+      val:
+      mod:
+      mod-amp:
+    triggers: []
+    negative:
 ```
 
 Most of the fields are optional. A simple 440hz sine wave looks like this:
