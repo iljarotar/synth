@@ -83,6 +83,7 @@ More examples can be found [here](https://github.com/iljarotar/synth-patches).
 | noises          | Noise [0..*]         | all noise generators                                                                                      |
 | custom-signals  | CustomSignal [0..*]  | all custom signals                                                                                        |
 | text-processors | TextProcessor [0..*] | all text processors                                                                                       |
+| envelopes       | Envelope [0..*]      | all envelopes                                                                                             |
 
 | Oscillator |                |                                           |
 | ---------- | -------------- | ----------------------------------------- |
