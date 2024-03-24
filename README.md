@@ -149,7 +149,7 @@ filter `order` might be necessary.
 | ------------- | ------------- | ----------------------------------------- |
 | **Field**     | **Type**      | **Description**                           |
 | name          | String        | should be unique in the scope of the file |
-| attak         | Param         | attack time in seconds [0,10000]          |
+| attack         | Param         | attack time in seconds [0,10000]          |
 | decay         | Param         | decay time in seconds [0,10000]           |
 | sustain       | Param         | sustain time in seconds [0,10000]         |
 | release       | Param         | release time in seconds [0,10000]         |
