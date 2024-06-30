@@ -91,9 +91,9 @@ func (l *Loader) StartWatching() {
 
 				err := l.Load()
 				if err != nil {
-					ui.Logger.Log("could not load file. error: " + err.Error())
+					ui.Logger.Error("could not load file. error: " + err.Error())
 				} else {
-					ui.Logger.Log("reloaded file " + l.file)
+					ui.Logger.Info("reloaded file " + l.file)
 				}
 
 				l.ctl.Start(0.01)
@@ -102,7 +102,7 @@ func (l *Loader) StartWatching() {
 			if !ok {
 				return
 			}
-			ui.Logger.Log("an error occurred. please restart synth. error: " + err.Error())
+			ui.Logger.Error("an error occurred. please restart synth. error: " + err.Error())
 		}
 	}
 }
