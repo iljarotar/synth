@@ -79,6 +79,7 @@ More examples can be found in the [examples](https://github.com/iljarotar/synth/
 | **Field**       | **Type**             | **Description**                                                                                           |
 | vol             | Float                | main volume in range [0,1]                                                                                |
 | out             | String [0..*]        | names of all oscillators, noise generators and custom signals, whose outputs will be sent to the speakers |
+| time            | Float                | initial time shift in seconds                                                                             |
 | oscillators     | Oscillator [0..*]    | all oscillators                                                                                           |
 | noises          | Noise [0..*]         | all noise generators                                                                                      |
 | custom-signals  | CustomSignal [0..*]  | all custom signals                                                                                        |
