@@ -7,6 +7,10 @@ import (
 	"github.com/iljarotar/synth/utils"
 )
 
+const (
+	maxOrder = 1000
+)
+
 type Filter struct {
 	Order           int     `yaml:"order"`
 	LowCutoff       float64 `yaml:"low-cutoff"`
@@ -15,7 +19,7 @@ type Filter struct {
 }
 
 func (f *Filter) Initialize() {
-	f.Order = int(utils.Limit(float64(f.Order), 0, 1000))
+	f.Order = int(utils.Limit(float64(f.Order), 0, maxOrder))
 
 	if f.LowCutoff == 0 && f.HighCutoff == 0 {
 		f.weights = make([]float64, 0) // disable filter
