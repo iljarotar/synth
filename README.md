@@ -115,7 +115,7 @@ More examples can be found in the [examples](https://github.com/iljarotar/synth/
 | Filter      |          |                                                            |
 | ----------- | -------- | ---------------------------------------------------------- |
 | **Field**   | **Type** | **Description**                                            |
-| order       | Integer  | order of the FIR filter                                    |
+| order       | Integer  | order of the FIR filter in range [0,1000]                  |
 | low-cutoff  | Float    | cutoff frequency of the highpass filter in range [0,20000] |
 | high-cutoff | Float    | cutoff frequency of the lowpass filter in range [0,20000]  |
 
@@ -126,7 +126,7 @@ transitioning at the `low-cutoff` frequency.
 
 A higher `order` improves the filter's precision, but it also makes it more
 expensive in terms of computation. If the sound becomes glitchy, decreasing the
-filter `order` might be necessary.
+filter `order` might be necessary. Sometimes a lower value for `order` also sounds better than a high value.
 
 | CustomSignal |              |                                           |
 | ------------ | ------------ | ----------------------------------------- |
