@@ -9,11 +9,10 @@ import (
 )
 
 type UI struct {
-	quit             chan bool
-	input            chan string
-	file             string
-	logs             []string
-	overdriveWarning bool
+	quit  chan bool
+	input chan string
+	file  string
+	logs  []string
 }
 
 func NewUI(file string, quit chan bool) *UI {
@@ -70,7 +69,7 @@ func (ui *UI) resetScreen() {
 	Clear()
 
 	fmt.Printf("\n\033[1;34m Synth playing \033[0m %s\n\n", ui.file)
-	if Logger.OverdriveWarningShowing {
+	if Logger.ShowingOverdriveWarning {
 		fmt.Printf("\033[1;33m [WARNING] Volume exceeded 100%% \033[0m\n\n")
 	}
 

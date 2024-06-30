@@ -62,8 +62,8 @@ func (s *Synth) Play(output chan<- struct{ Left, Right float32 }) {
 		right *= s.Volume
 		mono *= s.Volume
 
-		if mono > 1 && !ui.Logger.OverdriveWarningShowing {
-			ui.Logger.ShowOverdriveWarning()
+		if mono > 1 && !ui.Logger.ShowingOverdriveWarning {
+			ui.Logger.ShowOverdriveWarning(true)
 		}
 
 		y := struct{ Left, Right float32 }{Left: float32(left), Right: float32(right)}

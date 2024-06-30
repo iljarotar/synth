@@ -94,6 +94,7 @@ func (l *Loader) StartWatching() {
 					ui.Logger.Error("could not load file. error: " + err.Error())
 				} else {
 					ui.Logger.Info("reloaded patch file")
+					ui.Logger.ShowOverdriveWarning(false)
 				}
 
 				l.ctl.Start(0.01)
