@@ -121,13 +121,14 @@ func start(file, record string) error {
 	go rec.StartRecording()
 
 	exit := make(chan bool)
+	quit := make(chan bool)
+	u := ui.NewUI(quit)
+	go u.Enter(exit)
+
 	ctl := control.NewControl(recIn, exit)
 	defer ctl.Close()
 
-	log := make(chan string)
-	logger := ui.NewLogger(log)
-
-	loader, err := f.NewLoader(ctl, logger, file)
+	loader, err := f.NewLoader(ctl, file)
 	if err != nil {
 		return err
 	}
@@ -137,10 +138,6 @@ func start(file, record string) error {
 	if err != nil {
 		return err
 	}
-
-	quit := make(chan bool)
-	u := ui.NewUI(logger, quit)
-	go u.Enter(exit)
 
 	sig := make(chan os.Signal, 2)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)

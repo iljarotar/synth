@@ -9,14 +9,13 @@ import (
 )
 
 type UI struct {
-	logger *Logger
-	quit   chan bool
-	input  chan string
-	logs   []string
+	quit  chan bool
+	input chan string
+	logs  []string
 }
 
-func NewUI(logger *Logger, quit chan bool) *UI {
-	return &UI{logger: logger, quit: quit, input: make(chan string)}
+func NewUI(quit chan bool) *UI {
+	return &UI{quit: quit, input: make(chan string)}
 }
 
 func Clear() {
@@ -25,47 +24,47 @@ func Clear() {
 	cmd.Run()
 }
 
-func (u *UI) Enter(exit chan bool) {
-	go u.read()
-	u.resetScreen()
+func (ui *UI) Enter(exit chan bool) {
+	go ui.read()
+	ui.resetScreen()
 
 	for {
 		select {
-		case input := <-u.input:
+		case input := <-ui.input:
 			if input == "q" {
-				u.quit <- true
+				ui.quit <- true
 				return
 			} else {
-				u.resetScreen()
+				ui.resetScreen()
 			}
-		case log := <-u.logger.log:
-			u.logs = append(u.logs, log)
-			u.resetScreen()
+		case log := <-Logger.log:
+			ui.logs = append(ui.logs, log)
+			ui.resetScreen()
 		case e := <-exit:
 			if e == true {
-				u.quit <- true
+				ui.quit <- true
 				return
 			}
 		}
 	}
 }
 
-func (u *UI) read() {
+func (ui *UI) read() {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
 		in, _ := reader.ReadString('\n')
-		u.input <- strings.TrimSpace(in)
+		ui.input <- strings.TrimSpace(in)
 	}
 }
 
-func (u *UI) resetScreen() {
+func (ui *UI) resetScreen() {
 	Clear()
 
-	for i, log := range u.logs {
+	for i, log := range ui.logs {
 		fmt.Printf("[%d] %s\n", i+1, log)
 	}
-	if len(u.logs) > 0 {
+	if len(ui.logs) > 0 {
 		fmt.Print("\n")
 	}
 	fmt.Print("\033[1;34m Type 'q' to quit: \033[0m")

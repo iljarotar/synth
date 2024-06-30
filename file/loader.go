@@ -18,18 +18,17 @@ type Loader struct {
 	watch      *bool
 	lastLoaded time.Time
 	ctl        *control.Control
-	logger     *ui.Logger
 	file       string
 }
 
-func NewLoader(ctl *control.Control, log *ui.Logger, file string) (*Loader, error) {
+func NewLoader(ctl *control.Control, file string) (*Loader, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
 	}
 
 	watch := true
-	l := Loader{watcher: watcher, watch: &watch, ctl: ctl, logger: log, file: file}
+	l := Loader{watcher: watcher, watch: &watch, ctl: ctl, file: file}
 	go l.StartWatching()
 
 	return &l, nil
@@ -92,9 +91,9 @@ func (l *Loader) StartWatching() {
 
 				err := l.Load()
 				if err != nil {
-					l.logger.Log("could not load file. error: " + err.Error())
+					ui.Logger.Log("could not load file. error: " + err.Error())
 				} else {
-					l.logger.Log("reloaded file " + l.file)
+					ui.Logger.Log("reloaded file " + l.file)
 				}
 
 				l.ctl.Start(0.01)
@@ -103,7 +102,7 @@ func (l *Loader) StartWatching() {
 			if !ok {
 				return
 			}
-			l.logger.Log("an error occurred. please restart synth. error: " + err.Error())
+			ui.Logger.Log("an error occurred. please restart synth. error: " + err.Error())
 		}
 	}
 }

@@ -16,7 +16,7 @@ type Synth struct {
 	CustomSignals      []*module.CustomSignal  `yaml:"custom-signals"`
 	TextProcessors     []*module.TextProcessor `yaml:"text-processors"`
 	Envelopes          []*module.Envelope      `yaml:"envelopes"`
-	Time               float64
+	Time               float64                 `yaml:"time"`
 	modMap             module.ModulesMap
 	step, volumeMemory float64
 	next               chan bool

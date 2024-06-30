@@ -23,7 +23,7 @@ func NewControl(input chan struct{ Left, Right float32 }, exit chan bool) *Contr
 
 func (c *Control) LoadSynth(synth s.Synth) {
 	synth.Initialize()
-	synth.Time = c.synth.Time
+	synth.Time += c.synth.Time
 
 	*c.synth = synth
 }

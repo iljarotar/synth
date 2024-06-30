@@ -1,13 +1,13 @@
 package ui
 
-type Logger struct {
+type logger struct {
 	log chan string
 }
 
-func NewLogger(log chan string) *Logger {
-	return &Logger{log: log}
+func (l *logger) Log(log string) {
+	l.log <- log
 }
 
-func (l *Logger) Log(log string) {
-	l.log <- log
+var Logger = &logger{
+	log: make(chan string),
 }
