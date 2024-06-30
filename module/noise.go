@@ -2,7 +2,6 @@ package module
 
 import (
 	"math/rand"
-	"time"
 
 	"github.com/iljarotar/synth/utils"
 )
@@ -16,7 +15,6 @@ type Noise struct {
 }
 
 func (n *Noise) Initialize() {
-	rand.Seed(time.Now().Unix())
 	n.limitParams()
 	n.current = stereo(noise()*n.Amp.Val, n.Pan.Val)
 	n.Filter.Initialize()
