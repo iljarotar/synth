@@ -26,6 +26,7 @@ type Synth struct {
 func (s *Synth) Initialize() {
 	s.step = 1 / config.Config.SampleRate
 	s.Volume = utils.Limit(s.Volume, 0, 1)
+	s.Time = utils.Limit(s.Time, 0, 7200)
 	s.volumeMemory = s.Volume
 	s.Volume = 0 // start muted
 	s.next = make(chan bool)
