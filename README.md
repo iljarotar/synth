@@ -65,7 +65,7 @@ cd synth
 synth -f examples/a-major.yaml
 ```
 
-More examples can be found [here](https://github.com/iljarotar/synth/tree/main/examples).
+More examples can be found in the [examples](https://github.com/iljarotar/synth/tree/main/examples) directory.
 
 > Note: If you want to record the output, you must specify a non-negative
 > duration. Otherwise you will get am empty .wav file.
