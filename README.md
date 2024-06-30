@@ -65,7 +65,7 @@ cd synth
 synth -f examples/a-major.yaml
 ```
 
-More examples can be found [here](https://github.com/iljarotar/synth-patches).
+More examples can be found [here](https://github.com/iljarotar/synth/examples).
 
 > Note: If you want to record the output, you must specify a non-negative
 > duration. Otherwise you will get am empty .wav file.
@@ -149,7 +149,7 @@ filter `order` might be necessary.
 | ------------- | ------------- | ----------------------------------------- |
 | **Field**     | **Type**      | **Description**                           |
 | name          | String        | should be unique in the scope of the file |
-| attack         | Param         | attack time in seconds [0,10000]          |
+| attack        | Param         | attack time in seconds [0,10000]          |
 | decay         | Param         | decay time in seconds [0,10000]           |
 | sustain       | Param         | sustain time in seconds [0,10000]         |
 | release       | Param         | release time in seconds [0,10000]         |
@@ -185,7 +185,7 @@ noises:
       order:
       low-cutoff:
       high-cutoff:
-      
+
 oscillators:
   - name:
     type:
@@ -277,6 +277,6 @@ out: [osc]
 oscillators:
   - name: osc
     type: Sine
-    freq: {val: 440}
-    amp: {val: 1}
+    freq: { val: 440 }
+    amp: { val: 1 }
 ```
