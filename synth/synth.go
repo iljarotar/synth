@@ -5,6 +5,7 @@ import (
 
 	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/module"
+	"github.com/iljarotar/synth/ui"
 	"github.com/iljarotar/synth/utils"
 )
 
@@ -56,9 +57,14 @@ func (s *Synth) Play(output chan<- struct{ Left, Right float32 }) {
 	defer close(output)
 
 	for {
-		left, right := s.getCurrentValue()
+		left, right, mono := s.getCurrentValue()
 		left *= s.Volume
 		right *= s.Volume
+		mono *= s.Volume
+
+		if mono > 1 && !ui.Logger.OverdriveWarningShowing {
+			ui.Logger.ShowOverdriveWarning()
+		}
 
 		y := struct{ Left, Right float32 }{Left: float32(left), Right: float32(right)}
 		output <- y
@@ -105,19 +111,20 @@ func (s *Synth) FadeIn(seconds float64) {
 	}
 }
 
-func (s *Synth) getCurrentValue() (left, right float64) {
+func (s *Synth) getCurrentValue() (left, right, mono float64) {
 	s.updateCurrentValues()
-	left, right = 0, 0
+	left, right, mono = 0, 0, 0
 
 	for _, o := range s.Out {
 		mod, ok := s.modMap[o]
 		if ok {
 			left += mod.Current().Left
 			right += mod.Current().Right
+			mono += mod.Current().Mono
 		}
 	}
 
-	return left, right
+	return left, right, mono
 }
 
 func (s *Synth) updateCurrentValues() {

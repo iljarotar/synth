@@ -122,7 +122,7 @@ func start(file, record string) error {
 
 	exit := make(chan bool)
 	quit := make(chan bool)
-	u := ui.NewUI(quit)
+	u := ui.NewUI(file, quit)
 	go u.Enter(exit)
 
 	ctl := control.NewControl(recIn, exit)

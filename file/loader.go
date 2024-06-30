@@ -93,7 +93,7 @@ func (l *Loader) StartWatching() {
 				if err != nil {
 					ui.Logger.Error("could not load file. error: " + err.Error())
 				} else {
-					ui.Logger.Info("reloaded file " + l.file)
+					ui.Logger.Info("reloaded patch file")
 				}
 
 				l.ctl.Start(0.01)
