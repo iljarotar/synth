@@ -62,9 +62,11 @@ func (u *UI) read() {
 func (u *UI) resetScreen() {
 	Clear()
 
-	for i := range u.logs {
-		fmt.Println(u.logs[i])
+	for i, log := range u.logs {
+		fmt.Printf("[%d] %s\n", i+1, log)
 	}
-
-	fmt.Print("type 'q' to quit: ")
+	if len(u.logs) > 0 {
+		fmt.Print("\n")
+	}
+	fmt.Print("\033[1;34m Type 'q' to quit: \033[0m")
 }

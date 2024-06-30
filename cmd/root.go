@@ -103,7 +103,6 @@ func start(file, record string) error {
 		return err
 	}
 	defer audio.Terminate()
-	ui.Clear()
 
 	speakerIn := make(chan struct{ Left, Right float32 })
 	ctx, err := audio.NewContext(speakerIn, c.Config.SampleRate)
@@ -158,7 +157,6 @@ func start(file, record string) error {
 
 	err = rec.StopRecording()
 	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
-	ui.Clear()
 	return err
 }
 

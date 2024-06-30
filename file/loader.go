@@ -93,6 +93,8 @@ func (l *Loader) StartWatching() {
 				err := l.Load()
 				if err != nil {
 					l.logger.Log("could not load file. error: " + err.Error())
+				} else {
+					l.logger.Log("reloaded file " + l.file)
 				}
 
 				l.ctl.Start(0.01)
