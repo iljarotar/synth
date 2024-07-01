@@ -9,6 +9,7 @@ import (
 
 const (
 	maxOrder = 1000
+	pi       = math.Pi
 )
 
 type Filter struct {
@@ -60,19 +61,11 @@ func (f *Filter) Tap(x float64) float64 {
 func getLowpassCoefficients(order int, cutoff float64) []float64 {
 	b := make([]float64, order+1)
 	cutoff /= config.Config.SampleRate
-	pi := math.Pi
+	w := 2 * pi * cutoff
 
 	for n := range b {
 		k := float64(n - order/2)
-		hamming := 0.54 - 0.46*math.Cos(2*pi*float64(n)/float64(order))
-
-		if k == 0 {
-			b[n] = 2 * cutoff
-		} else {
-			b[n] = math.Sin(2*pi*cutoff*k) / (pi * k)
-		}
-
-		b[n] *= hamming
+		b[n] = (w / pi) * sinc(w*k) * hamming(n, order)
 	}
 
 	b = utils.Normalize(b, -0.22, 1) // approximately sinc range
@@ -83,19 +76,11 @@ func getLowpassCoefficients(order int, cutoff float64) []float64 {
 func getHighpassCoefficients(order int, cutoff float64) []float64 {
 	b := make([]float64, order+1)
 	cutoff /= config.Config.SampleRate
-	pi := math.Pi
+	w := 2 * pi * cutoff
 
 	for n := range b {
 		k := float64(n - order/2)
-		hamming := 0.54 - 0.46*math.Cos(2*pi*float64(n)/float64(order))
-
-		if k == 0 {
-			b[n] = 1 - 2*cutoff
-		} else {
-			b[n] = -math.Sin(2*pi*cutoff*k) / (pi * k)
-		}
-
-		b[n] *= hamming
+		b[n] = -(w / pi) * sinc(w*k) * hamming(n, order)
 	}
 
 	b = utils.Normalize(b, -0.22, 1) // approximately sinc range
@@ -107,22 +92,27 @@ func getBandpassCoefficients(order int, lowCutoff, highCutoff float64) []float64
 	b := make([]float64, order+1)
 	lowCutoff /= config.Config.SampleRate
 	highCutoff /= config.Config.SampleRate
-	pi := math.Pi
+	wl := 2 * pi * lowCutoff
+	wh := 2 * pi * highCutoff
 
 	for n := range b {
 		k := float64(n - order/2)
-		hamming := 0.54 - 0.46*math.Cos(2*pi*float64(n)/float64(order))
-
-		if k == 0 {
-			b[n] = 2 * (highCutoff - lowCutoff)
-		} else {
-			b[n] = (math.Sin(2*pi*highCutoff*k) - math.Sin(2*pi*lowCutoff*k)) / (pi * k)
-		}
-
-		b[n] *= hamming
+		b[n] = (1 / pi) * (wh*sinc(wh*k) - wl*sinc(wl*k)) * hamming(n, order)
 	}
 
 	b = utils.Normalize(b, -0.22, 1) // approximately sinc range
 
 	return b
+}
+
+func sinc(x float64) float64 {
+	if x == 0 {
+		return 1
+	}
+	return math.Sin(x) / x
+}
+
+func hamming(n, order int) float64 {
+	hamming := 0.54 - 0.46*math.Cos(2*pi*float64(n)/float64(order))
+	return hamming
 }
