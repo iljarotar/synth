@@ -67,17 +67,16 @@ func (ui *UI) read() {
 
 func (ui *UI) resetScreen() {
 	Clear()
-
 	fmt.Printf("\n\033[1;34m Synth playing \033[0m %s\n\n", ui.file)
-	if Logger.ShowingOverdriveWarning {
-		fmt.Printf("\033[1;33m [WARNING] Volume exceeded 100%% \033[0m\n\n")
-	}
 
 	for i, log := range ui.logs {
 		fmt.Printf(" [%d] %s\n", i+1, log)
 	}
 	if len(ui.logs) > 0 {
 		fmt.Print("\n")
+	}
+	if Logger.ShowingOverdriveWarning {
+		fmt.Printf("\033[1;33m [WARNING] Volume exceeded 100%% \033[0m\n\n")
 	}
 	fmt.Print("\033[1;34m Type 'q' to quit: \033[0m")
 }
