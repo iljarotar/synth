@@ -80,7 +80,7 @@ func getHighpassCoefficients(order int, cutoff float64) []float64 {
 
 	for n := range b {
 		k := float64(n - order/2)
-		b[n] = -(w / pi) * sinc(w*k) * hamming(n, order)
+		b[n] = delta(int(k)) - (w/pi)*sinc(w*k)*hamming(n, order)
 	}
 
 	b = utils.Normalize(b, -0.22, 1) // approximately sinc range
@@ -115,4 +115,11 @@ func sinc(x float64) float64 {
 func hamming(n, order int) float64 {
 	hamming := 0.54 - 0.46*math.Cos(2*pi*float64(n)/float64(order))
 	return hamming
+}
+
+func delta(n int) float64 {
+	if n == 0 {
+		return 1
+	}
+	return 0
 }
