@@ -29,6 +29,12 @@ func Clear() {
 	cmd.Run()
 }
 
+func LineBreaks(number int) {
+	for i := 0; i < number; i++ {
+		fmt.Print("\n")
+	}
+}
+
 func (ui *UI) Enter(exit chan bool) {
 	go ui.read()
 	ui.resetScreen()
@@ -67,16 +73,20 @@ func (ui *UI) read() {
 
 func (ui *UI) resetScreen() {
 	Clear()
-	fmt.Printf("\n\033[1;34m Synth playing \033[0m %s\n\n", ui.file)
+	LineBreaks(1)
+	fmt.Printf("\033[1;34m Synth playing \033[0m %s", ui.file)
+	LineBreaks(2)
 
 	for i, log := range ui.logs {
-		fmt.Printf(" [%d] %s\n", i+1, log)
+		fmt.Printf(" [%d] %s", i+1, log)
+		LineBreaks(1)
 	}
 	if len(ui.logs) > 0 {
-		fmt.Print("\n")
+		LineBreaks(1)
 	}
 	if Logger.ShowingOverdriveWarning {
-		fmt.Printf("\033[1;33m [WARNING] Volume exceeded 100%% \033[0m\n\n")
+		fmt.Printf("\033[1;33m [WARNING] Volume exceeded 100%% \033[0m")
+		LineBreaks(2)
 	}
 	fmt.Print("\033[1;34m Type 'q' to quit: \033[0m")
 }

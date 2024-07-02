@@ -154,6 +154,7 @@ func start(file, record string) error {
 
 	err = rec.StopRecording()
 	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
+	ui.LineBreaks(2)
 	return err
 }
 
