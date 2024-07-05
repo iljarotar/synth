@@ -9,20 +9,24 @@ type logger struct {
 }
 
 func (l *logger) Info(log string) {
-	l.log <- fmt.Sprintf("\033[1;32m[INFO]\033[0m %s", log)
+	l.log <- fmt.Sprintf("%s %s", colored("[INFO]", COLOR_GREEN_STRONG), log)
 }
 
 func (l *logger) Warning(log string) {
-	l.log <- fmt.Sprintf("\033[1;33m[WARNING]\033[0m %s", log)
+	l.log <- fmt.Sprintf("%s %s", colored("[WARNING]", COLOR_ORANGE_STRONG), log)
 }
 
 func (l *logger) Error(log string) {
-	l.log <- fmt.Sprintf("\033[1;31m[ERROR]\033[0m %s", log)
+	l.log <- fmt.Sprintf("%s %s", colored("[EROOR]", COLOR_RED_STRONG), log)
 }
 
 func (l *logger) ShowOverdriveWarning(limitExceeded bool) {
 	l.ShowingOverdriveWarning = limitExceeded
 	l.overdriveWarning <- limitExceeded
+}
+
+func colored(str string, col color) string {
+	return fmt.Sprintf("%s %s %s", col, str, COLOR_WHITE)
 }
 
 var Logger = &logger{
