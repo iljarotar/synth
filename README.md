@@ -1,6 +1,6 @@
 # Synth
 
-This is a simple modular-like command line synthesizer written in
+This is a simple modular-like command line synthesizer for Linux written in
 [golang](https://go.dev/).
 
 ## Installation
@@ -36,26 +36,6 @@ possible, so if you change and save the patch file, it will be applied
 instantly.
 
 ### Command line interface
-
-Type `synth` and you should get an output like this
-
-```
-command line synthesizer
-
-documentation and usage: https://github.com/iljarotar/synth
-
-Usage:
-  synth [flags]
-
-Flags:
-  -d, --duration string      duration in seconds excluding fade-in and fade-out. a negative duration will cause the synth to play until stopped manually (default "-1")
-      --fade-in string       fade-in in seconds (default "1")
-      --fade-out string      fade-out in seconds (default "1")
-  -f, --file string          path to your patch file
-  -h, --help                 print help
-  -o, --out string           if provided, a .wav file with the given name will be recorded
-  -s, --sample-rate string   sample rate (default "44100")
-```
 
 To listen to an example run
 

@@ -24,51 +24,41 @@ var rootCmd = &cobra.Command{
 documentation and usage: https://github.com/iljarotar/synth`,
 	Run: func(cmd *cobra.Command, args []string) {
 		file, _ := cmd.Flags().GetString("file")
-		s, _ := cmd.Flags().GetString("sample-rate")
-		in, _ := cmd.Flags().GetString("fade-in")
-		out, _ := cmd.Flags().GetString("fade-out")
-		d, _ := cmd.Flags().GetString("duration")
-		record, _ := cmd.Flags().GetString("out")
+		cfg, _ := cmd.Flags().GetString("config")
 
 		if file == "" {
 			cmd.Help()
 			return
 		}
 
-		sampleRate, err := utils.ParseInt(s)
+		err := c.EnsureDefaultConfig()
 		if err != nil {
-			fmt.Println("could not parse sample rate:", err)
+			fmt.Printf("%v", err)
 			return
 		}
-		c.Config.SampleRate = float64(sampleRate)
 
-		fadeIn, err := utils.ParseFloat(in)
+		defaultConfigPath, err := c.GetDefaultConfigPath()
 		if err != nil {
-			fmt.Println("could not parse fade-in:", err)
+			fmt.Printf("%v", err)
 			return
 		}
-		c.Config.FadeIn = fadeIn
 
-		fadeOut, err := utils.ParseFloat(out)
+		if cfg == "" {
+			cfg = defaultConfigPath
+		}
+		err = c.LoadConfig(cfg)
 		if err != nil {
-			fmt.Println("could not parse fade-out:", err)
+			fmt.Printf("could not load config file: %v", err)
 			return
 		}
-		c.Config.FadeOut = fadeOut
 
-		duration, err := utils.ParseFloat(d)
+		err = parseFlags(cmd)
 		if err != nil {
-			fmt.Println("could not parse duration:", err)
+			fmt.Printf("%v", err)
 			return
 		}
 
-		if duration > c.Config.GetMaxDuration() {
-			fmt.Printf("duration too long. maximum duration for sample rate %v, fade-in %vs and fade-out %vs is %vs\n", c.Config.SampleRate, c.Config.FadeIn, c.Config.FadeOut, c.Config.GetMaxDuration())
-			return
-		}
-		c.Config.Duration = duration
-
-		err = start(file, record)
+		err = start(file)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -83,21 +73,62 @@ func Execute() {
 }
 
 func init() {
-	sampleRate := fmt.Sprintf("%v", c.Default.SampleRate)
-	fadeIn := fmt.Sprintf("%v", c.Default.FadeIn)
-	fadeOut := fmt.Sprintf("%v", c.Default.FadeOut)
-	duration := fmt.Sprintf("%v", c.Default.Duration)
-
-	rootCmd.Flags().StringP("file", "f", "", "path to your patch file")
-	rootCmd.Flags().StringP("out", "o", "", "if provided, a .wav file with the given name will be recorded")
-	rootCmd.Flags().BoolP("help", "h", false, "print help")
-	rootCmd.Flags().StringP("sample-rate", "s", sampleRate, "sample rate")
-	rootCmd.Flags().StringP("duration", "d", duration, "duration in seconds excluding fade-in and fade-out. a negative duration will cause the synth to play until stopped manually")
-	rootCmd.Flags().String("fade-in", fadeIn, "fade-in in seconds")
-	rootCmd.Flags().String("fade-out", fadeOut, "fade-out in seconds")
+	rootCmd.Flags().StringP("file", "f", "", "Path to your patch file")
+	rootCmd.Flags().StringP("out", "o", "", "If provided, a .wav file with the given name will be recorded. A positive value for --duration must be given for the recording to work.")
+	rootCmd.Flags().StringP("sample-rate", "s", "", "Sample rate")
+	rootCmd.Flags().StringP("duration", "d", "", "Duration in seconds excluding fade-in and fade-out. a negative duration will cause the synth to play until stopped manually")
+	rootCmd.Flags().String("fade-in", "", "Fade-in in seconds")
+	rootCmd.Flags().String("fade-out", "", "Fade-out in seconds")
+	rootCmd.Flags().StringP("config", "c", "", "Path to your config file.")
 }
 
-func start(file, record string) error {
+func parseFlags(cmd *cobra.Command) error {
+	s, _ := cmd.Flags().GetString("sample-rate")
+	in, _ := cmd.Flags().GetString("fade-in")
+	out, _ := cmd.Flags().GetString("fade-out")
+	d, _ := cmd.Flags().GetString("duration")
+	record, _ := cmd.Flags().GetString("out")
+
+	if s != "" {
+		sampleRate, err := utils.ParseInt(s)
+		if err != nil {
+			return fmt.Errorf("could not parse sample rate: %w", err)
+		}
+		c.Config.SampleRate = float64(sampleRate)
+	}
+
+	if in != "" {
+		fadeIn, err := utils.ParseFloat(in)
+		if err != nil {
+			return fmt.Errorf("could not parse fade-in: %w", err)
+		}
+		c.Config.FadeIn = fadeIn
+	}
+
+	if out != "" {
+		fadeOut, err := utils.ParseFloat(out)
+		if err != nil {
+			return fmt.Errorf("could not parse fade-out: %w", err)
+		}
+		c.Config.FadeOut = fadeOut
+	}
+
+	if d != "" {
+		duration, err := utils.ParseFloat(d)
+		if err != nil {
+			return fmt.Errorf("could not parse duration: %w", err)
+		}
+		c.Config.Duration = duration
+	}
+
+	if record != "" {
+		c.Config.Out = record
+	}
+
+	return c.Config.Validate()
+}
+
+func start(file string) error {
 	err := audio.Init()
 	if err != nil {
 		return err
@@ -117,7 +148,7 @@ func start(file, record string) error {
 	}
 
 	recIn := make(chan struct{ Left, Right float32 })
-	rec := f.NewRecorder(recIn, speakerIn, record)
+	rec := f.NewRecorder(recIn, speakerIn, c.Config.Out)
 	go rec.StartRecording()
 
 	exit := make(chan bool)
