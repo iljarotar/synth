@@ -15,14 +15,13 @@ const (
 )
 
 type Synth struct {
-	Volume             float64                 `yaml:"vol"`
-	Out                []string                `yaml:"out"`
-	Oscillators        []*module.Oscillator    `yaml:"oscillators"`
-	Noises             []*module.Noise         `yaml:"noises"`
-	CustomSignals      []*module.CustomSignal  `yaml:"custom-signals"`
-	TextProcessors     []*module.TextProcessor `yaml:"text-processors"`
-	Envelopes          []*module.Envelope      `yaml:"envelopes"`
-	Time               float64                 `yaml:"time"`
+	Volume             float64                `yaml:"vol"`
+	Out                []string               `yaml:"out"`
+	Oscillators        []*module.Oscillator   `yaml:"oscillators"`
+	Noises             []*module.Noise        `yaml:"noises"`
+	CustomSignals      []*module.CustomSignal `yaml:"custom-signals"`
+	Envelopes          []*module.Envelope     `yaml:"envelopes"`
+	Time               float64                `yaml:"time"`
 	modMap             module.ModulesMap
 	step, volumeMemory float64
 	next               chan bool
@@ -46,10 +45,6 @@ func (s *Synth) Initialize() {
 
 	for _, c := range s.CustomSignals {
 		c.Initialize()
-	}
-
-	for _, p := range s.TextProcessors {
-		p.Initialize()
 	}
 
 	for _, e := range s.Envelopes {
@@ -149,10 +144,6 @@ func (s *Synth) updateCurrentValues() {
 		c.Next(s.Time, s.modMap)
 	}
 
-	for _, p := range s.TextProcessors {
-		p.Next(s.Time, s.modMap)
-	}
-
 	for _, e := range s.Envelopes {
 		e.Next(s.Time, s.modMap)
 	}
@@ -173,10 +164,6 @@ func (s *Synth) makeModulesMap() {
 
 	for _, c := range s.CustomSignals {
 		modMap[c.Name] = c
-	}
-
-	for _, p := range s.TextProcessors {
-		modMap[p.Name] = p
 	}
 
 	for _, e := range s.Envelopes {

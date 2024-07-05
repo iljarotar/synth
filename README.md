@@ -74,17 +74,16 @@ More examples can be found in the [examples](https://github.com/iljarotar/synth/
 
 ### Data types
 
-| Synth           |                      |                                                                                                           |
-| --------------- | -------------------- | --------------------------------------------------------------------------------------------------------- |
-| **Field**       | **Type**             | **Description**                                                                                           |
-| vol             | Float                | main volume in range [0,1]                                                                                |
-| out             | String [0..*]        | names of all oscillators, noise generators and custom signals, whose outputs will be sent to the speakers |
-| time            | Float                | initial time shift in seconds [0,7200]                                                                    |
-| oscillators     | Oscillator [0..*]    | all oscillators                                                                                           |
-| noises          | Noise [0..*]         | all noise generators                                                                                      |
-| custom-signals  | CustomSignal [0..*]  | all custom signals                                                                                        |
-| text-processors | TextProcessor [0..*] | all text processors                                                                                       |
-| envelopes       | Envelope [0..*]      | all envelopes                                                                                             |
+| Synth          |                     |                                                                                                           |
+| -------------- | ------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Field**      | **Type**            | **Description**                                                                                           |
+| vol            | Float               | main volume in range [0,1]                                                                                |
+| out            | String [0..*]       | names of all oscillators, noise generators and custom signals, whose outputs will be sent to the speakers |
+| time           | Float               | initial time shift in seconds [0,7200]                                                                    |
+| oscillators    | Oscillator [0..*]   | all oscillators                                                                                           |
+| noises         | Noise [0..*]        | all noise generators                                                                                      |
+| custom-signals | CustomSignal [0..*] | all custom signals                                                                                        |
+| envelopes      | Envelope [0..*]     | all envelopes                                                                                             |
 
 | Oscillator |                |                                           |
 | ---------- | -------------- | ----------------------------------------- |
@@ -136,15 +135,6 @@ filter `order` might be necessary. Sometimes a lower value for `order` also soun
 | pan          | Param        | stereo balance in range [-1,1]            |
 | freq         | Param        | periods per second [0,20000]              |
 | data         | Float [0..*] | custom values                             |
-
-| TextProcessor |          |                                           |
-| ------------- | -------- | ----------------------------------------- |
-| **Field**     | **Type** | **Description**                           |
-| name          | String   | should be unique in the scope of the file |
-| amp           | Param    | amplitude in range [0,1]                  |
-| pan           | Param    | stereo balance in range [-1,1]            |
-| bpm           | Param    | beats per minute [0,1000000]              |
-| text          | String   | arbitrary text                            |
 
 | Envelope      |               |                                           |
 | ------------- | ------------- | ----------------------------------------- |
@@ -219,22 +209,6 @@ custom-signals:
       mod:
       mod-amp:
     data: []
-
-text-processors:
-  - name:
-    bpm:
-      val:
-      mod:
-      mod-amp:
-    pan:
-      val:
-      mod:
-      mod-amp:
-    amp:
-      val:
-      mod:
-      mod-amp:
-    text:
 
 envelopes:
   - name:
