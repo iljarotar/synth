@@ -1,6 +1,7 @@
 package synth
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/iljarotar/synth/config"
@@ -67,8 +68,10 @@ func (s *Synth) Play(output chan<- struct{ Left, Right float32 }) {
 		right *= s.Volume
 		mono *= s.Volume
 
-		if mono > 1 && !ui.Logger.ShowingOverdriveWarning {
+		// ignore exceeding limit if the difference is sufficiently small
+		if mono >= 1.00001 && !ui.Logger.ShowingOverdriveWarning {
 			ui.Logger.ShowOverdriveWarning(true)
+			ui.Logger.Warning(fmt.Sprintf("Output value %f", mono))
 		}
 
 		y := struct{ Left, Right float32 }{Left: float32(left), Right: float32(right)}
