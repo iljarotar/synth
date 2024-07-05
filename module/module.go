@@ -40,7 +40,6 @@ type output struct {
 
 var (
 	ampLimits      limits = limits{min: 0, max: 1}
-	modLimits      limits = limits{min: 0, max: 1}
 	panLimits      limits = limits{min: -1, max: 1}
 	phaseLimits    limits = limits{min: -1, max: 1}
 	freqLimits     limits = limits{min: 0, max: 20000}

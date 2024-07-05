@@ -65,25 +65,25 @@ func (e *Envelope) Next(t float64, modMap ModulesMap) {
 
 func (e *Envelope) limitParams() {
 	e.Attack.Val = utils.Limit(e.Attack.Val, envelopeLimits.min, envelopeLimits.max)
-	e.Attack.ModAmp = utils.Limit(e.Attack.ModAmp, modLimits.min, modLimits.max)
+	e.Attack.ModAmp = utils.Limit(e.Attack.ModAmp, envelopeLimits.min, envelopeLimits.max)
 
 	e.Decay.Val = utils.Limit(e.Decay.Val, envelopeLimits.min, envelopeLimits.max)
-	e.Decay.ModAmp = utils.Limit(e.Decay.ModAmp, modLimits.min, modLimits.max)
+	e.Decay.ModAmp = utils.Limit(e.Decay.ModAmp, envelopeLimits.min, envelopeLimits.max)
 
 	e.Sustain.Val = utils.Limit(e.Sustain.Val, envelopeLimits.min, envelopeLimits.max)
-	e.Sustain.ModAmp = utils.Limit(e.Sustain.ModAmp, modLimits.min, modLimits.max)
+	e.Sustain.ModAmp = utils.Limit(e.Sustain.ModAmp, envelopeLimits.min, envelopeLimits.max)
 
 	e.Release.Val = utils.Limit(e.Release.Val, envelopeLimits.min, envelopeLimits.max)
-	e.Release.ModAmp = utils.Limit(e.Release.ModAmp, modLimits.min, modLimits.max)
+	e.Release.ModAmp = utils.Limit(e.Release.ModAmp, envelopeLimits.min, envelopeLimits.max)
 
 	e.Peak.Val = utils.Limit(e.Peak.Val, ampLimits.min, ampLimits.max)
-	e.Peak.ModAmp = utils.Limit(e.Peak.ModAmp, modLimits.min, modLimits.max)
+	e.Peak.ModAmp = utils.Limit(e.Peak.ModAmp, ampLimits.min, ampLimits.max)
 
 	e.SustainLevel.Val = utils.Limit(e.SustainLevel.Val, ampLimits.min, ampLimits.max)
-	e.SustainLevel.ModAmp = utils.Limit(e.SustainLevel.ModAmp, modLimits.min, modLimits.max)
+	e.SustainLevel.ModAmp = utils.Limit(e.SustainLevel.ModAmp, ampLimits.min, ampLimits.max)
 
 	e.Threshold.Val = utils.Limit(e.Threshold.Val, ampLimits.min, ampLimits.max)
-	e.Threshold.ModAmp = utils.Limit(e.Threshold.ModAmp, modLimits.min, modLimits.max)
+	e.Threshold.ModAmp = utils.Limit(e.Threshold.ModAmp, ampLimits.min, ampLimits.max)
 }
 
 func (e *Envelope) checkTrigger(t, threshold float64, modMap ModulesMap) {

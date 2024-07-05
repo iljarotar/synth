@@ -34,10 +34,10 @@ func (c *CustomSignal) Next(t float64, modMap ModulesMap) {
 }
 
 func (c *CustomSignal) limitParams() {
-	c.Amp.ModAmp = utils.Limit(c.Amp.ModAmp, modLimits.min, modLimits.max)
+	c.Amp.ModAmp = utils.Limit(c.Amp.ModAmp, ampLimits.min, ampLimits.max)
 	c.Amp.Val = utils.Limit(c.Amp.Val, ampLimits.min, ampLimits.max)
 
-	c.Pan.ModAmp = utils.Limit(c.Pan.ModAmp, modLimits.min, modLimits.max)
+	c.Pan.ModAmp = utils.Limit(c.Pan.ModAmp, panLimits.min, panLimits.max)
 	c.Pan.Val = utils.Limit(c.Pan.Val, panLimits.min, panLimits.max)
 
 	c.Freq.ModAmp = utils.Limit(c.Freq.ModAmp, freqLimits.min, freqLimits.max)

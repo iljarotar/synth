@@ -35,13 +35,13 @@ func (p *TextProcessor) Next(t float64, modMap ModulesMap) {
 }
 
 func (p *TextProcessor) limitParams() {
-	p.Amp.ModAmp = utils.Limit(p.Amp.ModAmp, modLimits.min, modLimits.max)
+	p.Amp.ModAmp = utils.Limit(p.Amp.ModAmp, ampLimits.min, ampLimits.max)
 	p.Amp.Val = utils.Limit(p.Amp.Val, ampLimits.min, ampLimits.max)
 
-	p.Pan.ModAmp = utils.Limit(p.Pan.ModAmp, modLimits.min, modLimits.max)
+	p.Pan.ModAmp = utils.Limit(p.Pan.ModAmp, panLimits.min, panLimits.max)
 	p.Pan.Val = utils.Limit(p.Pan.Val, panLimits.min, panLimits.max)
 
-	p.BPM.ModAmp = utils.Limit(p.BPM.ModAmp, modLimits.min, modLimits.max)
+	p.BPM.ModAmp = utils.Limit(p.BPM.ModAmp, bpmLimits.min, bpmLimits.max)
 	p.BPM.Val = utils.Limit(p.BPM.Val, bpmLimits.min, bpmLimits.max)
 }
 

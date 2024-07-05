@@ -74,12 +74,12 @@ func (o *Oscillator) signalValue(t, amp, offset float64) float64 {
 }
 
 func (o *Oscillator) limitParams() {
-	o.Amp.ModAmp = utils.Limit(o.Amp.ModAmp, modLimits.min, modLimits.max)
+	o.Amp.ModAmp = utils.Limit(o.Amp.ModAmp, ampLimits.min, ampLimits.max)
 	o.Amp.Val = utils.Limit(o.Amp.Val, ampLimits.min, ampLimits.max)
 
 	o.Phase = utils.Limit(o.Phase, phaseLimits.min, phaseLimits.max)
 
-	o.Pan.ModAmp = utils.Limit(o.Pan.ModAmp, modLimits.min, modLimits.max)
+	o.Pan.ModAmp = utils.Limit(o.Pan.ModAmp, panLimits.min, panLimits.max)
 	o.Pan.Val = utils.Limit(o.Pan.Val, panLimits.min, panLimits.max)
 
 	o.Freq.ModAmp = utils.Limit(o.Freq.ModAmp, freqLimits.min, freqLimits.max)
