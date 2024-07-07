@@ -5,14 +5,15 @@ import (
 )
 
 type Control struct {
-	synth  *s.Synth
-	output chan struct{ Left, Right float32 }
+	synth     *s.Synth
+	output    chan struct{ Left, Right float32 }
+	SynthDone chan bool
 }
 
 func NewControl(output chan struct{ Left, Right float32 }) *Control {
 	var synth s.Synth
 	synth.Initialize()
-	ctl := &Control{synth: &synth, output: output}
+	ctl := &Control{synth: &synth, output: output, SynthDone: make(chan bool)}
 	go ctl.synth.Play(ctl.output)
 	return ctl
 }
@@ -24,14 +25,19 @@ func (c *Control) LoadSynth(synth s.Synth) {
 	*c.synth = synth
 }
 
-func (c *Control) Close() {
+func (c *Control) Stop(fadeOut float64) {
+	c.synth.NotifyFadeOutDone(c.SynthDone)
+	c.synth.Fade(s.FadeDirectionOut, fadeOut)
+}
+
+func (c *Control) StopSynth() {
 	c.synth.Stop()
 }
 
-func (c *Control) Stop(fadeOut float64) {
-	c.synth.FadeOut(fadeOut)
+func (c *Control) FadeIn(fadeIn float64) {
+	c.synth.Fade(s.FadeDirectionIn, fadeIn)
 }
 
-func (c *Control) Start(fadeIn float64) {
-	c.synth.FadeIn(fadeIn)
+func (c *Control) FadeOut(fadeOut float64) {
+	c.synth.Fade(s.FadeDirectionOut, fadeOut)
 }

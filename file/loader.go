@@ -87,7 +87,7 @@ func (l *Loader) StartWatching() {
 
 			// check last loaded time to prevent occasional double loading
 			if !event.Has(fsnotify.Rename) && time.Now().Sub(l.lastLoaded) > 500*time.Millisecond {
-				l.ctl.Stop(0.01)
+				l.ctl.FadeOut(0.01)
 
 				err := l.Load()
 				if err != nil {
@@ -97,7 +97,7 @@ func (l *Loader) StartWatching() {
 					ui.Logger.ShowOverdriveWarning(false)
 				}
 
-				l.ctl.Start(0.01)
+				l.ctl.FadeIn(0.01)
 			}
 		case err, ok := <-l.watcher.Errors:
 			if !ok {

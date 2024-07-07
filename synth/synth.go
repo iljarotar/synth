@@ -14,6 +14,13 @@ const (
 	maxInitTime = 7200
 )
 
+type FadeDirection string
+
+const (
+	FadeDirectionIn  FadeDirection = "in"
+	FadeDirectionOut FadeDirection = "out"
+)
+
 type Synth struct {
 	Volume             float64                `yaml:"vol"`
 	Out                []string               `yaml:"out"`
@@ -24,7 +31,10 @@ type Synth struct {
 	Time               float64                `yaml:"time"`
 	modMap             module.ModulesMap
 	step, volumeMemory float64
-	next               chan bool
+	notifyFadeOutDone  chan bool
+	fadeDirection      FadeDirection
+	fadeDuration       float64
+	playing            bool
 }
 
 func (s *Synth) Initialize() {
@@ -33,7 +43,7 @@ func (s *Synth) Initialize() {
 	s.Time = utils.Limit(s.Time, 0, maxInitTime)
 	s.volumeMemory = s.Volume
 	s.Volume = 0 // start muted
-	s.next = make(chan bool)
+	s.playing = true
 
 	for _, osc := range s.Oscillators {
 		osc.Initialize()
@@ -57,8 +67,9 @@ func (s *Synth) Initialize() {
 func (s *Synth) Play(output chan<- struct{ Left, Right float32 }) {
 	defer close(output)
 
-	for {
+	for s.playing {
 		left, right, mono := s.getCurrentValue()
+		s.adjustVolume()
 		left *= s.Volume
 		right *= s.Volume
 		mono *= s.Volume
@@ -71,46 +82,63 @@ func (s *Synth) Play(output chan<- struct{ Left, Right float32 }) {
 
 		y := struct{ Left, Right float32 }{Left: float32(left), Right: float32(right)}
 		output <- y
-
-		select {
-		case next := <-s.next:
-			if next {
-				s.next <- true
-			} else {
-				return
-			}
-		default:
-		}
 	}
 }
 
 func (s *Synth) Stop() {
-	s.next <- false
+	s.playing = false
 }
 
-func (s *Synth) FadeOut(seconds float64) {
-	step := secondsToStep(seconds, s.Volume)
-	for s.Volume > 0 {
-		s.Volume -= step
-		s.next <- true
-		<-s.next
-	}
+func (s *Synth) Fade(direction FadeDirection, seconds float64) {
+	s.fadeDirection = direction
+	s.fadeDuration = seconds
+}
 
-	if s.Volume < 0 {
-		s.Volume = 0
+func (s *Synth) NotifyFadeOutDone(notify chan bool) {
+	s.notifyFadeOutDone = notify
+}
+
+func (s *Synth) adjustVolume() {
+	if s.fadeDirection == FadeDirectionIn {
+		s.fadeIn()
+	} else {
+		s.fadeOut()
 	}
 }
 
-func (s *Synth) FadeIn(seconds float64) {
-	step := secondsToStep(seconds, s.volumeMemory-s.Volume)
-	for s.Volume < s.volumeMemory {
-		s.Volume += step
-		s.next <- true
-		<-s.next
+func (s *Synth) fadeIn() {
+	if s.Volume == s.volumeMemory {
+		if s.notifyFadeOutDone != nil {
+			s.notifyFadeOutDone <- true
+		}
+		return
 	}
+
+	step := secondsToStep(s.fadeDuration, s.volumeMemory-s.Volume)
+	s.Volume += step
+	s.fadeDuration -= 1 / config.Config.SampleRate
 
 	if s.Volume > s.volumeMemory {
 		s.Volume = s.volumeMemory
+	}
+}
+
+func (s *Synth) fadeOut() {
+	if s.Volume == 0 {
+		if s.notifyFadeOutDone != nil {
+			s.notifyFadeOutDone <- true
+			close(s.notifyFadeOutDone)
+			s.notifyFadeOutDone = nil
+		}
+		return
+	}
+
+	step := secondsToStep(s.fadeDuration, s.Volume)
+	s.Volume -= step
+	s.fadeDuration -= 1 / config.Config.SampleRate
+
+	if s.Volume < 0 {
+		s.Volume = 0
 	}
 }
 

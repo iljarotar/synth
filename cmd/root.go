@@ -135,7 +135,7 @@ func start(file string) error {
 	}
 
 	ctl := control.NewControl(output)
-	defer ctl.Close()
+	defer ctl.StopSynth()
 
 	loader, err := f.NewLoader(ctl, file)
 	if err != nil {
@@ -158,14 +158,19 @@ func start(file string) error {
 	interrupt := make(chan bool)
 	go catchInterrupt(interrupt, sig)
 
-	ctl.Start(c.Config.FadeIn)
+	ctl.FadeIn(c.Config.FadeIn)
 
-	select {
-	case <-quit:
-		ctl.Stop(c.Config.FadeOut)
-	case <-interrupt:
-		ctl.Stop(0.05)
-		ui.LineBreaks(1)
+Loop:
+	for {
+		select {
+		case <-quit:
+			ctl.Stop(c.Config.FadeOut)
+		case <-interrupt:
+			ctl.Stop(0.05)
+			ui.LineBreaks(1)
+		case <-ctl.SynthDone:
+			break Loop
+		}
 	}
 
 	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
