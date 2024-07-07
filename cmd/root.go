@@ -23,13 +23,17 @@ var rootCmd = &cobra.Command{
 	
 documentation and usage: https://github.com/iljarotar/synth`,
 	Run: func(cmd *cobra.Command, args []string) {
-		file, _ := cmd.Flags().GetString("file")
 		cfg, _ := cmd.Flags().GetString("config")
 
-		if file == "" {
+		if len(args) == 0 {
 			cmd.Help()
 			return
 		}
+
+		if err := cobra.MaximumNArgs(1)(cmd, args); err != nil {
+			fmt.Println("too many arguments passed - at most one argument expected")
+		}
+		file := args[0]
 
 		err := c.EnsureDefaultConfig()
 		if err != nil {
@@ -73,7 +77,6 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().StringP("file", "f", "", "Path to your patch file")
 	rootCmd.Flags().StringP("sample-rate", "s", "", "Sample rate")
 	rootCmd.Flags().String("fade-in", "", "Fade-in in seconds")
 	rootCmd.Flags().String("fade-out", "", "Fade-out in seconds")
@@ -133,8 +136,6 @@ func start(file string) error {
 
 	exit := make(chan bool)
 	quit := make(chan bool)
-	u := ui.NewUI(file, quit)
-	go u.Enter(exit)
 
 	ctl := control.NewControl(outputChan, exit)
 	defer ctl.Close()
@@ -147,8 +148,12 @@ func start(file string) error {
 
 	err = loader.Load()
 	if err != nil {
-		return err
+		ui.Clear()
+		return fmt.Errorf("unable to load file %s: %w", file, err)
 	}
+
+	u := ui.NewUI(file, quit)
+	go u.Enter(exit)
 
 	sig := make(chan os.Signal, 2)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
