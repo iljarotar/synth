@@ -122,8 +122,8 @@ func start(file string) error {
 	}
 	defer audio.Terminate()
 
-	outputChan := make(chan struct{ Left, Right float32 })
-	ctx, err := audio.NewContext(outputChan, c.Config.SampleRate)
+	output := make(chan struct{ Left, Right float32 })
+	ctx, err := audio.NewContext(output, c.Config.SampleRate)
 	if err != nil {
 		return err
 	}
@@ -134,9 +134,7 @@ func start(file string) error {
 		return err
 	}
 
-	quit := make(chan bool)
-
-	ctl := control.NewControl(outputChan)
+	ctl := control.NewControl(output)
 	defer ctl.Close()
 
 	loader, err := f.NewLoader(ctl, file)
@@ -151,6 +149,7 @@ func start(file string) error {
 		return fmt.Errorf("unable to load file %s: %w", file, err)
 	}
 
+	quit := make(chan bool)
 	u := ui.NewUI(file, quit)
 	go u.Enter()
 
@@ -158,6 +157,7 @@ func start(file string) error {
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	interrupt := make(chan bool)
 	go catchInterrupt(interrupt, sig)
+
 	ctl.Start(c.Config.FadeIn)
 
 	select {

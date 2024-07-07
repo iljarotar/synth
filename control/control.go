@@ -5,15 +5,15 @@ import (
 )
 
 type Control struct {
-	synth      *s.Synth
-	outputChan chan struct{ Left, Right float32 }
+	synth  *s.Synth
+	output chan struct{ Left, Right float32 }
 }
 
-func NewControl(outputChan chan struct{ Left, Right float32 }) *Control {
+func NewControl(output chan struct{ Left, Right float32 }) *Control {
 	var synth s.Synth
 	synth.Initialize()
-	ctl := &Control{synth: &synth, outputChan: outputChan}
-	go ctl.synth.Play(ctl.outputChan)
+	ctl := &Control{synth: &synth, output: output}
+	go ctl.synth.Play(ctl.output)
 	return ctl
 }
 
