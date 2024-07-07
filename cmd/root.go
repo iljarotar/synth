@@ -134,10 +134,9 @@ func start(file string) error {
 		return err
 	}
 
-	exit := make(chan bool)
 	quit := make(chan bool)
 
-	ctl := control.NewControl(outputChan, exit)
+	ctl := control.NewControl(outputChan)
 	defer ctl.Close()
 
 	loader, err := f.NewLoader(ctl, file)
@@ -153,7 +152,7 @@ func start(file string) error {
 	}
 
 	u := ui.NewUI(file, quit)
-	go u.Enter(exit)
+	go u.Enter()
 
 	sig := make(chan os.Signal, 2)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
@@ -166,6 +165,7 @@ func start(file string) error {
 		ctl.Stop(c.Config.FadeOut)
 	case <-interrupt:
 		ctl.Stop(0.05)
+		ui.LineBreaks(1)
 	}
 
 	time.Sleep(time.Millisecond * 200) // avoid clipping at the end

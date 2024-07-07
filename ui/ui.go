@@ -35,7 +35,7 @@ func LineBreaks(number int) {
 	}
 }
 
-func (ui *UI) Enter(exit chan bool) {
+func (ui *UI) Enter() {
 	go ui.read()
 	ui.resetScreen()
 
@@ -53,11 +53,6 @@ func (ui *UI) Enter(exit chan bool) {
 			ui.resetScreen()
 		case <-Logger.overdriveWarning:
 			ui.resetScreen()
-		case e := <-exit:
-			if e == true {
-				ui.quit <- true
-				return
-			}
 		}
 	}
 }

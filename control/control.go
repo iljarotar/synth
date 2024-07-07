@@ -7,13 +7,12 @@ import (
 type Control struct {
 	synth      *s.Synth
 	outputChan chan struct{ Left, Right float32 }
-	exitUIChan chan bool
 }
 
-func NewControl(outputChan chan struct{ Left, Right float32 }, exitUIChan chan bool) *Control {
+func NewControl(outputChan chan struct{ Left, Right float32 }) *Control {
 	var synth s.Synth
 	synth.Initialize()
-	ctl := &Control{synth: &synth, outputChan: outputChan, exitUIChan: exitUIChan}
+	ctl := &Control{synth: &synth, outputChan: outputChan}
 	go ctl.synth.Play(ctl.outputChan)
 	return ctl
 }
