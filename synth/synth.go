@@ -108,9 +108,6 @@ func (s *Synth) adjustVolume() {
 
 func (s *Synth) fadeIn() {
 	if s.Volume == s.volumeMemory {
-		if s.notifyFadeOutDone != nil {
-			s.notifyFadeOutDone <- true
-		}
 		return
 	}
 
