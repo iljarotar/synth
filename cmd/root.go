@@ -74,9 +74,7 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().StringP("file", "f", "", "Path to your patch file")
-	rootCmd.Flags().StringP("out", "o", "", "If provided, a .wav file with the given name will be recorded. A positive value for --duration must be given for the recording to work.")
 	rootCmd.Flags().StringP("sample-rate", "s", "", "Sample rate")
-	rootCmd.Flags().StringP("duration", "d", "", "Duration in seconds excluding fade-in and fade-out. a negative duration will cause the synth to play until stopped manually")
 	rootCmd.Flags().String("fade-in", "", "Fade-in in seconds")
 	rootCmd.Flags().String("fade-out", "", "Fade-out in seconds")
 	rootCmd.Flags().StringP("config", "c", "", "Path to your config file.")
@@ -86,8 +84,6 @@ func parseFlags(cmd *cobra.Command) error {
 	s, _ := cmd.Flags().GetString("sample-rate")
 	in, _ := cmd.Flags().GetString("fade-in")
 	out, _ := cmd.Flags().GetString("fade-out")
-	d, _ := cmd.Flags().GetString("duration")
-	record, _ := cmd.Flags().GetString("out")
 
 	if s != "" {
 		sampleRate, err := utils.ParseInt(s)
@@ -113,18 +109,6 @@ func parseFlags(cmd *cobra.Command) error {
 		c.Config.FadeOut = fadeOut
 	}
 
-	if d != "" {
-		duration, err := utils.ParseFloat(d)
-		if err != nil {
-			return fmt.Errorf("could not parse duration: %w", err)
-		}
-		c.Config.Duration = duration
-	}
-
-	if record != "" {
-		c.Config.Out = record
-	}
-
 	return c.Config.Validate()
 }
 
@@ -135,8 +119,8 @@ func start(file string) error {
 	}
 	defer audio.Terminate()
 
-	speakerIn := make(chan struct{ Left, Right float32 })
-	ctx, err := audio.NewContext(speakerIn, c.Config.SampleRate)
+	outputChan := make(chan struct{ Left, Right float32 })
+	ctx, err := audio.NewContext(outputChan, c.Config.SampleRate)
 	if err != nil {
 		return err
 	}
@@ -147,16 +131,12 @@ func start(file string) error {
 		return err
 	}
 
-	recIn := make(chan struct{ Left, Right float32 })
-	rec := f.NewRecorder(recIn, speakerIn, c.Config.Out)
-	go rec.StartRecording()
-
 	exit := make(chan bool)
 	quit := make(chan bool)
 	u := ui.NewUI(file, quit)
 	go u.Enter(exit)
 
-	ctl := control.NewControl(recIn, exit)
+	ctl := control.NewControl(outputChan, exit)
 	defer ctl.Close()
 
 	loader, err := f.NewLoader(ctl, file)
@@ -183,7 +163,6 @@ func start(file string) error {
 		ctl.Stop(0.05)
 	}
 
-	err = rec.StopRecording()
 	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
 	ui.LineBreaks(1)
 	return err

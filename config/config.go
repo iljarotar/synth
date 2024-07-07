@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"math"
 	"os"
 	"path/filepath"
 
@@ -13,6 +12,7 @@ const (
 	maxSamples        = 317520000
 	minSampleRate     = 8000
 	maxSampleRate     = 48000
+	maxFadeDuration   = 3600
 	defaultConfigFile = "config.yaml"
 	defaultConfigDir  = "synth"
 )
@@ -21,16 +21,12 @@ type config struct {
 	SampleRate float64 `yaml:"sample-rate"`
 	FadeIn     float64 `yaml:"fade-in"`
 	FadeOut    float64 `yaml:"fade-out"`
-	Duration   float64 `yaml:"duration"`
-	Out        string  `yaml:"out"`
 }
 
 var Default = config{
 	SampleRate: 44100,
 	FadeIn:     1,
 	FadeOut:    1,
-	Duration:   -1,
-	Out:        "",
 }
 
 var Config = config{}
@@ -84,14 +80,6 @@ func LoadConfig(path string) error {
 	return Config.Validate()
 }
 
-func (c *config) GetMaxDuration() float64 {
-	return math.Floor(maxSamples/c.SampleRate - c.FadeIn - c.FadeOut)
-}
-
-func (c *config) GetMaxFade() float64 {
-	return math.Floor(c.GetMaxDuration() / 2)
-}
-
 func (c *config) Validate() error {
 	if c.SampleRate < minSampleRate {
 		return fmt.Errorf("sample rate must be greater or equal to %d", minSampleRate)
@@ -102,17 +90,14 @@ func (c *config) Validate() error {
 	if c.FadeIn < 0 {
 		return fmt.Errorf("fade-in duration must not be negative")
 	}
-	if c.FadeIn > c.GetMaxFade() {
-		return fmt.Errorf("fade-in duration must be lower or equal to %f", c.GetMaxFade())
+	if c.FadeIn > maxFadeDuration {
+		return fmt.Errorf("fade-in duration must be lower or equal to %d", maxFadeDuration)
 	}
 	if c.FadeOut < 0 {
 		return fmt.Errorf("fade-out duration must not be negative")
 	}
-	if c.FadeOut > c.GetMaxFade() {
-		return fmt.Errorf("fade-out duration must be lower or equal to %f", c.GetMaxFade())
-	}
-	if c.Duration > c.GetMaxDuration() {
-		return fmt.Errorf("duration must be lower or equal to %f", c.GetMaxDuration())
+	if c.FadeOut > maxFadeDuration {
+		return fmt.Errorf("fade-out duration must be lower or equal to %d", maxFadeDuration)
 	}
 	return nil
 }
