@@ -37,13 +37,13 @@ documentation and usage: https://github.com/iljarotar/synth`,
 
 		err := c.EnsureDefaultConfig()
 		if err != nil {
-			fmt.Printf("%v", err)
+			fmt.Println(err)
 			return
 		}
 
 		defaultConfigPath, err := c.GetDefaultConfigPath()
 		if err != nil {
-			fmt.Printf("%v", err)
+			fmt.Println(err)
 			return
 		}
 
@@ -52,13 +52,13 @@ documentation and usage: https://github.com/iljarotar/synth`,
 		}
 		err = c.LoadConfig(cfg)
 		if err != nil {
-			fmt.Printf("could not load config file: %v", err)
+			fmt.Printf("could not load config file: %v\n", err)
 			return
 		}
 
 		err = parseFlags(cmd)
 		if err != nil {
-			fmt.Printf("%v", err)
+			fmt.Println(err)
 			return
 		}
 
