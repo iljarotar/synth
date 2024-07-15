@@ -1,9 +1,9 @@
 vol: 1
 out: [n1, o1, o2, o3, o4]
-noise: 
+noises:
   - name: n1
-    amp: {val: 0.01}
-    filter: {order: 200, low-cutoff: 300, high-cutoff: 500}
+    amp: {val: 0.005}
+    filter: {order: 100, low-cutoff: 300, high-cutoff: 500}
 
 oscillators:
   - name: o1

@@ -87,7 +87,10 @@ func (l *Loader) StartWatching() {
 
 			// check last loaded time to prevent occasional double loading
 			if !event.Has(fsnotify.Rename) && time.Now().Sub(l.lastLoaded) > 500*time.Millisecond {
-				l.ctl.FadeOut(0.01)
+				waitForFadeOut := make(chan bool)
+
+				l.ctl.FadeOut(0.01, waitForFadeOut)
+				<-waitForFadeOut
 
 				err := l.Load()
 				if err != nil {
