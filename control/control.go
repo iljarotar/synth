@@ -26,8 +26,7 @@ func (c *Control) LoadSynth(synth s.Synth) {
 }
 
 func (c *Control) Stop(fadeOut float64) {
-	c.synth.NotifyFadeOutDone(c.SynthDone)
-	c.synth.Fade(s.FadeDirectionOut, fadeOut)
+	c.FadeOut(fadeOut, c.SynthDone)
 }
 
 func (c *Control) StopSynth() {
@@ -38,6 +37,7 @@ func (c *Control) FadeIn(fadeIn float64) {
 	c.synth.Fade(s.FadeDirectionIn, fadeIn)
 }
 
-func (c *Control) FadeOut(fadeOut float64) {
+func (c *Control) FadeOut(fadeOut float64, notifyDone chan bool) {
+	c.synth.NotifyFadeOutDone(notifyDone)
 	c.synth.Fade(s.FadeDirectionOut, fadeOut)
 }
