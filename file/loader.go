@@ -7,7 +7,6 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/iljarotar/synth/control"
-	"github.com/iljarotar/synth/state"
 	s "github.com/iljarotar/synth/synth"
 	"github.com/iljarotar/synth/ui"
 	"golang.org/x/exp/slices"
@@ -83,7 +82,7 @@ func (l *Loader) StartWatching() {
 			if !ok {
 				return
 			}
-			if state.State.Closed {
+			if ui.State.Closed {
 				return
 			}
 
