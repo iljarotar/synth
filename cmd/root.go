@@ -122,6 +122,10 @@ func start(file string) error {
 	}
 	defer audio.Terminate()
 
+	quit := make(chan bool)
+	u := ui.NewUI(file, quit)
+	go u.Enter()
+
 	output := make(chan struct{ Left, Right float32 })
 	ctx, err := audio.NewContext(output, c.Config.SampleRate)
 	if err != nil {
@@ -148,10 +152,6 @@ func start(file string) error {
 		ui.Clear()
 		return fmt.Errorf("unable to load file %s: %w", file, err)
 	}
-
-	quit := make(chan bool)
-	u := ui.NewUI(file, quit)
-	go u.Enter()
 
 	sig := make(chan os.Signal, 2)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
