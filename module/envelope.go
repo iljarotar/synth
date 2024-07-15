@@ -8,29 +8,26 @@ import (
 
 type Envelope struct {
 	Module
-	Name         string   `yaml:"name"`
-	Attack       Param    `yaml:"attack"`
-	Decay        Param    `yaml:"decay"`
-	Sustain      Param    `yaml:"sustain"`
-	Release      Param    `yaml:"release"`
-	Peak         Param    `yaml:"peak"`
-	SustainLevel Param    `yaml:"sustain-level"`
-	Triggers     []string `yaml:"triggers"`
-	Threshold    Param    `yaml:"threshold"`
-	Negative     bool     `yaml:"negative"`
-	lastInput    float64
-	triggeredAt  float64
-	triggered    bool
+	Name            string  `yaml:"name"`
+	Attack          Param   `yaml:"attack"`
+	Decay           Param   `yaml:"decay"`
+	Sustain         Param   `yaml:"sustain"`
+	Release         Param   `yaml:"release"`
+	Peak            Param   `yaml:"peak"`
+	SustainLevel    Param   `yaml:"sustain-level"`
+	TimeShift       float64 `yaml:"time-shift"`
+	BPM             Param   `yaml:"bpm"`
+	lastTriggeredAt *float64
+	currentConfig   envelopeConfig
 }
 
 type envelopeConfig struct {
-	Attack       float64
-	Decay        float64
-	Sustain      float64
-	Release      float64
-	Peak         float64
-	SustainLevel float64
-	Threshold    float64
+	attack       float64
+	decay        float64
+	sustain      float64
+	release      float64
+	peak         float64
+	sustainLevel float64
 }
 
 func (e *Envelope) Initialize() {
@@ -39,6 +36,13 @@ func (e *Envelope) Initialize() {
 }
 
 func (e *Envelope) Next(t float64, modMap ModulesMap) {
+	bpm := utils.Limit(e.BPM.Val+modulate(e.BPM.Mod, modMap)*e.BPM.ModAmp, bpmLimits.min, bpmLimits.max)
+	e.trigger(t, bpm, modMap)
+	y := e.getCurrentValue(t)
+	e.current = output{Mono: y, Left: 0, Right: 0}
+}
+
+func (e *Envelope) getCurrentConfig(t float64, modMap ModulesMap) {
 	attack := utils.Limit(e.Attack.Val+modulate(e.Attack.Mod, modMap)*e.Attack.ModAmp, envelopeLimits.min, envelopeLimits.max)
 	decay := utils.Limit(e.Decay.Val+modulate(e.Decay.Mod, modMap)*e.Decay.ModAmp, envelopeLimits.min, envelopeLimits.max)
 	sustain := utils.Limit(e.Sustain.Val+modulate(e.Sustain.Mod, modMap)*e.Sustain.ModAmp, envelopeLimits.min, envelopeLimits.max)
@@ -46,21 +50,97 @@ func (e *Envelope) Next(t float64, modMap ModulesMap) {
 
 	peak := utils.Limit(e.Peak.Val+modulate(e.Peak.Mod, modMap)*e.Peak.ModAmp, ampLimits.min, ampLimits.max)
 	sustainLevel := utils.Limit(e.SustainLevel.Val+modulate(e.SustainLevel.Mod, modMap)*e.SustainLevel.ModAmp, ampLimits.min, ampLimits.max)
-	threshold := utils.Limit(e.Threshold.Val+modulate(e.Threshold.Mod, modMap)*e.Threshold.ModAmp, ampLimits.min, ampLimits.max)
 
-	envelope := envelopeConfig{
-		Attack:       attack,
-		Decay:        decay,
-		Sustain:      sustain,
-		Release:      release,
-		Peak:         peak,
-		SustainLevel: sustainLevel,
-		Threshold:    threshold,
+	config := envelopeConfig{
+		attack:       attack,
+		decay:        decay,
+		sustain:      sustain,
+		release:      release,
+		peak:         peak,
+		sustainLevel: sustainLevel,
+	}
+	e.currentConfig = config
+}
+
+func (e *Envelope) trigger(t, bpm float64, modMap ModulesMap) {
+	if bpm == 0 {
+		return
+	}
+	secondsBetweenTwoBeats := 60 / bpm
+	var triggerAt float64
+	if t >= e.TimeShift {
+		numberOfTriggersMinusOne := math.Floor((t - e.TimeShift) / secondsBetweenTwoBeats)
+		triggerAt = numberOfTriggersMinusOne*secondsBetweenTwoBeats + e.TimeShift
+	} else {
+		numberOfTriggers := math.Ceil((e.TimeShift - t) / secondsBetweenTwoBeats)
+		triggerAt = e.TimeShift - numberOfTriggers*secondsBetweenTwoBeats
 	}
 
-	e.checkTrigger(t, threshold, modMap)
-	y := e.getCurrentValue(t, envelope)
-	e.current = output{Mono: y, Left: 0, Right: 0}
+	oldLastTriggeredAt := e.lastTriggeredAt
+	if oldLastTriggeredAt == nil {
+		e.lastTriggeredAt = &triggerAt
+		e.getCurrentConfig(t, modMap)
+		return
+	}
+
+	if t-*e.lastTriggeredAt >= secondsBetweenTwoBeats {
+		newLastTriggeredAt := *oldLastTriggeredAt + secondsBetweenTwoBeats
+		e.lastTriggeredAt = &newLastTriggeredAt
+		e.getCurrentConfig(t, modMap)
+	}
+}
+
+func (e *Envelope) getCurrentValue(t float64) float64 {
+	if e.lastTriggeredAt == nil {
+		return 0
+	}
+	attackEnd := e.currentConfig.attack
+	decayEnd := attackEnd + e.currentConfig.decay
+	sustainEnd := decayEnd + e.currentConfig.sustain
+	releaseEnd := sustainEnd + e.currentConfig.release
+	timeSinceLastTrigger := t - *e.lastTriggeredAt
+
+	switch {
+	case timeSinceLastTrigger <= attackEnd:
+		return attackFunc(e.currentConfig, *e.lastTriggeredAt)(t)
+	case timeSinceLastTrigger <= decayEnd:
+		return decayFunc(e.currentConfig, *e.lastTriggeredAt)(t)
+	case timeSinceLastTrigger <= sustainEnd:
+		return e.currentConfig.sustainLevel
+	case timeSinceLastTrigger <= releaseEnd:
+		return releaseFunc(e.currentConfig, *e.lastTriggeredAt)(t)
+	default:
+		return 0
+	}
+}
+
+type stageFunc func(t float64) float64
+
+func attackFunc(envelope envelopeConfig, triggeredAt float64) stageFunc {
+	m := envelope.peak / envelope.attack
+	c := -m * triggeredAt
+
+	return func(t float64) float64 {
+		return m*t + c
+	}
+}
+
+func decayFunc(envelope envelopeConfig, triggeredAt float64) stageFunc {
+	m := -(envelope.peak - envelope.sustainLevel) / envelope.decay
+	c := -m*(triggeredAt+envelope.attack) + envelope.peak
+
+	return func(t float64) float64 {
+		return m*t + c
+	}
+}
+
+func releaseFunc(envelope envelopeConfig, triggeredAt float64) stageFunc {
+	m := -envelope.sustainLevel / envelope.release
+	c := -m*(triggeredAt+envelope.attack+envelope.decay+envelope.sustain) + envelope.sustainLevel
+
+	return func(t float64) float64 {
+		return m*t + c
+	}
 }
 
 func (e *Envelope) limitParams() {
@@ -82,90 +162,6 @@ func (e *Envelope) limitParams() {
 	e.SustainLevel.Val = utils.Limit(e.SustainLevel.Val, ampLimits.min, ampLimits.max)
 	e.SustainLevel.ModAmp = utils.Limit(e.SustainLevel.ModAmp, ampLimits.min, ampLimits.max)
 
-	e.Threshold.Val = utils.Limit(e.Threshold.Val, ampLimits.min, ampLimits.max)
-	e.Threshold.ModAmp = utils.Limit(e.Threshold.ModAmp, ampLimits.min, ampLimits.max)
-}
-
-func (e *Envelope) checkTrigger(t, threshold float64, modMap ModulesMap) {
-	var sum float64
-	for _, trigger := range e.Triggers {
-		mod, ok := modMap[trigger]
-		if ok {
-			sum += mod.Current().Mono
-		}
-	}
-
-	sum = math.Abs(sum)
-
-	if e.lastInput < threshold && sum >= threshold {
-		e.triggered = true
-		e.triggeredAt = t
-	}
-
-	e.lastInput = sum
-}
-
-func (e *Envelope) getCurrentValue(t float64, envelope envelopeConfig) float64 {
-	if !e.triggered {
-		return 0
-	}
-
-	var f stageFunc
-	attackEnd := e.triggeredAt + envelope.Attack
-	decayEnd := attackEnd + envelope.Decay
-	sustainEnd := decayEnd + envelope.Sustain
-	releaseEnd := sustainEnd + envelope.Release
-
-	switch {
-	case t >= e.triggeredAt && t < attackEnd:
-		f = attackFunc(envelope, e.triggeredAt)
-
-	case t >= attackEnd && t < decayEnd:
-		f = decayFunc(envelope, e.triggeredAt)
-
-	case t >= decayEnd && t < sustainEnd:
-		return envelope.SustainLevel
-
-	case t >= sustainEnd && t < releaseEnd:
-		f = releaseFunc(envelope, e.triggeredAt)
-
-	default:
-		e.triggered = false
-		return 0
-	}
-
-	if e.Negative {
-		return -f(t)
-	}
-
-	return f(t)
-}
-
-type stageFunc func(t float64) float64
-
-func attackFunc(envelope envelopeConfig, triggeredAt float64) stageFunc {
-	m := envelope.Peak / envelope.Attack
-	c := -m * triggeredAt
-
-	return func(t float64) float64 {
-		return m*t + c
-	}
-}
-
-func decayFunc(envelope envelopeConfig, triggeredAt float64) stageFunc {
-	m := -(envelope.Peak - envelope.SustainLevel) / envelope.Decay
-	c := -m*(triggeredAt+envelope.Attack) + envelope.Peak
-
-	return func(t float64) float64 {
-		return m*t + c
-	}
-}
-
-func releaseFunc(envelope envelopeConfig, triggeredAt float64) stageFunc {
-	m := -envelope.SustainLevel / envelope.Release
-	c := -m*(triggeredAt+envelope.Attack+envelope.Decay+envelope.Sustain) + envelope.SustainLevel
-
-	return func(t float64) float64 {
-		return m*t + c
-	}
+	e.BPM.Val = utils.Limit(e.BPM.Val, bpmLimits.min, bpmLimits.max)
+	e.BPM.ModAmp = utils.Limit(e.BPM.ModAmp, bpmLimits.min, bpmLimits.max)
 }

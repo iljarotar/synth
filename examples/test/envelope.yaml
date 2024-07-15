@@ -1,0 +1,23 @@
+vol: 1
+out: [o1]
+oscillators:
+  - name: o1
+    type: Triangle
+    freq: {val: 200}
+    amp: {val: 0, mod: [e1], mod-amp: 1}
+
+  - name: lfo1
+    type: Square
+    freq: {val: 0.2}
+    amp: {val: 1}
+
+envelopes:
+  - name: e1
+    attack: {val: 0.05}
+    decay: {val: 0.1}
+    sustain: {val: 0.2}
+    release: {val: 1}
+    peak: {val: 1}
+    sustain-level: {val: 0.1}
+    time-shift: 3
+    bpm: {val: 40, mod: [lfo1], mod-amp: 10}

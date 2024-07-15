@@ -111,19 +111,18 @@ filter `order` might be necessary. Sometimes a lower value for `order` also soun
 | freq         | Param        | periods per second [0,20000]              |
 | data         | Float [0..*] | custom values                             |
 
-| Envelope      |               |                                           |
-| ------------- | ------------- | ----------------------------------------- |
-| **Field**     | **Type**      | **Description**                           |
-| name          | String        | should be unique in the scope of the file |
-| attack        | Param         | attack time in seconds [0,10000]          |
-| decay         | Param         | decay time in seconds [0,10000]           |
-| sustain       | Param         | sustain time in seconds [0,10000]         |
-| release       | Param         | release time in seconds [0,10000]         |
-| peak          | Param         | peak amplitude [0,1]                      |
-| sustain-level | Param         | sustain amplitude [0,1]                   |
-| threshold     | Param         | trigger treshold [0,1]                    |
-| triggers      | String [0..*] | names of triggering modules               |
-| negative      | Boolean       | if true, the envelope's sign is inverted  |
+| Envelope      |          |                                           |
+| ------------- | -------- | ----------------------------------------- |
+| **Field**     | **Type** | **Description**                           |
+| name          | String   | should be unique in the scope of the file |
+| attack        | Param    | attack time in seconds [0,10000]          |
+| decay         | Param    | decay time in seconds [0,10000]           |
+| sustain       | Param    | sustain time in seconds [0,10000]         |
+| release       | Param    | release time in seconds [0,10000]         |
+| peak          | Param    | peak amplitude [0,1]                      |
+| sustain-level | Param    | sustain amplitude [0,1]                   |
+| bpm           | Param    | triggers per minute [0,600000]            |
+| time-shift    | Float    | initial time shift                        |
 
 | Param     |               |                                            |
 | --------- | ------------- | ------------------------------------------ |
