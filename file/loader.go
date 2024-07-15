@@ -7,6 +7,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/iljarotar/synth/control"
+	"github.com/iljarotar/synth/state"
 	s "github.com/iljarotar/synth/synth"
 	"github.com/iljarotar/synth/ui"
 	"golang.org/x/exp/slices"
@@ -80,6 +81,9 @@ func (l *Loader) StartWatching() {
 		select {
 		case event, ok := <-l.watcher.Events:
 			if !ok {
+				return
+			}
+			if state.State.Closed {
 				return
 			}
 
