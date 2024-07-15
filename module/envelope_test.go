@@ -59,6 +59,13 @@ func TestEnvelope_trigger(t *testing.T) {
 			bpm:      10,
 			want:     7,
 		},
+		{
+			name:     "no trigger if t is closer to last trigger than seconds between two beats",
+			envelope: Envelope{lastTriggeredAt: pointer(12.0)},
+			t:        17,
+			bpm:      10,
+			want:     12,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
