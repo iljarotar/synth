@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/iljarotar/synth/state"
 )
 
 type UI struct {
@@ -43,6 +45,7 @@ func (ui *UI) Enter() {
 		select {
 		case input := <-ui.input:
 			if input == "q" {
+				state.State.Closed = true
 				ui.quit <- true
 				return
 			} else {
