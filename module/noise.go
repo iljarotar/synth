@@ -8,10 +8,10 @@ import (
 
 type Noise struct {
 	Module
-	Name   string `yaml:"name"`
-	Amp    Param  `yaml:"amp"`
-	Pan    Param  `yaml:"pan"`
-	Filter Filter `yaml:"filter"`
+	Name   string    `yaml:"name"`
+	Amp    Param     `yaml:"amp"`
+	Pan    Param     `yaml:"pan"`
+	Filter FIRFilter `yaml:"filter"`
 }
 
 func (n *Noise) Initialize() {
