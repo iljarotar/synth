@@ -43,7 +43,7 @@ var (
 	panLimits      limits = limits{min: -1, max: 1}
 	phaseLimits    limits = limits{min: -1, max: 1}
 	freqLimits     limits = limits{min: 0, max: 20000}
-	bpmLimits      limits = limits{min: 0, max: 1000000}
+	bpmLimits      limits = limits{min: 0, max: 600000}
 	envelopeLimits limits = limits{min: 0, max: 10000}
 )
 
