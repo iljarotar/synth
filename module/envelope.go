@@ -84,7 +84,7 @@ func (e *Envelope) trigger(t, bpm float64, modMap ModulesMap) {
 	}
 
 	if t-*e.lastTriggeredAt >= secondsBetweenTwoBeats {
-		newLastTriggeredAt := *oldLastTriggeredAt + secondsBetweenTwoBeats
+		newLastTriggeredAt := t
 		e.lastTriggeredAt = &newLastTriggeredAt
 		e.getCurrentConfig(t, modMap)
 	}

@@ -48,16 +48,9 @@ func TestEnvelope_trigger(t *testing.T) {
 		{
 			name:     "change from negative triggered time to positive",
 			envelope: Envelope{lastTriggeredAt: pointer(-1.0), TimeShift: 5},
-			t:        6,
+			t:        5,
 			bpm:      10,
 			want:     5,
-		},
-		{
-			name:     "next trigger should be seconds between two beats later than last",
-			envelope: Envelope{lastTriggeredAt: pointer(1.0)},
-			t:        8,
-			bpm:      10,
-			want:     7,
 		},
 		{
 			name:     "no trigger if t is closer to last trigger than seconds between two beats",
