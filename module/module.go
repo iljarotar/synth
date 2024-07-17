@@ -8,8 +8,6 @@ type Module struct {
 }
 
 type IModule interface {
-	Initialize()
-	Next(t float64, modMap ModulesMap)
 	Integral() float64
 	Current() output
 }

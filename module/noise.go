@@ -8,9 +8,11 @@ import (
 
 type Noise struct {
 	Module
-	Name string `yaml:"name"`
-	Amp  Param  `yaml:"amp"`
-	Pan  Param  `yaml:"pan"`
+	Name               string   `yaml:"name"`
+	Amp                Param    `yaml:"amp"`
+	Pan                Param    `yaml:"pan"`
+	Filters            []string `yaml:"filters"`
+	x2, x1, x0, y1, y0 float64
 }
 
 func (n *Noise) Initialize() {
@@ -18,11 +20,29 @@ func (n *Noise) Initialize() {
 	n.current = stereo(noise()*n.Amp.Val, n.Pan.Val)
 }
 
-func (n *Noise) Next(_ float64, modMap ModulesMap) {
+func (n *Noise) Next(modMap ModulesMap, filtersMap FiltersMap) {
 	pan := modulate(n.Pan, panLimits, modMap)
 	amp := modulate(n.Amp, ampLimits, modMap)
 
-	n.current = stereo(noise()*amp, pan)
+	var y2 float64
+
+	for _, f := range n.Filters {
+		filter, ok := filtersMap[f]
+		if !ok {
+			continue
+		}
+
+		// CONTINUE: x values for cascading taps must be y values of previous ones... maybe recursive?
+		y2 := filter.Tap(n.x2, n.x1, n.x0, n.y1, n.y0)
+
+		n.x0 = n.x1
+		n.x1 = n.x2
+		n.x2 = noise()
+		n.y0 = n.y1
+		n.y1 = y2
+	}
+
+	n.current = stereo(y2*amp, pan)
 }
 
 func (n *Noise) limitParams() {

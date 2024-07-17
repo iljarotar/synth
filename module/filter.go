@@ -9,16 +9,25 @@ import (
 
 type FilterType string
 
+type FiltersMap map[string]*Filter
+
 const (
 	FilterTypeLowPass  FilterType = "LowPass"
 	FilterTypeHighPass FilterType = "HighPass"
 )
 
+const (
+	// TODO: decide on values an remove fields from Filter
+	dbGain = 1
+	slope  = 0.999
+)
+
 type Filter struct {
+	Name                   string     `yaml:"name"`
 	Type                   FilterType `yaml:"type"`
 	Cutoff                 Param      `yaml:"cutoff"`
-	DBGain                 float64    `yaml:"db-gain"`
-	Slope                  float64    `yaml:"slope"`
+	DBGain                 float64    `yaml:"db-gain"` // decide on gain an remove param
+	Slope                  float64    `yaml:"slope"`   // same here
 	a0, a1, a2, b0, b1, b2 float64
 }
 

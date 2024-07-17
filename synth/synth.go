@@ -28,8 +28,10 @@ type Synth struct {
 	Noises             []*module.Noise        `yaml:"noises"`
 	CustomSignals      []*module.CustomSignal `yaml:"custom-signals"`
 	Envelopes          []*module.Envelope     `yaml:"envelopes"`
+	Filters            []*module.Filter       `yaml:"filters"`
 	Time               float64                `yaml:"time"`
 	modMap             module.ModulesMap
+	filtersMap         module.FiltersMap
 	step, volumeMemory float64
 	notifyFadeOutDone  chan bool
 	fadeDirection      FadeDirection
@@ -61,7 +63,11 @@ func (s *Synth) Initialize() {
 		e.Initialize()
 	}
 
-	s.makeModulesMap()
+	for _, f := range s.Filters {
+		f.Initialize()
+	}
+
+	s.makeMaps()
 }
 
 func (s *Synth) Play(output chan<- struct{ Left, Right float32 }) {
@@ -162,7 +168,7 @@ func (s *Synth) updateCurrentValues() {
 	}
 
 	for _, n := range s.Noises {
-		n.Next(s.Time, s.modMap)
+		n.Next(s.modMap, s.filtersMap)
 	}
 
 	for _, c := range s.CustomSignals {
@@ -173,11 +179,16 @@ func (s *Synth) updateCurrentValues() {
 		e.Next(s.Time, s.modMap)
 	}
 
+	for _, f := range s.Filters {
+		f.NextCoeffs(s.modMap)
+	}
+
 	s.Time += s.step
 }
 
-func (s *Synth) makeModulesMap() {
+func (s *Synth) makeMaps() {
 	modMap := make(module.ModulesMap)
+	filtersMap := make(module.FiltersMap)
 
 	for _, osc := range s.Oscillators {
 		modMap[osc.Name] = osc
@@ -195,7 +206,12 @@ func (s *Synth) makeModulesMap() {
 		modMap[e.Name] = e
 	}
 
+	for _, f := range s.Filters {
+		filtersMap[f.Name] = f
+	}
+
 	s.modMap = modMap
+	s.filtersMap = filtersMap
 }
 
 func secondsToStep(seconds, delta float64) float64 {

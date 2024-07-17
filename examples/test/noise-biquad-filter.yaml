@@ -1,0 +1,11 @@
+vol: 1
+out: [n1]
+oscillators:
+  - name: lfo1
+    type: Sine
+    freq: {val: 0.2}
+    amp: {val: 1}
+
+noises:
+  - name: n1
+    amp: {val: 0.1}
