@@ -36,20 +36,20 @@ func (e *Envelope) Initialize() {
 }
 
 func (e *Envelope) Next(t float64, modMap ModulesMap) {
-	bpm := utils.Limit(e.BPM.Val+modulate(e.BPM.Mod, modMap)*e.BPM.ModAmp, bpmLimits.min, bpmLimits.max)
+	bpm := modulate(e.BPM, bpmLimits, modMap)
 	e.trigger(t, bpm, modMap)
 	y := e.getCurrentValue(t)
 	e.current = output{Mono: y, Left: 0, Right: 0}
 }
 
 func (e *Envelope) getCurrentConfig(t float64, modMap ModulesMap) {
-	attack := utils.Limit(e.Attack.Val+modulate(e.Attack.Mod, modMap)*e.Attack.ModAmp, envelopeLimits.min, envelopeLimits.max)
-	decay := utils.Limit(e.Decay.Val+modulate(e.Decay.Mod, modMap)*e.Decay.ModAmp, envelopeLimits.min, envelopeLimits.max)
-	sustain := utils.Limit(e.Sustain.Val+modulate(e.Sustain.Mod, modMap)*e.Sustain.ModAmp, envelopeLimits.min, envelopeLimits.max)
-	release := utils.Limit(e.Release.Val+modulate(e.Release.Mod, modMap)*e.Release.ModAmp, envelopeLimits.min, envelopeLimits.max)
+	attack := modulate(e.Attack, envelopeLimits, modMap)
+	decay := modulate(e.Decay, envelopeLimits, modMap)
+	sustain := modulate(e.Sustain, envelopeLimits, modMap)
+	release := modulate(e.Release, envelopeLimits, modMap)
 
-	peak := utils.Limit(e.Peak.Val+modulate(e.Peak.Mod, modMap)*e.Peak.ModAmp, ampLimits.min, ampLimits.max)
-	sustainLevel := utils.Limit(e.SustainLevel.Val+modulate(e.SustainLevel.Mod, modMap)*e.SustainLevel.ModAmp, ampLimits.min, ampLimits.max)
+	peak := modulate(e.Peak, ampLimits, modMap)
+	sustainLevel := modulate(e.SustainLevel, ampLimits, modMap)
 
 	config := envelopeConfig{
 		attack:       attack,

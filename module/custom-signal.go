@@ -25,9 +25,9 @@ func (c *CustomSignal) Initialize() {
 }
 
 func (c *CustomSignal) Next(t float64, modMap ModulesMap) {
-	pan := utils.Limit(c.Pan.Val+modulate(c.Pan.Mod, modMap)*c.Pan.ModAmp, panLimits.min, panLimits.max)
-	amp := utils.Limit(c.Amp.Val+modulate(c.Amp.Mod, modMap)*c.Amp.ModAmp, ampLimits.min, ampLimits.max)
-	freq := utils.Limit(c.Freq.Val+modulate(c.Freq.Mod, modMap)*c.Freq.ModAmp, freqLimits.min, freqLimits.max)
+	pan := modulate(c.Pan, panLimits, modMap)
+	amp := modulate(c.Amp, ampLimits, modMap)
+	freq := modulate(c.Freq, freqLimits, modMap)
 
 	y := c.signalValue(t, amp, freq)
 	c.current = stereo(y, pan)

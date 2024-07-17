@@ -41,8 +41,8 @@ func (o *Oscillator) Initialize() {
 }
 
 func (o *Oscillator) Next(t float64, modMap ModulesMap) {
-	pan := utils.Limit(o.Pan.Val+modulate(o.Pan.Mod, modMap)*o.Pan.ModAmp, panLimits.min, panLimits.max)
-	amp := utils.Limit(o.Amp.Val+modulate(o.Amp.Mod, modMap)*o.Amp.ModAmp, ampLimits.min, ampLimits.max)
+	pan := modulate(o.Pan, panLimits, modMap)
+	amp := modulate(o.Amp, ampLimits, modMap)
 	offset := o.getOffset(modMap)
 
 	y := o.signalValue(t, amp, offset)
