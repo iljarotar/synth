@@ -47,7 +47,7 @@ var (
 	envelopeLimits limits = limits{min: 0, max: 10000}
 )
 
-func modulate(modulators []string, modMap ModulesMap) float64 {
+func modulateValue(modulators []string, modMap ModulesMap) float64 {
 	var y float64
 
 	for _, m := range modulators {
@@ -58,6 +58,11 @@ func modulate(modulators []string, modMap ModulesMap) float64 {
 	}
 
 	return y
+}
+
+func modulate(param Param, lim limits, modMap ModulesMap) float64 {
+	y := param.Val + modulateValue(param.Mod, modMap)*param.ModAmp
+	return utils.Limit(y, lim.min, lim.max)
 }
 
 func stereo(x, pan float64) output {

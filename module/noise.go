@@ -19,8 +19,8 @@ func (n *Noise) Initialize() {
 }
 
 func (n *Noise) Next(_ float64, modMap ModulesMap) {
-	pan := utils.Limit(n.Pan.Val+modulate(n.Pan.Mod, modMap)*n.Pan.ModAmp, panLimits.min, panLimits.max)
-	amp := utils.Limit(n.Amp.Val+modulate(n.Amp.Mod, modMap)*n.Amp.ModAmp, ampLimits.min, ampLimits.max)
+	pan := modulate(n.Pan, panLimits, modMap)
+	amp := modulate(n.Amp, ampLimits, modMap)
 
 	n.current = stereo(noise()*amp, pan)
 }
