@@ -14,21 +14,21 @@ func (l *logger) Info(log string) {
 	if State.Closed {
 		return
 	}
-	l.log <- fmt.Sprintf("%s %s", colored("[INFO]", COLOR_GREEN_STRONG), log)
+	l.log <- fmt.Sprintf("%s %s", colored("[INFO]", colorGreenStrong), log)
 }
 
 func (l *logger) Warning(log string) {
 	if State.Closed {
 		return
 	}
-	l.log <- fmt.Sprintf("%s %s", colored("[WARNING]", COLOR_ORANGE_STRONG), log)
+	l.log <- fmt.Sprintf("%s %s", colored("[WARNING]", colorOrangeStorng), log)
 }
 
 func (l *logger) Error(log string) {
 	if State.Closed {
 		return
 	}
-	l.log <- fmt.Sprintf("%s %s", colored("[EROOR]", COLOR_RED_STRONG), log)
+	l.log <- fmt.Sprintf("%s %s", colored("[EROOR]", colorRedStrong), log)
 }
 
 func (l *logger) ShowOverdriveWarning(limitExceeded bool) {
@@ -40,7 +40,7 @@ func (l *logger) ShowOverdriveWarning(limitExceeded bool) {
 }
 
 func colored(str string, col color) string {
-	return fmt.Sprintf("%s %s %s", col, str, COLOR_WHITE)
+	return fmt.Sprintf("%s %s %s", col, str, colorWhite)
 }
 
 var Logger = &logger{

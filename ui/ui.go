@@ -70,7 +70,7 @@ func (ui *UI) read() {
 func (ui *UI) resetScreen() {
 	Clear()
 	LineBreaks(1)
-	fmt.Printf("%s%s", colored("Synth playing", COLOR_BLUE_STRONG), ui.file)
+	fmt.Printf("%s%s", colored("Synth playing", colorBlueStrong), ui.file)
 	LineBreaks(2)
 
 	for i, log := range ui.logs {
@@ -81,8 +81,8 @@ func (ui *UI) resetScreen() {
 		LineBreaks(1)
 	}
 	if Logger.ShowingOverdriveWarning {
-		fmt.Printf("%s", colored("[WARNING] Volume exceeded 100%%", COLOR_ORANGE_STRONG))
+		fmt.Printf("%s", colored("[WARNING] Volume exceeded 100%%", colorOrangeStorng))
 		LineBreaks(2)
 	}
-	fmt.Printf("%s", colored("Type 'q' to quit:", COLOR_BLUE_STRONG))
+	fmt.Printf("%s", colored("Type 'q' to quit:", colorBlueStrong))
 }
