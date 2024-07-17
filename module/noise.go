@@ -8,23 +8,21 @@ import (
 
 type Noise struct {
 	Module
-	Name   string    `yaml:"name"`
-	Amp    Param     `yaml:"amp"`
-	Pan    Param     `yaml:"pan"`
-	Filter FIRFilter `yaml:"filter"`
+	Name string `yaml:"name"`
+	Amp  Param  `yaml:"amp"`
+	Pan  Param  `yaml:"pan"`
 }
 
 func (n *Noise) Initialize() {
 	n.limitParams()
 	n.current = stereo(noise()*n.Amp.Val, n.Pan.Val)
-	n.Filter.Initialize()
 }
 
 func (n *Noise) Next(_ float64, modMap ModulesMap) {
 	pan := utils.Limit(n.Pan.Val+modulate(n.Pan.Mod, modMap)*n.Pan.ModAmp, panLimits.min, panLimits.max)
 	amp := utils.Limit(n.Amp.Val+modulate(n.Amp.Mod, modMap)*n.Amp.ModAmp, ampLimits.min, ampLimits.max)
 
-	n.current = stereo(n.Filter.Tap(noise())*amp, pan)
+	n.current = stereo(noise()*amp, pan)
 }
 
 func (n *Noise) limitParams() {
@@ -33,9 +31,6 @@ func (n *Noise) limitParams() {
 
 	n.Pan.ModAmp = utils.Limit(n.Pan.ModAmp, panLimits.min, panLimits.max)
 	n.Pan.Val = utils.Limit(n.Pan.Val, panLimits.min, panLimits.max)
-
-	n.Filter.LowCutoff = utils.Limit(n.Filter.LowCutoff, freqLimits.min, freqLimits.max)
-	n.Filter.HighCutoff = utils.Limit(n.Filter.HighCutoff, freqLimits.min, freqLimits.max)
 }
 
 func noise() float64 {
