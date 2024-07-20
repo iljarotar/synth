@@ -11,6 +11,10 @@ type FilterType string
 
 type FiltersMap map[string]*Filter
 
+type filterInputs struct {
+	x0, x1, x2, y0, y1 float64
+}
+
 const (
 	FilterTypeLowPass  FilterType = "LowPass"
 	FilterTypeHighPass FilterType = "HighPass"
