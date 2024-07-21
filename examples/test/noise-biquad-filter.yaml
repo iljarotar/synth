@@ -3,13 +3,13 @@ out: [n1]
 filters:
   - name: f1
     type: HighPass
-    cutoff: {val: 16000}
+    cutoff: {val: 7000, mod: [lfo1], mod-amp: 3000}
     db-gain: -1
     slope: 0.9
 
   - name: f2
     type: LowPass
-    cutoff: {val: 14000}
+    cutoff: {val: 200, mod: [lfo1], mod-amp: 100}
     db-gain: -1
     slope: 0.9
 
