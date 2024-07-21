@@ -25,7 +25,7 @@ func (n *Noise) Next(modMap ModulesMap, filtersMap FiltersMap) {
 	pan := modulate(n.Pan, panLimits, modMap)
 	amp := modulate(n.Amp, ampLimits, modMap)
 
-	var y2 float64
+	var y2, y float64
 	x := noise()
 
 	for i, f := range n.Filters {
@@ -38,7 +38,8 @@ func (n *Noise) Next(modMap ModulesMap, filtersMap FiltersMap) {
 		}
 
 		inputs := n.inputs[i]
-		y2 += filter.Tap(inputs.x2, inputs.x1, inputs.x0, inputs.y1, inputs.y0)
+		y2 = filter.Tap(inputs.x2, inputs.x1, inputs.x0, inputs.y1, inputs.y0)
+		y += y2
 
 		inputs.x0 = inputs.x1
 		inputs.x1 = inputs.x2
@@ -49,12 +50,11 @@ func (n *Noise) Next(modMap ModulesMap, filtersMap FiltersMap) {
 	}
 
 	if len(n.Filters) == 0 {
-		y2 = noise()
+		y = noise()
 	} else {
-		// FIX: for some reason adding multiple filters still causes overdrive
-		y2 /= float64(len(n.Filters))
+		y /= float64(len(n.Filters))
 	}
-	n.current = stereo(y2*amp, pan)
+	n.current = stereo(y*amp, pan)
 }
 
 func (n *Noise) limitParams() {

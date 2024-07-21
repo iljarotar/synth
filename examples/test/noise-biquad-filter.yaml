@@ -2,16 +2,28 @@ vol: 1
 out: [n1]
 filters:
   - name: f1
-    type: HighPass
-    cutoff: {val: 7000, mod: [lfo1], mod-amp: 3000}
-    db-gain: -1
-    slope: 0.9
+    low-cutoff:
+      val: 1900
+      mod: [lfo1]
+      mod-amp: 500
+    high-cutoff:
+      val: 2000
+      mod: [lfo1]
+      mod-amp: 500
+    db-gain: -100
+    slope: 0.99
 
   - name: f2
-    type: LowPass
-    cutoff: {val: 200, mod: [lfo1], mod-amp: 100}
-    db-gain: -1
-    slope: 0.9
+    high-cutoff:
+      val: 200
+    db-gain: -100
+    slope: 0.99
+
+  - name: f3
+    low-cutoff:
+      val: 8000
+    db-gain: -100
+    slope: 0.99
 
 oscillators:
   - name: lfo1
@@ -22,4 +34,4 @@ oscillators:
 noises:
   - name: n1
     amp: {val: 0.1}
-    filters: [f1, f2]
+    filters: [f1, f2, f3]
