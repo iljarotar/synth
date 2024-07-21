@@ -51,6 +51,7 @@ func (n *Noise) Next(modMap ModulesMap, filtersMap FiltersMap) {
 	if len(n.Filters) == 0 {
 		y2 = noise()
 	} else {
+		// FIX: for some reason adding multiple filters still causes overdrive
 		y2 /= float64(len(n.Filters))
 	}
 	n.current = stereo(y2*amp, pan)
