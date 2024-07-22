@@ -36,7 +36,7 @@ type Filter struct {
 }
 
 func (f *Filter) Initialize() {
-	f.adjustParams()
+	f.limitParams()
 	f.amp = getAmp(dbGain)
 	f.calculateCoeffs(f.LowCutoff.Val, f.HighCutoff.Val)
 }
@@ -160,15 +160,11 @@ func (c *filterConfig) applyFilters(x float64) (float64, []filterInputs) {
 	return y, newInputs
 }
 
-func (f *Filter) adjustParams() {
+func (f *Filter) limitParams() {
 	f.LowCutoff.Val = utils.Limit(f.LowCutoff.Val, cutoffLimits.min, cutoffLimits.max)
 	f.LowCutoff.ModAmp = utils.Limit(f.LowCutoff.ModAmp, cutoffLimits.min, cutoffLimits.max)
 	f.HighCutoff.Val = utils.Limit(f.HighCutoff.Val, cutoffLimits.min, cutoffLimits.max)
 	f.HighCutoff.ModAmp = utils.Limit(f.HighCutoff.ModAmp, cutoffLimits.min, cutoffLimits.max)
-
-	if isUnset(f.HighCutoff, cutoffLimits) {
-		f.HighCutoff.Val = cutoffLimits.max
-	}
 }
 
 func isUnset(p Input, lim limits) bool {
