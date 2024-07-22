@@ -40,35 +40,36 @@ instantly.
 To listen to an example run
 
 ```bash
-synth -f examples/a-major.yaml
+synth examples/a-major.yaml
 ```
 
-Run `synth` to see more configuration options.
+Run `synth` to see all configuration options.
 
 ## Writing a patch file
 
 ### Data types
 
-| Synth          |                     |                                                                                                           |
-| -------------- | ------------------- | --------------------------------------------------------------------------------------------------------- |
-| **Field**      | **Type**            | **Description**                                                                                           |
-| vol            | Float               | main volume in range [0,1]                                                                                |
-| out            | String [0..*]       | names of all oscillators, noise generators and custom signals, whose outputs will be sent to the speakers |
-| time           | Float               | initial time shift in seconds [0,7200]                                                                    |
-| oscillators    | Oscillator [0..*]   | all oscillators                                                                                           |
-| noises         | Noise [0..*]        | all noise generators                                                                                      |
-| custom-signals | CustomSignal [0..*] | all custom signals                                                                                        |
-| envelopes      | Envelope [0..*]     | all envelopes                                                                                             |
+| Synth       |                   |                                                    |
+| ----------- | ----------------- | -------------------------------------------------- |
+| **Field**   | **Type**          | **Description**                                    |
+| vol         | Float             | main volume in range [0,1]                         |
+| out         | String [0..*]     | names of all modules whose outputs will be audible |
+| time        | Float             | initial time shift in seconds [0,7200]             |
+| oscillators | Oscillator [0..*] | all oscillators                                    |
+| noises      | Noise [0..*]      | all noise generators                               |
+| wavetables  | Wavetables [0..*] | all wavetables                                     |
+| envelopes   | Envelope [0..*]   | all envelopes                                      |
 
 | Oscillator |                |                                           |
 | ---------- | -------------- | ----------------------------------------- |
 | **Field**  | **Type**       | **Description**                           |
 | name       | String         | should be unique in the scope of the file |
 | type       | OscillatorType | wave form                                 |
-| freq       | Param          | frequency in range [0,20000]              |
-| amp        | Param          | amplitude in range [0,1]                  |
+| freq       | Input          | frequency in range [0,20000]              |
+| amp        | Input          | amplitude in range [0,1]                  |
 | phase      | Float          | phase in range [-1,1]                     |
-| pan        | Param          | stereo balance in range [-1,1]            |
+| pan        | Input          | stereo balance in range [-1,1]            |
+| filters    | String[0..*]   | names of the filters to apply             |
 
 | OscillatorType  |
 | --------------- |
@@ -78,147 +79,58 @@ Run `synth` to see more configuration options.
 | Sawtooth        |
 | ReverseSawtooth |
 
-| Noise     |          |                                           |
-| --------- | -------- | ----------------------------------------- |
-| **Field** | **Type** | **Description**                           |
-| name      | String   | should be unique in the scope of the file |
-| amp       | Param    | amplitude in range [0,1]                  |
-| pan       | Param    | stereo balance in range [-1,1]            |
-| filter    | Filter   | a lowpass, highpass or bandpass filter    |
+| Noise     |              |                                           |
+| --------- | ------------ | ----------------------------------------- |
+| **Field** | **Type**     | **Description**                           |
+| name      | String       | should be unique in the scope of the file |
+| amp       | Input        | amplitude in range [0,1]                  |
+| pan       | Input        | stereo balance in range [-1,1]            |
+| filters   | String[0..*] | names of the filters to apply             |
+
+| Wavetable |              |                                           |
+| --------- | ------------ | ----------------------------------------- |
+| **Field** | **Type**     | **Description**                           |
+| name      | String       | should be unique in the scope of the file |
+| amp       | Input        | amplitude in range [0,1]                  |
+| pan       | Input        | stereo balance in range [-1,1]            |
+| freq      | Input        | periods per second [0,20000]              |
+| table     | Float [0..*] | output values                             |
+| filters   | String[0..*] | names of the filters to apply             |
 
 | Filter      |          |                                                            |
 | ----------- | -------- | ---------------------------------------------------------- |
 | **Field**   | **Type** | **Description**                                            |
-| order       | Integer  | order of the FIR filter in range [0,1000]                  |
-| low-cutoff  | Float    | cutoff frequency of the highpass filter in range [0,20000] |
-| high-cutoff | Float    | cutoff frequency of the lowpass filter in range [0,20000]  |
+| low-cutoff  | Float    | cutoff frequency of the highpass filter in range [1,20000] |
+| high-cutoff | Float    | cutoff frequency of the lowpass filter in range [1,20000]  |
 
-If both `low-cutoff` and `high-cutoff` are 0, the filter is disabled. If
-`low-cutoff` is 0, the filter is a lowpass filter transitioning at the
-`high-cutoff` frequency. If `high-cutoff` is 0, the filter is a highpass filter
-transitioning at the `low-cutoff` frequency.
-
-A higher `order` improves the filter's precision, but it also makes it more
-expensive in terms of computation. If the sound becomes glitchy, decreasing the
-filter `order` might be necessary. Sometimes a lower value for `order` also sounds better than a high value.
-
-| CustomSignal |              |                                           |
-| ------------ | ------------ | ----------------------------------------- |
-| **Field**    | **Type**     | **Description**                           |
-| name         | String       | should be unique in the scope of the file |
-| amp          | Param        | amplitude in range [0,1]                  |
-| pan          | Param        | stereo balance in range [-1,1]            |
-| freq         | Param        | periods per second [0,20000]              |
-| data         | Float [0..*] | custom values                             |
+If both `low-cutoff` and `high-cutoff` are omitted, the filter is disabled. If
+`low-cutoff` is omitted, the filter is a lowpass filter transitioning at the
+`high-cutoff` frequency. If `high-cutoff` is omitted, the filter is a highpass filter
+transitioning at the `low-cutoff` frequency. If both cutoff frequencies are defined, it becomes a bandpass filter.
 
 | Envelope      |          |                                           |
 | ------------- | -------- | ----------------------------------------- |
 | **Field**     | **Type** | **Description**                           |
 | name          | String   | should be unique in the scope of the file |
-| attack        | Param    | attack time in seconds [0,10000]          |
-| decay         | Param    | decay time in seconds [0,10000]           |
-| sustain       | Param    | sustain time in seconds [0,10000]         |
-| release       | Param    | release time in seconds [0,10000]         |
-| peak          | Param    | peak amplitude [0,1]                      |
-| sustain-level | Param    | sustain amplitude [0,1]                   |
-| bpm           | Param    | triggers per minute [0,600000]            |
+| attack        | Input    | attack time in seconds [0,10000]          |
+| decay         | Input    | decay time in seconds [0,10000]           |
+| sustain       | Input    | sustain time in seconds [0,10000]         |
+| release       | Input    | release time in seconds [0,10000]         |
+| peak          | Input    | peak amplitude [0,1]                      |
+| sustain-level | Input    | sustain amplitude [0,1]                   |
+| bpm           | Input    | triggers per minute [0,600000]            |
 | time-shift    | Float    | initial time shift                        |
 
-| Param     |               |                                            |
+| Input     |               |                                            |
 | --------- | ------------- | ------------------------------------------ |
 | **Field** | **Type**      | **Description**                            |
 | val       | Float         | initial value of the respective parameter  |
 | mod       | String [0..*] | names of modulating modules                |
 | mod-amp   | Float         | amplitude of the modulation in range [0,1] |
 
-### Structure of a patch file
+## Example patch file
 
-```yaml
-vol:
-out:
-noises:
-  - name:
-    amp:
-      val:
-      mod:
-      mod-amp:
-    pan:
-      val:
-      mod:
-      mod-amp:
-    filter:
-      order:
-      low-cutoff:
-      high-cutoff:
-
-oscillators:
-  - name:
-    type:
-    freq:
-      val:
-      mod:
-      mod-amp:
-    amp:
-      val:
-      mod:
-      mod-amp:
-    pan:
-      val:
-      mod:
-      mod-amp:
-    phase:
-
-custom-signals:
-  - name:
-    freq:
-      val:
-      mod:
-      mod-amp:
-    amp:
-      val:
-      mod:
-      mod-amp:
-    pan:
-      val:
-      mod:
-      mod-amp:
-    data: []
-
-envelopes:
-  - name:
-    attack:
-      val:
-      mod:
-      mod-amp:
-    decay:
-      val:
-      mod:
-      mod-amp:
-    sustain:
-      val:
-      mod:
-      mod-amp:
-    release:
-      val:
-      mod:
-      mod-amp:
-    peak:
-      val:
-      mod:
-      mod-amp:
-    sustain-level:
-      val:
-      mod:
-      mod-amp:
-    threshold:
-      val:
-      mod:
-      mod-amp:
-    triggers: []
-    negative:
-```
-
-Most of the fields are optional. A simple 440hz sine wave looks like this:
+Playing this file outputs a 440 Hz sine wave.
 
 ```yaml
 vol: 1

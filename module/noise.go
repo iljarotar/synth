@@ -9,8 +9,8 @@ import (
 type Noise struct {
 	Module
 	Name    string   `yaml:"name"`
-	Amp     Param    `yaml:"amp"`
-	Pan     Param    `yaml:"pan"`
+	Amp     Input    `yaml:"amp"`
+	Pan     Input    `yaml:"pan"`
 	Filters []string `yaml:"filters"`
 	inputs  []filterInputs
 }

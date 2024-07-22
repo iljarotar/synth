@@ -28,8 +28,8 @@ const (
 
 type Filter struct {
 	Name                   string `yaml:"name"`
-	LowCutoff              Param  `yaml:"low-cutoff"`
-	HighCutoff             Param  `yaml:"high-cutoff"`
+	LowCutoff              Input  `yaml:"low-cutoff"`
+	HighCutoff             Input  `yaml:"high-cutoff"`
 	a0, a1, a2, b0, b1, b2 float64
 	amp                    float64
 	bypass                 bool
@@ -171,6 +171,6 @@ func (f *Filter) adjustParams() {
 	}
 }
 
-func isUnset(p Param, lim limits) bool {
+func isUnset(p Input, lim limits) bool {
 	return p.Val == lim.min && len(p.Mod) == 0
 }

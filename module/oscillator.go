@@ -25,10 +25,10 @@ type Oscillator struct {
 	Module
 	Name    string         `yaml:"name"`
 	Type    OscillatorType `yaml:"type"`
-	Freq    Param          `yaml:"freq"`
-	Amp     Param          `yaml:"amp"`
+	Freq    Input          `yaml:"freq"`
+	Amp     Input          `yaml:"amp"`
 	Phase   float64        `yaml:"phase"`
-	Pan     Param          `yaml:"pan"`
+	Pan     Input          `yaml:"pan"`
 	Filters []string       `yaml:"filters"`
 	inputs  []filterInputs
 	signal  SignalFunc

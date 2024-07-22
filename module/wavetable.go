@@ -11,9 +11,9 @@ type Wavetable struct {
 	Module
 	Name    string    `yaml:"name"`
 	Table   []float64 `yaml:"table"`
-	Freq    Param     `yaml:"freq"`
-	Amp     Param     `yaml:"amp"`
-	Pan     Param     `yaml:"pan"`
+	Freq    Input     `yaml:"freq"`
+	Amp     Input     `yaml:"amp"`
+	Pan     Input     `yaml:"pan"`
 	Filters []string  `yaml:"filters"`
 	inputs  []filterInputs
 }

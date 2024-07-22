@@ -22,7 +22,7 @@ func (m *Module) Current() output {
 	return m.current
 }
 
-type Param struct {
+type Input struct {
 	Val    float64  `yaml:"val"`
 	Mod    []string `yaml:"mod"`
 	ModAmp float64  `yaml:"mod-amp"`
@@ -59,7 +59,7 @@ func modulateValue(modulators []string, modMap ModulesMap) float64 {
 	return y
 }
 
-func modulate(param Param, lim limits, modMap ModulesMap) float64 {
+func modulate(param Input, lim limits, modMap ModulesMap) float64 {
 	y := param.Val + modulateValue(param.Mod, modMap)*param.ModAmp
 	return utils.Limit(y, lim.min, lim.max)
 }
