@@ -25,35 +25,14 @@ func (n *Noise) Next(modMap ModulesMap, filtersMap FiltersMap) {
 	pan := modulate(n.Pan, panLimits, modMap)
 	amp := modulate(n.Amp, ampLimits, modMap)
 
-	var y2, y float64
-	x := noise()
-
-	for i, f := range n.Filters {
-		filter, ok := filtersMap[f]
-		if !ok {
-			continue
-		}
-		if len(n.inputs) != len(n.Filters) {
-			return
-		}
-
-		inputs := n.inputs[i]
-		y2 = filter.Tap(inputs.x2, inputs.x1, inputs.x0, inputs.y1, inputs.y0)
-		y += y2
-
-		inputs.x0 = inputs.x1
-		inputs.x1 = inputs.x2
-		inputs.y0 = inputs.y1
-		inputs.y1 = y2
-		inputs.x2 = x
-		n.inputs[i] = inputs
+	config := filterConfig{
+		filterNames: n.Filters,
+		inputs:      n.inputs,
+		FiltersMap:  filtersMap,
 	}
 
-	if len(n.Filters) == 0 {
-		y = noise()
-	} else {
-		y /= float64(len(n.Filters))
-	}
+	y, newInputs := config.applyFilters(noise())
+	n.inputs = newInputs
 	n.current = stereo(y*amp, pan)
 }
 

@@ -15,6 +15,12 @@ type filterInputs struct {
 	x0, x1, x2, y0, y1 float64
 }
 
+type filterConfig struct {
+	filterNames []string
+	inputs      []filterInputs
+	FiltersMap
+}
+
 const (
 	// TODO: decide on values an remove fields from Filter
 	dbGain = 1
@@ -121,6 +127,40 @@ func getAlphaBP(omega, bandwidth float64) float64 {
 	b := omega / math.Sin(omega)
 	sinh := math.Sinh(a * b * bandwidth)
 	return math.Sin(omega) * sinh
+}
+
+func (c *filterConfig) applyFilters(x float64) (float64, []filterInputs) {
+	var y2, y float64
+	newInputs := c.inputs
+
+	for i, f := range c.filterNames {
+		filter, ok := c.FiltersMap[f]
+		if !ok {
+			continue
+		}
+		if len(c.inputs) != len(c.filterNames) {
+			return 0, c.inputs
+		}
+
+		in := c.inputs[i]
+		y2 = filter.Tap(in.x2, in.x1, in.x0, in.y1, in.y0)
+		y += y2
+
+		in.x0 = in.x1
+		in.x1 = in.x2
+		in.y0 = in.y1
+		in.y1 = y2
+		in.x2 = x
+		newInputs[i] = in
+	}
+
+	if len(c.filterNames) == 0 {
+		y = x
+	} else {
+		y /= float64(len(c.filterNames))
+	}
+
+	return y, newInputs
 }
 
 func (f *Filter) adjustParams() {
