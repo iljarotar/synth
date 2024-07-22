@@ -23,29 +23,40 @@ const (
 
 type Oscillator struct {
 	Module
-	Name   string         `yaml:"name"`
-	Type   OscillatorType `yaml:"type"`
-	Freq   Param          `yaml:"freq"`
-	Amp    Param          `yaml:"amp"`
-	Phase  float64        `yaml:"phase"`
-	Pan    Param          `yaml:"pan"`
-	signal SignalFunc
+	Name    string         `yaml:"name"`
+	Type    OscillatorType `yaml:"type"`
+	Freq    Param          `yaml:"freq"`
+	Amp     Param          `yaml:"amp"`
+	Phase   float64        `yaml:"phase"`
+	Pan     Param          `yaml:"pan"`
+	Filters []string       `yaml:"filters"`
+	inputs  []filterInputs
+	signal  SignalFunc
 }
 
 func (o *Oscillator) Initialize() {
 	o.signal = newSignalFunc(o.Type)
 	o.limitParams()
+	o.inputs = make([]filterInputs, len(o.Filters))
 
 	y := o.signalValue(0, o.Amp.Val, 0)
 	o.current = stereo(y, o.Pan.Val)
 }
 
-func (o *Oscillator) Next(t float64, modMap ModulesMap) {
+func (o *Oscillator) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 	pan := modulate(o.Pan, panLimits, modMap)
 	amp := modulate(o.Amp, ampLimits, modMap)
 	offset := o.getOffset(modMap)
 
-	y := o.signalValue(t, amp, offset)
+	cfg := filterConfig{
+		filterNames: o.Filters,
+		inputs:      o.inputs,
+		FiltersMap:  filtersMap,
+	}
+
+	x := o.signalValue(t, amp, offset)
+	y, newInputs := cfg.applyFilters(x)
+	o.inputs = newInputs
 	o.current = stereo(y, pan)
 }
 

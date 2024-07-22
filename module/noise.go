@@ -17,21 +17,21 @@ type Noise struct {
 
 func (n *Noise) Initialize() {
 	n.limitParams()
-	n.current = stereo(noise()*n.Amp.Val, n.Pan.Val)
 	n.inputs = make([]filterInputs, len(n.Filters))
+	n.current = stereo(noise()*n.Amp.Val, n.Pan.Val)
 }
 
 func (n *Noise) Next(modMap ModulesMap, filtersMap FiltersMap) {
 	pan := modulate(n.Pan, panLimits, modMap)
 	amp := modulate(n.Amp, ampLimits, modMap)
 
-	config := filterConfig{
+	cfg := filterConfig{
 		filterNames: n.Filters,
 		inputs:      n.inputs,
 		FiltersMap:  filtersMap,
 	}
 
-	y, newInputs := config.applyFilters(noise())
+	y, newInputs := cfg.applyFilters(noise())
 	n.inputs = newInputs
 	n.current = stereo(y*amp, pan)
 }

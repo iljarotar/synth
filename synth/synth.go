@@ -164,7 +164,7 @@ func (s *Synth) getCurrentValue() (left, right, mono float64) {
 func (s *Synth) updateCurrentValues() {
 	for _, o := range s.Oscillators {
 		osc := o
-		osc.Next(s.Time, s.modMap)
+		osc.Next(s.Time, s.modMap, s.filtersMap)
 	}
 
 	for _, n := range s.Noises {
