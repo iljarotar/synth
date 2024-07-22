@@ -10,20 +10,10 @@ filters:
       val: 2000
       mod: [lfo1]
       mod-amp: 500
-    db-gain: -100
-    slope: 0.99
 
   - name: f2
     high-cutoff:
       val: 200
-    db-gain: -100
-    slope: 0.99
-
-  - name: f3
-    low-cutoff:
-      val: 8000
-    db-gain: -100
-    slope: 0.99
 
 oscillators:
   - name: lfo1
@@ -34,4 +24,6 @@ oscillators:
 noises:
   - name: n1
     amp: {val: 0.1}
-    filters: [f1, f2, f3]
+    filters:
+      - f2
+      - f1

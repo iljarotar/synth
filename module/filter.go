@@ -22,17 +22,14 @@ type filterConfig struct {
 }
 
 const (
-	// TODO: decide on values an remove fields from Filter
-	dbGain = 1
-	slope  = 0.999
+	dbGain = -50
+	slope  = 0.99
 )
 
 type Filter struct {
-	Name                   string  `yaml:"name"`
-	LowCutoff              Param   `yaml:"low-cutoff"`
-	HighCutoff             Param   `yaml:"high-cutoff"`
-	DBGain                 float64 `yaml:"db-gain"` // decide on gain an remove param
-	Slope                  float64 `yaml:"slope"`   // same here
+	Name                   string `yaml:"name"`
+	LowCutoff              Param  `yaml:"low-cutoff"`
+	HighCutoff             Param  `yaml:"high-cutoff"`
 	a0, a1, a2, b0, b1, b2 float64
 	amp                    float64
 	bypass                 bool
@@ -40,7 +37,7 @@ type Filter struct {
 
 func (f *Filter) Initialize() {
 	f.adjustParams()
-	f.amp = getAmp(f.DBGain)
+	f.amp = getAmp(dbGain)
 	f.calculateCoeffs(f.LowCutoff.Val, f.HighCutoff.Val)
 }
 
@@ -71,7 +68,7 @@ func (f *Filter) calculateCoeffs(fl, fh float64) {
 
 func (f *Filter) calculateLowPassCoeffs(fc float64) {
 	omega := getOmega(fc)
-	alpha := getAlphaLPHP(omega, f.amp, f.Slope)
+	alpha := getAlphaLPHP(omega, f.amp, slope)
 	f.b1 = 1 - math.Cos(omega)
 	f.b0 = f.b1 / 2
 	f.b2 = f.b0
@@ -82,7 +79,7 @@ func (f *Filter) calculateLowPassCoeffs(fc float64) {
 
 func (f *Filter) calculateHighPassCoeffs(fc float64) {
 	omega := getOmega(fc)
-	alpha := getAlphaLPHP(omega, f.amp, f.Slope)
+	alpha := getAlphaLPHP(omega, f.amp, slope)
 	f.b0 = (1 + math.Cos(omega)) / 2
 	f.b1 = -(1 + math.Cos(omega))
 	f.b2 = f.b0
