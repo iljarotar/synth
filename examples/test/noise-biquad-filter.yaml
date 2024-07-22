@@ -3,17 +3,11 @@ out: [n1]
 filters:
   - name: f1
     low-cutoff:
-      val: 1900
+      val: 100
       mod: [lfo1]
-      mod-amp: 500
+      mod-amp: 99
     high-cutoff:
-      val: 2000
-      mod: [lfo1]
-      mod-amp: 500
-
-  - name: f2
-    high-cutoff:
-      val: 200
+      val: 199
 
 oscillators:
   - name: lfo1
@@ -25,5 +19,4 @@ noises:
   - name: n1
     amp: {val: 0.1}
     filters:
-      - f2
       - f1

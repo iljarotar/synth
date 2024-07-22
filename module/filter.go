@@ -57,9 +57,9 @@ func (f *Filter) NextCoeffs(modMap ModulesMap) {
 
 func (f *Filter) calculateCoeffs(fl, fh float64) {
 	switch {
-	case fl == 1 && len(f.LowCutoff.Mod) == 0:
+	case isUnset(f.LowCutoff, cutoffLimits):
 		f.calculateLowPassCoeffs(fh)
-	case fh == 1 && len(f.HighCutoff.Mod) == 0:
+	case isUnset(f.HighCutoff, cutoffLimits):
 		f.calculateHighPassCoeffs(fl)
 	default:
 		f.calculateBandPassCoeffs(fl, fh)
