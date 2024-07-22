@@ -9,14 +9,14 @@ import (
 type Envelope struct {
 	Module
 	Name            string  `yaml:"name"`
-	Attack          Param   `yaml:"attack"`
-	Decay           Param   `yaml:"decay"`
-	Sustain         Param   `yaml:"sustain"`
-	Release         Param   `yaml:"release"`
-	Peak            Param   `yaml:"peak"`
-	SustainLevel    Param   `yaml:"sustain-level"`
+	Attack          Input   `yaml:"attack"`
+	Decay           Input   `yaml:"decay"`
+	Sustain         Input   `yaml:"sustain"`
+	Release         Input   `yaml:"release"`
+	Peak            Input   `yaml:"peak"`
+	SustainLevel    Input   `yaml:"sustain-level"`
 	TimeShift       float64 `yaml:"time-shift"`
-	BPM             Param   `yaml:"bpm"`
+	BPM             Input   `yaml:"bpm"`
 	lastTriggeredAt *float64
 	currentConfig   envelopeConfig
 }
