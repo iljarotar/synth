@@ -16,9 +16,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var version string
+
 var rootCmd = &cobra.Command{
-	Use:   "synth",
-	Short: "command line synthesizer",
+	Use:     "synth",
+	Version: version,
+	Short:   "command line synthesizer",
 	Long: `command line synthesizer
 	
 documentation and usage: https://github.com/iljarotar/synth`,
