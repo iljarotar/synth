@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/iljarotar/synth/audio"
+	"github.com/iljarotar/synth/config"
 	c "github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/control"
 	f "github.com/iljarotar/synth/file"
@@ -16,7 +17,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var version string
+var version = "dev"
 
 var rootCmd = &cobra.Command{
 	Use:     "synth",
@@ -80,10 +81,12 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().StringP("sample-rate", "s", "", "Sample rate")
-	rootCmd.Flags().String("fade-in", "", "Fade-in in seconds")
-	rootCmd.Flags().String("fade-out", "", "Fade-out in seconds")
-	rootCmd.Flags().StringP("config", "c", "", "Path to your config file.")
+	defaultConfigPath := fmt.Sprintf("<YOUR_DEFAULT_CONFIG_DIR>/%s/%s", config.DefaultConfigDir, config.DefaultConfigFile)
+	rootCmd.Flags().Float64P("sample-rate", "s", config.Default.SampleRate, "sample rate")
+	rootCmd.Flags().Float64("fade-in", config.Config.FadeIn, "fade-in in seconds")
+	rootCmd.Flags().Float64("fade-out", config.Config.FadeOut, "fade-out in seconds")
+	rootCmd.Flags().StringP("config", "c", defaultConfigPath, "path to your config file")
+	rootCmd.Flags().Float64P("duration", "d", config.Default.Duration, "duration in seconds; if positive duration is specified, synth will stop playing after the defined time")
 }
 
 func parseFlags(cmd *cobra.Command) error {
