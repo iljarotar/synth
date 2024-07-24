@@ -17,9 +17,6 @@ type logger struct {
 }
 
 func (l *logger) SendTime(time int) {
-	if State.Closed {
-		return
-	}
 	State.CurrentTime = time
 	l.time <- formatTime(time)
 }
@@ -37,17 +34,11 @@ func (l *logger) Error(log string) {
 }
 
 func (l *logger) ShowOverdriveWarning(limitExceeded bool) {
-	if State.Closed {
-		return
-	}
 	State.ShowingOverdriveWarning = limitExceeded
 	l.overdriveWarning <- limitExceeded
 }
 
 func (l *logger) sendLog(log, label string, labelColor color) {
-	if State.Closed {
-		return
-	}
 	time := formatTime(State.CurrentTime)
 	coloredLabel := fmt.Sprintf("%s", colored(label, labelColor))
 	l.log <- fmt.Sprintf("[%s] %s %s", time, coloredLabel, log)

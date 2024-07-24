@@ -162,22 +162,28 @@ func start(file string) error {
 	go catchInterrupt(interrupt, sig)
 
 	ctl.FadeIn(c.Config.FadeIn)
+	var fadingOut bool
 
 Loop:
 	for {
 		select {
 		case <-quit:
+			if fadingOut {
+				ui.Logger.Info("already received quit signal")
+				continue
+			}
+			fadingOut = true
+			ui.Logger.Info(fmt.Sprintf("fading out in %fs", c.Config.FadeOut))
 			ctl.Stop(c.Config.FadeOut)
 		case <-interrupt:
 			ctl.Stop(0.05)
-			ui.LineBreaks(1)
 		case <-ctl.SynthDone:
 			break Loop
 		}
 	}
 
 	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
-	ui.LineBreaks(1)
+	ui.LineBreaks(2)
 	return err
 }
 

@@ -46,8 +46,8 @@ func (ui *UI) Enter() {
 		case input := <-ui.input:
 			if input == "q" {
 				State.Closed = true
+				ui.resetScreen()
 				ui.quit <- true
-				return
 			} else {
 				ui.resetScreen()
 			}

@@ -219,8 +219,8 @@ func (s *Synth) makeMaps() {
 }
 
 func secondsToStep(seconds, delta float64) float64 {
-	steps := math.Round(seconds * config.Config.SampleRate)
-	step := 1 / steps
+	steps := seconds * config.Config.SampleRate
+	step := delta / steps
 	return step
 }
 
