@@ -74,6 +74,10 @@ func (s *Synth) Play(output chan<- struct{ Left, Right float32 }) {
 	defer close(output)
 
 	for s.playing {
+		if isNextSecond(s.Time) {
+			ui.Logger.SendTime(int(s.Time))
+		}
+
 		left, right, mono := s.getCurrentValue()
 		s.adjustVolume()
 		left *= s.Volume
@@ -81,7 +85,7 @@ func (s *Synth) Play(output chan<- struct{ Left, Right float32 }) {
 		mono *= s.Volume
 
 		// ignore exceeding limit if the difference is sufficiently small
-		if mono >= 1.00001 && !ui.Logger.ShowingOverdriveWarning {
+		if mono >= 1.00001 && !ui.State.ShowingOverdriveWarning {
 			ui.Logger.ShowOverdriveWarning(true)
 			ui.Logger.Warning(fmt.Sprintf("Output value %f", mono))
 		}
@@ -218,4 +222,9 @@ func secondsToStep(seconds, delta float64) float64 {
 	steps := math.Round(seconds * config.Config.SampleRate)
 	step := 1 / steps
 	return step
+}
+
+func isNextSecond(time float64) bool {
+	sec, _ := math.Modf(time)
+	return sec > float64(ui.State.CurrentTime)
 }
