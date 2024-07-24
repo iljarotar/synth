@@ -81,7 +81,10 @@ func Execute() {
 }
 
 func init() {
-	defaultConfigPath := fmt.Sprintf("<YOUR_DEFAULT_CONFIG_DIR>/%s/%s", config.DefaultConfigDir, config.DefaultConfigFile)
+	defaultConfigPath, err := config.GetDefaultConfigPath()
+	if err != nil {
+		os.Exit(1)
+	}
 	rootCmd.Flags().Float64P("sample-rate", "s", config.Default.SampleRate, "sample rate")
 	rootCmd.Flags().Float64("fade-in", config.Config.FadeIn, "fade-in in seconds")
 	rootCmd.Flags().Float64("fade-out", config.Config.FadeOut, "fade-out in seconds")
