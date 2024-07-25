@@ -10,8 +10,14 @@ oscillators:
     amp: {val: 1}
     freq: {val: 400, mod: [s1], mod-amp: 100}
 
+  - name: o2
+    type: Square
+    amp: {val: 1}
+    freq: {val: 0.5}
+
+
 samplers:
   - name: s1
     amp: {val: 1}
-    freq: {val: 1}
+    freq: {val: 2, mod: [o2], mod-amp: 1}
     inputs: [n1]
