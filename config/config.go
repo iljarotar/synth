@@ -13,8 +13,8 @@ const (
 	maxSampleRate     = 48000
 	maxFadeDuration   = 3600
 	maxDuration       = 7200
-	DefaultConfigFile = "config.yaml"
-	DefaultConfigDir  = "synth"
+	defaultConfigFile = "config.yaml"
+	defaultConfigDir  = "synth"
 )
 
 type config struct {
@@ -38,7 +38,7 @@ func GetDefaultConfigPath() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("unable to get default config directory: %w", err)
 	}
-	return filepath.Join(userConfigDir, DefaultConfigDir, DefaultConfigFile), nil
+	return filepath.Join(userConfigDir, defaultConfigDir, defaultConfigFile), nil
 }
 
 func EnsureDefaultConfig() error {
