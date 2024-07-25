@@ -43,7 +43,7 @@ To listen to an example run
 synth examples/a-major.yaml
 ```
 
-Run `synth` to see all configuration options.
+Run `synth -h` to see all configuration options.
 
 ## Writing a patch file
 
