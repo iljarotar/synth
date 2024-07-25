@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var version = "dev"
+var version = "unknown"
 
 var rootCmd = &cobra.Command{
 	Use:     "synth",
