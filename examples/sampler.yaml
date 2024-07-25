@@ -1,0 +1,17 @@
+vol: 1
+out: [o1]
+noises:
+  - name: n1
+    amp: {val: 1}
+
+oscillators:
+  - name: o1
+    type: Sine
+    amp: {val: 1}
+    freq: {val: 400, mod: [s1], mod-amp: 100}
+
+samplers:
+  - name: s1
+    amp: {val: 1}
+    freq: {val: 1}
+    inputs: [n1]

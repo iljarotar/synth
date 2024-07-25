@@ -1,6 +1,8 @@
 package module
 
-import "github.com/iljarotar/synth/utils"
+import (
+	"github.com/iljarotar/synth/utils"
+)
 
 type Module struct {
 	integral float64
