@@ -121,7 +121,7 @@ func (s *Synth) fadeIn() {
 		return
 	}
 
-	step := secondsToStep(s.fadeDuration, s.volumeMemory-s.Volume)
+	step := secondsToStep(s.fadeDuration, s.volumeMemory-s.Volume, config.Config.SampleRate)
 	s.Volume += step
 	s.fadeDuration -= 1 / config.Config.SampleRate
 
@@ -140,7 +140,7 @@ func (s *Synth) fadeOut() {
 		return
 	}
 
-	step := secondsToStep(s.fadeDuration, s.Volume)
+	step := secondsToStep(s.fadeDuration, s.Volume, config.Config.SampleRate)
 	s.Volume -= step
 	s.fadeDuration -= 1 / config.Config.SampleRate
 
@@ -218,8 +218,11 @@ func (s *Synth) makeMaps() {
 	s.filtersMap = filtersMap
 }
 
-func secondsToStep(seconds, delta float64) float64 {
-	steps := seconds * config.Config.SampleRate
+func secondsToStep(seconds, delta, sampleRate float64) float64 {
+	if seconds == 0 {
+		return delta
+	}
+	steps := seconds * sampleRate
 	step := delta / steps
 	return step
 }
