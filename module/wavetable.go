@@ -40,6 +40,7 @@ func (w *Wavetable) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 
 	x := w.signalValue(t, amp, freq)
 	y, newInputs := cfg.applyFilters(x)
+	w.integral += y / config.Config.SampleRate
 	w.inputs = newInputs
 	w.current = stereo(y, pan)
 }
@@ -64,7 +65,6 @@ func (w *Wavetable) signalValue(t, amp, freq float64) float64 {
 	}
 
 	y := amp * val
-	w.integral += y / config.Config.SampleRate
 
 	return y
 }

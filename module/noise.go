@@ -3,6 +3,7 @@ package module
 import (
 	"math/rand"
 
+	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/utils"
 )
 
@@ -32,6 +33,7 @@ func (n *Noise) Next(modMap ModulesMap, filtersMap FiltersMap) {
 	}
 
 	y, newInputs := cfg.applyFilters(noise())
+	n.integral += y / config.Config.SampleRate
 	n.inputs = newInputs
 	n.current = stereo(y*amp, pan)
 }

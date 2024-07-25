@@ -56,6 +56,8 @@ func (o *Oscillator) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 
 	x := o.signalValue(t, amp, offset)
 	y, newInputs := cfg.applyFilters(x)
+	avg := (y + o.Current().Mono) / 2
+	o.integral += avg / config.Config.SampleRate
 	o.inputs = newInputs
 	o.current = stereo(y, pan)
 }
@@ -76,12 +78,7 @@ func (o *Oscillator) getOffset(modMap ModulesMap) float64 {
 func (o *Oscillator) signalValue(t, amp, offset float64) float64 {
 	shift := o.Phase / o.Freq.Val // shift is a fraction of one period
 	phi := 2 * math.Pi * (o.Freq.Val*(t+shift) + offset)
-	y := o.signal(phi) * amp
-
-	avg := (y + o.Current().Mono) / 2
-	o.integral += avg / config.Config.SampleRate
-
-	return y
+	return o.signal(phi) * amp
 }
 
 func (o *Oscillator) limitParams() {
