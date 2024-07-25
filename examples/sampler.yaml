@@ -11,7 +11,7 @@ oscillators:
     freq: {val: 400, mod: [s1], mod-amp: 100}
 
   - name: o2
-    type: Square
+    type: Sine
     amp: {val: 1}
     freq: {val: 0.5}
 

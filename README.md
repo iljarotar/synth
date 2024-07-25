@@ -59,6 +59,7 @@ Run `synth -h` to see all configuration options.
 | oscillators | Oscillator [0..*] | all oscillators                                    |
 | noises      | Noise [0..*]      | all noise generators                               |
 | wavetables  | Wavetables [0..*] | all wavetables                                     |
+| samplers    | Sampler[0..*]     | all samplers                                       |
 | envelopes   | Envelope [0..*]   | all envelopes                                      |
 
 | Oscillator |                |                                           |
@@ -97,6 +98,18 @@ Run `synth -h` to see all configuration options.
 | freq      | Input        | periods per second [0,20000]              |
 | table     | Float [0..*] | output values                             |
 | filters   | String[0..*] | names of the filters to apply             |
+
+| Sampler   |              |                                                    |
+| --------- | ------------ | -------------------------------------------------- |
+| **Field** | **Type**     | **Description**                                    |
+| name      | String       | should be unique in the scope of the file          |
+| amp       | Input        | amplitude in range [0,1]                           |
+| pan       | Input        | stereo balance in range [-1,1]                     |
+| freq      | Input        | frequency in range [0,SAMPLE_RATE (default 44100)] |
+| filters   | String[0..*] | names of the filters to apply                      |
+| inputs    | String[0..*] | names of the modules that will be sampled          |
+
+A sampler periodically samples the output values of the given inputs and outputs their sum.
 
 | Filter      |          |                                                            |
 | ----------- | -------- | ---------------------------------------------------------- |
