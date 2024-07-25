@@ -6,22 +6,26 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/iljarotar/synth/config"
 )
 
 type UI struct {
-	quit  chan bool
-	input chan string
-	file  string
-	logs  []string
-	time  string
+	quit     chan bool
+	input    chan string
+	autoStop chan bool
+	file     string
+	logs     []string
+	time     string
 }
 
-func NewUI(file string, quit chan bool) *UI {
+func NewUI(file string, quit chan bool, autoStop chan bool) *UI {
 	return &UI{
-		quit:  quit,
-		input: make(chan string),
-		file:  file,
-		time:  "00:00:00",
+		quit:     quit,
+		autoStop: autoStop,
+		input:    make(chan string),
+		file:     file,
+		time:     "00:00:00",
 	}
 }
 
@@ -59,6 +63,9 @@ func (ui *UI) Enter() {
 			ui.resetScreen()
 		case <-Logger.overdriveWarning:
 			ui.resetScreen()
+		case <-ui.autoStop:
+			State.Closed = true
+			ui.quit <- true
 		}
 	}
 }
@@ -88,7 +95,11 @@ func (ui *UI) resetScreen() {
 		fmt.Printf("%s", colored("[WARNING] Volume exceeded 100%%", colorOrangeStorng))
 		LineBreaks(2)
 	}
-	fmt.Printf("%s\n", ui.time)
+	fmt.Printf("%s", ui.time)
+	if config.Config.Duration >= 0 {
+		fmt.Printf(" - automatically stopping after %fs", config.Config.Duration)
+	}
+	LineBreaks(1)
 	fmt.Printf("%s ", colored("Type 'q' to quit:", colorBlueStrong))
 }
 

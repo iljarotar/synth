@@ -2,7 +2,6 @@ package synth
 
 import (
 	"fmt"
-	"math"
 
 	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/module"
@@ -70,13 +69,12 @@ func (s *Synth) Initialize() {
 	s.makeMaps()
 }
 
-func (s *Synth) Play(output chan<- struct{ Left, Right float32 }) {
+func (s *Synth) Play(output chan<- struct{ Left, Right float32 }, reportTime chan float64) {
 	defer close(output)
+	defer close(reportTime)
 
 	for s.playing {
-		if isNextSecond(s.Time) {
-			ui.Logger.SendTime(int(s.Time))
-		}
+		reportTime <- s.Time
 
 		left, right, mono := s.getCurrentValue()
 		s.adjustVolume()
@@ -225,9 +223,4 @@ func secondsToStep(seconds, delta, sampleRate float64) float64 {
 	steps := seconds * sampleRate
 	step := delta / steps
 	return step
-}
-
-func isNextSecond(time float64) bool {
-	sec, _ := math.Modf(time)
-	return sec > float64(ui.State.CurrentTime)
 }

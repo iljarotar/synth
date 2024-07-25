@@ -13,7 +13,6 @@ import (
 	"github.com/iljarotar/synth/control"
 	f "github.com/iljarotar/synth/file"
 	"github.com/iljarotar/synth/ui"
-	"github.com/iljarotar/synth/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -86,40 +85,22 @@ func init() {
 		os.Exit(1)
 	}
 	rootCmd.Flags().Float64P("sample-rate", "s", config.Default.SampleRate, "sample rate")
-	rootCmd.Flags().Float64("fade-in", config.Config.FadeIn, "fade-in in seconds")
-	rootCmd.Flags().Float64("fade-out", config.Config.FadeOut, "fade-out in seconds")
+	rootCmd.Flags().Float64("fade-in", config.Default.FadeIn, "fade-in in seconds")
+	rootCmd.Flags().Float64("fade-out", config.Default.FadeOut, "fade-out in seconds")
 	rootCmd.Flags().StringP("config", "c", defaultConfigPath, "path to your config file")
 	rootCmd.Flags().Float64P("duration", "d", config.Default.Duration, "duration in seconds; if positive duration is specified, synth will stop playing after the defined time")
 }
 
 func parseFlags(cmd *cobra.Command) error {
-	s, _ := cmd.Flags().GetString("sample-rate")
-	in, _ := cmd.Flags().GetString("fade-in")
-	out, _ := cmd.Flags().GetString("fade-out")
+	s, _ := cmd.Flags().GetFloat64("sample-rate")
+	in, _ := cmd.Flags().GetFloat64("fade-in")
+	out, _ := cmd.Flags().GetFloat64("fade-out")
+	duration, _ := cmd.Flags().GetFloat64("duration")
 
-	if s != "" {
-		sampleRate, err := utils.ParseInt(s)
-		if err != nil {
-			return fmt.Errorf("could not parse sample rate: %w", err)
-		}
-		c.Config.SampleRate = float64(sampleRate)
-	}
-
-	if in != "" {
-		fadeIn, err := utils.ParseFloat(in)
-		if err != nil {
-			return fmt.Errorf("could not parse fade-in: %w", err)
-		}
-		c.Config.FadeIn = fadeIn
-	}
-
-	if out != "" {
-		fadeOut, err := utils.ParseFloat(out)
-		if err != nil {
-			return fmt.Errorf("could not parse fade-out: %w", err)
-		}
-		c.Config.FadeOut = fadeOut
-	}
+	c.Config.SampleRate = s
+	c.Config.FadeIn = in
+	c.Config.FadeOut = out
+	c.Config.Duration = duration
 
 	return c.Config.Validate()
 }
@@ -132,7 +113,8 @@ func start(file string) error {
 	defer audio.Terminate()
 
 	quit := make(chan bool)
-	u := ui.NewUI(file, quit)
+	autoStop := make(chan bool)
+	u := ui.NewUI(file, quit, autoStop)
 	go u.Enter()
 
 	output := make(chan struct{ Left, Right float32 })
@@ -147,7 +129,8 @@ func start(file string) error {
 		return err
 	}
 
-	ctl := control.NewControl(output)
+	ctl := control.NewControl(output, autoStop)
+	ctl.Start()
 	defer ctl.StopSynth()
 
 	loader, err := f.NewLoader(ctl, file)
