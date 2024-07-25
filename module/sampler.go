@@ -36,21 +36,21 @@ func (s *Sampler) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 		FiltersMap:  filtersMap,
 	}
 
-	x := s.sample(t, freq, modMap) * amp
+	x := s.sample(t, freq, amp, modMap)
 	y, newInputs := cfg.applyFilters(x)
 	s.integral += y / config.Config.SampleRate
 	s.inputs = newInputs
 	s.current = stereo(y, pan)
 }
 
-func (s *Sampler) sample(t, freq float64, modMap ModulesMap) float64 {
+func (s *Sampler) sample(t, freq, amp float64, modMap ModulesMap) float64 {
 	if freq == 0 {
 		return s.current.Mono
 	}
 	secondsBetweenTwoBeats := 1 / freq
 	if t-s.lastTriggeredAt >= secondsBetweenTwoBeats {
 		s.lastTriggeredAt = t
-		return s.getCurrentOutputValue(modMap)
+		return s.getCurrentOutputValue(modMap) * amp
 	}
 	return s.current.Mono
 }

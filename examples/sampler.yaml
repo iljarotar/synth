@@ -18,6 +18,6 @@ oscillators:
 
 samplers:
   - name: s1
-    amp: {val: 1}
+    amp: {val: 0.9}
     freq: {val: 2, mod: [o2], mod-amp: 1}
     inputs: [n1]
