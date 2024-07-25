@@ -44,6 +44,9 @@ func (s *Sampler) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 }
 
 func (s *Sampler) sample(t, freq float64, modMap ModulesMap) float64 {
+	if freq == 0 {
+		return s.current.Mono
+	}
 	secondsBetweenTwoBeats := 1 / freq
 	if t-s.lastTriggeredAt >= secondsBetweenTwoBeats {
 		s.lastTriggeredAt = t
