@@ -13,15 +13,16 @@ To run the synthesizer you might also need to install
 1. Install and setup [Go](https://go.dev/doc/install)
 2. Clone the repository
 
-```
+```bash
 git clone git@github.com:iljarotar/synth.git
 ```
 
 3. Install
 
-```
+```bash
 cd synth
-go install
+make build
+cp bin/synth <SOMEWHERE_IN_YOUR_PATH>
 ```
 
 ## Usage
