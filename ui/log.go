@@ -55,7 +55,7 @@ func formatTime(time int) string {
 		hoursString = fmt.Sprintf("0%s", hoursString)
 	}
 
-	minutes := time / 60
+	minutes := time/60 - hours*60
 	minutesString := fmt.Sprintf("%d", minutes)
 	if minutes < 10 {
 		minutesString = fmt.Sprintf("0%s", minutesString)
