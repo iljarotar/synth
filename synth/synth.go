@@ -2,6 +2,7 @@ package synth
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/module"
@@ -88,7 +89,7 @@ func (s *Synth) Play(output chan<- struct{ Left, Right float32 }, reportTime cha
 		mono *= s.Volume
 
 		// ignore exceeding limit if the difference is sufficiently small
-		if mono >= 1.00001 && !ui.State.ShowingOverdriveWarning {
+		if math.Abs(mono) >= 1.00001 && !ui.State.ShowingOverdriveWarning {
 			ui.Logger.ShowOverdriveWarning(true)
 			ui.Logger.Warning(fmt.Sprintf("Output value %f", mono))
 		}

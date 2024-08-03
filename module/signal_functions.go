@@ -60,7 +60,7 @@ func TriangleSignalFunc() SignalFunc {
 
 func SawtoothSignalFunc() SignalFunc {
 	sawtooth := func(x float64) float64 {
-		return 2 * (x/(2*math.Pi) - math.Floor(1/2+x/(2*math.Pi)))
+		return 2 * (x/(2*math.Pi) - math.Floor(1.0/2+x/(2*math.Pi)))
 	}
 
 	return sawtooth
@@ -68,7 +68,7 @@ func SawtoothSignalFunc() SignalFunc {
 
 func ReverseSawtoothSignalFunc() SignalFunc {
 	sawtooth := func(x float64) float64 {
-		return 1 - 2*(x/(2*math.Pi)-math.Floor(1/2+x/(2*math.Pi))) - 1
+		return 1 - 2*(x/(2*math.Pi)-math.Floor(1.0/2+x/(2*math.Pi))) - 1
 	}
 
 	return sawtooth
