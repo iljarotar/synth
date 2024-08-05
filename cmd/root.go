@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/iljarotar/synth/audio"
-	"github.com/iljarotar/synth/config"
+
 	c "github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/control"
 	f "github.com/iljarotar/synth/file"
@@ -53,19 +53,19 @@ documentation and usage: https://github.com/iljarotar/synth`,
 		if cfg == "" {
 			cfg = defaultConfigPath
 		}
-		err = c.LoadConfig(cfg)
+		config, err := c.LoadConfig(cfg)
 		if err != nil {
 			fmt.Printf("could not load config file: %v\n", err)
 			return
 		}
 
-		err = parseFlags(cmd)
+		err = parseFlags(cmd, config)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
-		err = start(file)
+		err = start(file, config)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -80,32 +80,40 @@ func Execute() {
 }
 
 func init() {
-	defaultConfigPath, err := config.GetDefaultConfigPath()
+	defaultConfigPath, err := c.GetDefaultConfigPath()
 	if err != nil {
 		os.Exit(1)
 	}
-	rootCmd.Flags().Float64P("sample-rate", "s", config.Default.SampleRate, "sample rate")
-	rootCmd.Flags().Float64("fade-in", config.Default.FadeIn, "fade-in in seconds")
-	rootCmd.Flags().Float64("fade-out", config.Default.FadeOut, "fade-out in seconds")
+	rootCmd.Flags().Float64P("sample-rate", "s", c.DefaultSampleRate, "sample rate")
+	rootCmd.Flags().Float64("fade-in", c.DefaultFadeIn, "fade-in in seconds")
+	rootCmd.Flags().Float64("fade-out", c.DefaultFadeOut, "fade-out in seconds")
 	rootCmd.Flags().StringP("config", "c", defaultConfigPath, "path to your config file")
-	rootCmd.Flags().Float64P("duration", "d", config.Default.Duration, "duration in seconds; if positive duration is specified, synth will stop playing after the defined time")
+	rootCmd.Flags().Float64P("duration", "d", c.DefaultDuration, "duration in seconds; if positive duration is specified, synth will stop playing after the defined time")
 }
 
-func parseFlags(cmd *cobra.Command) error {
+func parseFlags(cmd *cobra.Command, config *c.Config) error {
 	s, _ := cmd.Flags().GetFloat64("sample-rate")
 	in, _ := cmd.Flags().GetFloat64("fade-in")
 	out, _ := cmd.Flags().GetFloat64("fade-out")
 	duration, _ := cmd.Flags().GetFloat64("duration")
 
-	c.Config.SampleRate = s
-	c.Config.FadeIn = in
-	c.Config.FadeOut = out
-	c.Config.Duration = duration
+	if cmd.Flag("sample-rate").Changed {
+		config.SampleRate = s
+	}
+	if cmd.Flag("fade-in").Changed {
+		config.FadeIn = in
+	}
+	if cmd.Flag("fade-out").Changed {
+		config.FadeOut = out
+	}
+	if cmd.Flag("duration").Changed {
+		config.Duration = duration
+	}
 
-	return c.Config.Validate()
+	return config.Validate()
 }
 
-func start(file string) error {
+func start(file string, config *c.Config) error {
 	err := audio.Init()
 	if err != nil {
 		return err
@@ -114,11 +122,11 @@ func start(file string) error {
 
 	quit := make(chan bool)
 	autoStop := make(chan bool)
-	u := ui.NewUI(file, quit, autoStop)
+	u := ui.NewUI(file, quit, autoStop, config.Duration)
 	go u.Enter()
 
 	output := make(chan struct{ Left, Right float32 })
-	ctx, err := audio.NewContext(output, c.Config.SampleRate)
+	ctx, err := audio.NewContext(output, config.SampleRate)
 	if err != nil {
 		return err
 	}
@@ -129,7 +137,7 @@ func start(file string) error {
 		return err
 	}
 
-	ctl := control.NewControl(output, autoStop)
+	ctl := control.NewControl(*config, output, autoStop)
 	ctl.Start()
 	defer ctl.StopSynth()
 
@@ -150,7 +158,7 @@ func start(file string) error {
 	interrupt := make(chan bool)
 	go catchInterrupt(interrupt, sig)
 
-	ctl.FadeIn(c.Config.FadeIn)
+	ctl.FadeIn(config.FadeIn)
 	var fadingOut bool
 
 Loop:
@@ -162,8 +170,8 @@ Loop:
 				continue
 			}
 			fadingOut = true
-			ui.Logger.Info(fmt.Sprintf("fading out in %fs", c.Config.FadeOut))
-			ctl.Stop(c.Config.FadeOut)
+			ui.Logger.Info(fmt.Sprintf("fading out in %fs", config.FadeOut))
+			ctl.Stop(config.FadeOut)
 		case <-interrupt:
 			ctl.Stop(0.05)
 		case <-ctl.SynthDone:

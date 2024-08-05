@@ -3,12 +3,13 @@ package control
 import (
 	"math"
 
-	"github.com/iljarotar/synth/config"
+	cfg "github.com/iljarotar/synth/config"
 	s "github.com/iljarotar/synth/synth"
 	"github.com/iljarotar/synth/ui"
 )
 
 type Control struct {
+	config      cfg.Config
 	synth       *s.Synth
 	output      chan struct{ Left, Right float32 }
 	SynthDone   chan bool
@@ -17,12 +18,13 @@ type Control struct {
 	currentTime float64
 }
 
-func NewControl(output chan struct{ Left, Right float32 }, autoStop chan bool) *Control {
+func NewControl(config cfg.Config, output chan struct{ Left, Right float32 }, autoStop chan bool) *Control {
 	var synth s.Synth
-	synth.Initialize()
+	synth.Initialize(config.SampleRate)
 	reportTime := make(chan float64)
 
 	ctl := &Control{
+		config:     config,
 		synth:      &synth,
 		output:     output,
 		SynthDone:  make(chan bool),
@@ -39,7 +41,7 @@ func (c *Control) Start() {
 }
 
 func (c *Control) LoadSynth(synth s.Synth) {
-	synth.Initialize()
+	synth.Initialize(c.config.SampleRate)
 	synth.Time += c.synth.Time
 
 	*c.synth = synth
@@ -71,10 +73,10 @@ func (c *Control) observeTime() {
 }
 
 func (c *Control) checkDuration() {
-	if config.Config.Duration < 0 {
+	if c.config.Duration < 0 {
 		return
 	}
-	duration := config.Config.Duration - config.Config.FadeOut
+	duration := c.config.Duration - c.config.FadeOut
 	if c.currentTime < duration || ui.State.Closed {
 		return
 	}

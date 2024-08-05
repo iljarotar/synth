@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/module"
 	"github.com/iljarotar/synth/ui"
 	"github.com/iljarotar/synth/utils"
@@ -31,6 +30,7 @@ type Synth struct {
 	Envelopes          []*module.Envelope   `yaml:"envelopes"`
 	Filters            []*module.Filter     `yaml:"filters"`
 	Time               float64              `yaml:"time"`
+	sampleRate         float64
 	modMap             module.ModulesMap
 	filtersMap         module.FiltersMap
 	step, volumeMemory float64
@@ -40,8 +40,9 @@ type Synth struct {
 	playing            bool
 }
 
-func (s *Synth) Initialize() {
-	s.step = 1 / config.Config.SampleRate
+func (s *Synth) Initialize(sampleRate float64) {
+	s.step = 1 / sampleRate
+	s.sampleRate = sampleRate
 	s.Volume = utils.Limit(s.Volume, 0, 1)
 	s.Time = utils.Limit(s.Time, 0, maxInitTime)
 	s.volumeMemory = s.Volume
@@ -49,19 +50,19 @@ func (s *Synth) Initialize() {
 	s.playing = true
 
 	for _, osc := range s.Oscillators {
-		osc.Initialize()
+		osc.Initialize(sampleRate)
 	}
 
 	for _, n := range s.Noises {
-		n.Initialize()
+		n.Initialize(sampleRate)
 	}
 
 	for _, c := range s.Wavetables {
-		c.Initialize()
+		c.Initialize(sampleRate)
 	}
 
 	for _, smplr := range s.Samplers {
-		smplr.Initialize()
+		smplr.Initialize(sampleRate)
 	}
 
 	for _, e := range s.Envelopes {
@@ -69,7 +70,7 @@ func (s *Synth) Initialize() {
 	}
 
 	for _, f := range s.Filters {
-		f.Initialize()
+		f.Initialize(sampleRate)
 	}
 
 	s.makeMaps()
@@ -125,9 +126,9 @@ func (s *Synth) fadeIn() {
 		return
 	}
 
-	step := secondsToStep(s.fadeDuration, s.volumeMemory-s.Volume, config.Config.SampleRate)
+	step := secondsToStep(s.fadeDuration, s.volumeMemory-s.Volume, s.sampleRate)
 	s.Volume += step
-	s.fadeDuration -= 1 / config.Config.SampleRate
+	s.fadeDuration -= 1 / s.sampleRate
 
 	if s.Volume > s.volumeMemory {
 		s.Volume = s.volumeMemory
@@ -144,9 +145,9 @@ func (s *Synth) fadeOut() {
 		return
 	}
 
-	step := secondsToStep(s.fadeDuration, s.Volume, config.Config.SampleRate)
+	step := secondsToStep(s.fadeDuration, s.Volume, s.sampleRate)
 	s.Volume -= step
-	s.fadeDuration -= 1 / config.Config.SampleRate
+	s.fadeDuration -= 1 / s.sampleRate
 
 	if s.Volume < 0 {
 		s.Volume = 0

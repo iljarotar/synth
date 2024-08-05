@@ -9,29 +9,25 @@ import (
 )
 
 const (
-	minSampleRate     = 8000
-	maxSampleRate     = 48000
-	maxFadeDuration   = 3600
-	maxDuration       = 7200
+	minSampleRate   = 8000
+	maxSampleRate   = 48000
+	maxFadeDuration = 3600
+	maxDuration     = 7200
+
 	defaultConfigFile = "config.yaml"
 	defaultConfigDir  = "synth"
+	DefaultSampleRate = 44100
+	DefaultFadeIn     = 1
+	DefaultFadeOut    = 1
+	DefaultDuration   = -1
 )
 
-type config struct {
+type Config struct {
 	SampleRate float64 `yaml:"sample-rate"`
 	FadeIn     float64 `yaml:"fade-in"`
 	FadeOut    float64 `yaml:"fade-out"`
 	Duration   float64 `yaml:"duration"`
 }
-
-var Default = config{
-	SampleRate: 44100,
-	FadeIn:     1,
-	FadeOut:    1,
-	Duration:   -1,
-}
-
-var Config = config{}
 
 func GetDefaultConfigPath() (string, error) {
 	userConfigDir, err := os.UserConfigDir()
@@ -55,7 +51,14 @@ func EnsureDefaultConfig() error {
 		return fmt.Errorf("unable to open config file: %w", err)
 	}
 
-	defaultConfig, err := yaml.Marshal(Default)
+	defaultConfig := Config{
+		SampleRate: DefaultSampleRate,
+		FadeIn:     DefaultFadeIn,
+		FadeOut:    DefaultFadeOut,
+		Duration:   DefaultDuration,
+	}
+
+	defaultConfigBytes, err := yaml.Marshal(defaultConfig)
 	if err != nil {
 		return fmt.Errorf("unable to marshal default config: %w", err)
 	}
@@ -65,24 +68,31 @@ func EnsureDefaultConfig() error {
 		return fmt.Errorf("unable to create config directory: %w", err)
 	}
 
-	return os.WriteFile(configPath, defaultConfig, 0600)
+	return os.WriteFile(configPath, defaultConfigBytes, 0600)
 }
 
-func LoadConfig(path string) error {
+func LoadConfig(path string) (*Config, error) {
 	raw, err := os.ReadFile(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = yaml.Unmarshal(raw, &Config)
+	config := &Config{}
+
+	err = yaml.Unmarshal(raw, &config)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return Config.Validate()
+	err = config.Validate()
+	if err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }
 
-func (c *config) Validate() error {
+func (c *Config) Validate() error {
 	if c.SampleRate < minSampleRate {
 		return fmt.Errorf("sample rate must be greater than or equal to %d", minSampleRate)
 	}

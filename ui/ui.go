@@ -6,8 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-
-	"github.com/iljarotar/synth/config"
 )
 
 type UI struct {
@@ -17,15 +15,17 @@ type UI struct {
 	file     string
 	logs     []string
 	time     string
+	duration float64
 }
 
-func NewUI(file string, quit chan bool, autoStop chan bool) *UI {
+func NewUI(file string, quit chan bool, autoStop chan bool, duration float64) *UI {
 	return &UI{
 		quit:     quit,
 		autoStop: autoStop,
 		input:    make(chan string),
 		file:     file,
 		time:     "00:00:00",
+		duration: duration,
 	}
 }
 
@@ -96,8 +96,8 @@ func (ui *UI) resetScreen() {
 		LineBreaks(2)
 	}
 	fmt.Printf("%s", ui.time)
-	if config.Config.Duration >= 0 {
-		fmt.Printf(" - automatically stopping after %fs", config.Config.Duration)
+	if ui.duration >= 0 {
+		fmt.Printf(" - automatically stopping after %fs", ui.duration)
 	}
 	LineBreaks(1)
 	fmt.Printf("%s ", colored("Type 'q' to quit:", colorBlueStrong))

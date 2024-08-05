@@ -1,7 +1,6 @@
 package module
 
 import (
-	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/utils"
 )
 
@@ -16,10 +15,12 @@ type Sampler struct {
 	inputs          []filterInputs
 	lastTriggeredAt float64
 	limits
+	sampleRate float64
 }
 
-func (s *Sampler) Initialize() {
-	s.limits = limits{min: 0, max: config.Config.SampleRate}
+func (s *Sampler) Initialize(sampleRate float64) {
+	s.sampleRate = sampleRate
+	s.limits = limits{min: 0, max: sampleRate}
 	s.limitParams()
 	s.inputs = make([]filterInputs, len(s.Filters))
 	s.current = stereo(0, s.Pan.Val)
@@ -38,7 +39,7 @@ func (s *Sampler) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 
 	x := s.sample(t, freq, amp, modMap)
 	y, newInputs := cfg.applyFilters(x)
-	s.integral += y / config.Config.SampleRate
+	s.integral += y / s.sampleRate
 	s.inputs = newInputs
 	s.current = stereo(y, pan)
 }

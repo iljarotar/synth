@@ -3,7 +3,6 @@ package module
 import (
 	"math"
 
-	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/utils"
 )
 
@@ -33,9 +32,11 @@ type Filter struct {
 	a0, a1, a2, b0, b1, b2 float64
 	amp                    float64
 	bypass                 bool
+	sampleRate             float64
 }
 
-func (f *Filter) Initialize() {
+func (f *Filter) Initialize(sampleRate float64) {
+	f.sampleRate = sampleRate
 	f.limitParams()
 	f.amp = getAmp(dbGain)
 	f.calculateCoeffs(f.LowCutoff.Val, f.HighCutoff.Val)
@@ -67,7 +68,7 @@ func (f *Filter) calculateCoeffs(fl, fh float64) {
 }
 
 func (f *Filter) calculateLowPassCoeffs(fc float64) {
-	omega := getOmega(fc)
+	omega := getOmega(fc, f.sampleRate)
 	alpha := getAlphaLPHP(omega, f.amp, slope)
 	f.b1 = 1 - math.Cos(omega)
 	f.b0 = f.b1 / 2
@@ -78,7 +79,7 @@ func (f *Filter) calculateLowPassCoeffs(fc float64) {
 }
 
 func (f *Filter) calculateHighPassCoeffs(fc float64) {
-	omega := getOmega(fc)
+	omega := getOmega(fc, f.sampleRate)
 	alpha := getAlphaLPHP(omega, f.amp, slope)
 	f.b0 = (1 + math.Cos(omega)) / 2
 	f.b1 = -(1 + math.Cos(omega))
@@ -94,7 +95,7 @@ func (f *Filter) calculateBandPassCoeffs(fl, fh float64) {
 	}
 	bw := math.Log2(fh / fl)
 	fc := fl + (fh-fl)/2
-	omega := getOmega(fc)
+	omega := getOmega(fc, f.sampleRate)
 	alpha := getAlphaBP(omega, bw)
 	f.b0 = alpha
 	f.b1 = 0
@@ -108,8 +109,8 @@ func getAmp(dbGain float64) float64 {
 	return math.Pow(10, dbGain/40)
 }
 
-func getOmega(fc float64) float64 {
-	return 2 * math.Pi * (fc / config.Config.SampleRate)
+func getOmega(fc float64, sampleRate float64) float64 {
+	return 2 * math.Pi * (fc / sampleRate)
 }
 
 func getAlphaLPHP(omega, amp, slope float64) float64 {
