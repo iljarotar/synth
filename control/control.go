@@ -67,6 +67,8 @@ func (c *Control) FadeOut(fadeOut float64, notifyDone chan bool) {
 }
 
 func (c *Control) receiveOutput(outputChan <-chan synth.Output) {
+	defer close(c.output)
+
 	for out := range outputChan {
 		c.logTime(out.Time)
 		c.checkDuration(out.Time)
