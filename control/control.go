@@ -12,13 +12,12 @@ import (
 )
 
 type Control struct {
-	logger      *ui.Logger
-	config      cfg.Config
-	synth       *s.Synth
-	output      chan audio.AudioOutput
-	SynthDone   chan bool
-	autoStop    chan bool
-	currentTime float64
+	logger    *ui.Logger
+	config    cfg.Config
+	synth     *s.Synth
+	output    chan audio.AudioOutput
+	SynthDone chan bool
+	autoStop  chan bool
 }
 
 func NewControl(logger *ui.Logger, config cfg.Config, output chan audio.AudioOutput, autoStop chan bool) *Control {
@@ -69,9 +68,8 @@ func (c *Control) FadeOut(fadeOut float64, notifyDone chan bool) {
 
 func (c *Control) receiveOutput(outputChan <-chan synth.Output) {
 	for out := range outputChan {
-		c.currentTime = out.Time
 		c.logTime(out.Time)
-		c.checkDuration()
+		c.checkDuration(out.Time)
 
 		c.checkOverdrive(out.Mono)
 
@@ -89,12 +87,12 @@ func (c *Control) checkOverdrive(output float64) {
 	}
 }
 
-func (c *Control) checkDuration() {
+func (c *Control) checkDuration(time float64) {
 	if c.config.Duration < 0 {
 		return
 	}
 	duration := c.config.Duration - c.config.FadeOut
-	if c.currentTime < duration || ui.State.Closed {
+	if time < duration || ui.State.Closed {
 		return
 	}
 	c.autoStop <- true
