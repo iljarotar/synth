@@ -12,12 +12,14 @@ import (
 )
 
 type Control struct {
-	logger    *ui.Logger
-	config    cfg.Config
-	synth     *s.Synth
-	output    chan audio.AudioOutput
-	SynthDone chan bool
-	autoStop  chan bool
+	logger                        *ui.Logger
+	config                        cfg.Config
+	synth                         *s.Synth
+	output                        chan audio.AudioOutput
+	SynthDone                     chan bool
+	autoStop                      chan bool
+	maxOutput, lastNotifiedOutput float64
+	overdriveWarningTriggeredAt   float64
 }
 
 func NewControl(logger *ui.Logger, config cfg.Config, output chan audio.AudioOutput, autoStop chan bool) *Control {
@@ -43,6 +45,8 @@ func (c *Control) Start() {
 }
 
 func (c *Control) LoadSynth(synth s.Synth) {
+	c.maxOutput = 0
+	c.lastNotifiedOutput = 0
 	synth.Initialize(c.config.SampleRate)
 	synth.Time += c.synth.Time
 
@@ -73,7 +77,7 @@ func (c *Control) receiveOutput(outputChan <-chan synth.Output) {
 		c.logTime(out.Time)
 		c.checkDuration(out.Time)
 
-		c.checkOverdrive(out.Mono)
+		c.checkOverdrive(out.Mono, out.Time)
 
 		c.output <- audio.AudioOutput{
 			Left:  out.Left,
@@ -82,10 +86,18 @@ func (c *Control) receiveOutput(outputChan <-chan synth.Output) {
 	}
 }
 
-func (c *Control) checkOverdrive(output float64) {
-	if math.Abs(output) >= 1.00001 && !ui.State.ShowingOverdriveWarning {
+func (c *Control) checkOverdrive(output, time float64) {
+	// only consider up to three decimals
+	abs := math.Round(math.Abs(output)*1000) / 1000
+	if abs > c.maxOutput {
+		c.maxOutput = abs
+	}
+
+	if c.maxOutput >= 1 && c.maxOutput > c.lastNotifiedOutput && time-c.overdriveWarningTriggeredAt >= 0.5 {
+		c.lastNotifiedOutput = c.maxOutput
 		c.logger.ShowOverdriveWarning(true)
-		c.logger.Warning(fmt.Sprintf("Output value %f", output))
+		c.logger.Warning(fmt.Sprintf("Output value %f", c.maxOutput))
+		c.overdriveWarningTriggeredAt = time
 	}
 }
 
