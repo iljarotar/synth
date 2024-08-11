@@ -33,7 +33,7 @@ type Synth struct {
 	notifyFadeOutDone  chan bool
 	fadeDirection      FadeDirection
 	fadeDuration       float64
-	playing            bool
+	active             bool
 }
 
 func (s *Synth) Initialize(sampleRate float64) {
@@ -43,7 +43,7 @@ func (s *Synth) Initialize(sampleRate float64) {
 	s.Time = utils.Limit(s.Time, 0, maxInitTime)
 	s.volumeMemory = s.Volume
 	s.Volume = 0 // start muted
-	s.playing = true
+	s.active = true
 
 	for _, osc := range s.Oscillators {
 		osc.Initialize(sampleRate)
@@ -75,7 +75,7 @@ func (s *Synth) Initialize(sampleRate float64) {
 func (s *Synth) Play(outputChan chan<- Output) {
 	defer close(outputChan)
 
-	for s.playing {
+	for s.active {
 		left, right, mono := s.getCurrentValue()
 		s.adjustVolume()
 		left *= s.Volume
@@ -91,7 +91,7 @@ func (s *Synth) Play(outputChan chan<- Output) {
 }
 
 func (s *Synth) Stop() {
-	s.playing = false
+	s.active = false
 }
 
 func (s *Synth) Fade(direction FadeDirection, seconds float64) {
