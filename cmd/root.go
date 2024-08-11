@@ -120,12 +120,13 @@ func start(file string, config *c.Config) error {
 	}
 	defer audio.Terminate()
 
+	logger := ui.NewLogger()
 	quit := make(chan bool)
 	autoStop := make(chan bool)
-	u := ui.NewUI(file, quit, autoStop, config.Duration)
+	u := ui.NewUI(logger, file, quit, autoStop, config.Duration)
 	go u.Enter()
 
-	output := make(chan struct{ Left, Right float32 })
+	output := make(chan audio.AudioOutput)
 	ctx, err := audio.NewContext(output, config.SampleRate)
 	if err != nil {
 		return err
@@ -137,11 +138,11 @@ func start(file string, config *c.Config) error {
 		return err
 	}
 
-	ctl := control.NewControl(*config, output, autoStop)
+	ctl := control.NewControl(logger, *config, output, autoStop)
 	ctl.Start()
 	defer ctl.StopSynth()
 
-	loader, err := f.NewLoader(ctl, file)
+	loader, err := f.NewLoader(logger, ctl, file)
 	if err != nil {
 		return err
 	}
@@ -166,11 +167,11 @@ Loop:
 		select {
 		case <-quit:
 			if fadingOut {
-				ui.Logger.Info("already received quit signal")
+				logger.Info("already received quit signal")
 				continue
 			}
 			fadingOut = true
-			ui.Logger.Info(fmt.Sprintf("fading out in %fs", config.FadeOut))
+			logger.Info(fmt.Sprintf("fading out in %fs", config.FadeOut))
 			ctl.Stop(config.FadeOut)
 		case <-interrupt:
 			ctl.Stop(0.05)

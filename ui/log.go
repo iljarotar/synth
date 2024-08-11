@@ -10,35 +10,43 @@ const (
 	labelError   = "[ERROR]  "
 )
 
-type logger struct {
+type Logger struct {
 	log              chan string
 	overdriveWarning chan bool
 	time             chan string
 }
 
-func (l *logger) SendTime(time int) {
+func NewLogger() *Logger {
+	return &Logger{
+		log:              make(chan string),
+		overdriveWarning: make(chan bool),
+		time:             make(chan string),
+	}
+}
+
+func (l *Logger) SendTime(time int) {
 	State.CurrentTime = time
 	l.time <- formatTime(time)
 }
 
-func (l *logger) Info(log string) {
+func (l *Logger) Info(log string) {
 	l.sendLog(log, labelInfo, colorGreenStrong)
 }
 
-func (l *logger) Warning(log string) {
+func (l *Logger) Warning(log string) {
 	l.sendLog(log, labelWarning, colorOrangeStorng)
 }
 
-func (l *logger) Error(log string) {
+func (l *Logger) Error(log string) {
 	l.sendLog(log, labelError, colorRedStrong)
 }
 
-func (l *logger) ShowOverdriveWarning(limitExceeded bool) {
+func (l *Logger) ShowOverdriveWarning(limitExceeded bool) {
 	State.ShowingOverdriveWarning = limitExceeded
 	l.overdriveWarning <- limitExceeded
 }
 
-func (l *logger) sendLog(log, label string, labelColor color) {
+func (l *Logger) sendLog(log, label string, labelColor color) {
 	time := formatTime(State.CurrentTime)
 	coloredLabel := fmt.Sprintf("%s", colored(label, labelColor))
 	l.log <- fmt.Sprintf("[%s] %s %s", time, coloredLabel, log)
@@ -68,10 +76,4 @@ func formatTime(time int) string {
 	}
 
 	return fmt.Sprintf("%s:%s:%s", hoursString, minutesString, secondsString)
-}
-
-var Logger = &logger{
-	log:              make(chan string),
-	overdriveWarning: make(chan bool),
-	time:             make(chan string),
 }

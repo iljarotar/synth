@@ -9,6 +9,7 @@ import (
 )
 
 type UI struct {
+	logger   *Logger
 	quit     chan bool
 	input    chan string
 	autoStop chan bool
@@ -18,8 +19,9 @@ type UI struct {
 	duration float64
 }
 
-func NewUI(file string, quit chan bool, autoStop chan bool, duration float64) *UI {
+func NewUI(logger *Logger, file string, quit chan bool, autoStop chan bool, duration float64) *UI {
 	return &UI{
+		logger:   logger,
 		quit:     quit,
 		autoStop: autoStop,
 		input:    make(chan string),
@@ -55,13 +57,13 @@ func (ui *UI) Enter() {
 			} else {
 				ui.resetScreen()
 			}
-		case time := <-Logger.time:
+		case time := <-ui.logger.time:
 			ui.time = time
 			ui.updateTime()
-		case log := <-Logger.log:
+		case log := <-ui.logger.log:
 			ui.appendLog(log)
 			ui.resetScreen()
-		case <-Logger.overdriveWarning:
+		case <-ui.logger.overdriveWarning:
 			ui.resetScreen()
 		case <-ui.autoStop:
 			State.Closed = true

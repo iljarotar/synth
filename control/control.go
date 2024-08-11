@@ -1,43 +1,46 @@
 package control
 
 import (
+	"fmt"
 	"math"
 
+	"github.com/iljarotar/synth/audio"
 	cfg "github.com/iljarotar/synth/config"
+	"github.com/iljarotar/synth/synth"
 	s "github.com/iljarotar/synth/synth"
 	"github.com/iljarotar/synth/ui"
 )
 
 type Control struct {
+	logger      *ui.Logger
 	config      cfg.Config
 	synth       *s.Synth
-	output      chan struct{ Left, Right float32 }
+	output      chan audio.AudioOutput
 	SynthDone   chan bool
 	autoStop    chan bool
-	reportTime  chan float64
 	currentTime float64
 }
 
-func NewControl(config cfg.Config, output chan struct{ Left, Right float32 }, autoStop chan bool) *Control {
+func NewControl(logger *ui.Logger, config cfg.Config, output chan audio.AudioOutput, autoStop chan bool) *Control {
 	var synth s.Synth
 	synth.Initialize(config.SampleRate)
-	reportTime := make(chan float64)
 
 	ctl := &Control{
-		config:     config,
-		synth:      &synth,
-		output:     output,
-		SynthDone:  make(chan bool),
-		reportTime: reportTime,
-		autoStop:   autoStop,
+		logger:    logger,
+		config:    config,
+		synth:     &synth,
+		output:    output,
+		SynthDone: make(chan bool),
+		autoStop:  autoStop,
 	}
 
 	return ctl
 }
 
 func (c *Control) Start() {
-	go c.synth.Play(c.output, c.reportTime)
-	go c.observeTime()
+	outputChan := make(chan synth.Output)
+	go c.synth.Play(outputChan)
+	go c.receiveOutput(outputChan)
 }
 
 func (c *Control) LoadSynth(synth s.Synth) {
@@ -64,11 +67,25 @@ func (c *Control) FadeOut(fadeOut float64, notifyDone chan bool) {
 	c.synth.Fade(s.FadeDirectionOut, fadeOut)
 }
 
-func (c *Control) observeTime() {
-	for time := range c.reportTime {
-		c.currentTime = time
-		logTime(time)
+func (c *Control) receiveOutput(outputChan <-chan synth.Output) {
+	for out := range outputChan {
+		c.currentTime = out.Time
+		c.logTime(out.Time)
 		c.checkDuration()
+
+		c.checkOverdrive(out.Mono)
+
+		c.output <- audio.AudioOutput{
+			Left:  out.Left,
+			Right: out.Right,
+		}
+	}
+}
+
+func (c *Control) checkOverdrive(output float64) {
+	if math.Abs(output) >= 1.00001 && !ui.State.ShowingOverdriveWarning {
+		c.logger.ShowOverdriveWarning(true)
+		c.logger.Warning(fmt.Sprintf("Output value %f", output))
 	}
 }
 
@@ -83,9 +100,9 @@ func (c *Control) checkDuration() {
 	c.autoStop <- true
 }
 
-func logTime(time float64) {
+func (c *Control) logTime(time float64) {
 	if isNextSecond(time) {
-		ui.Logger.SendTime(int(time))
+		c.logger.SendTime(int(time))
 	}
 }
 

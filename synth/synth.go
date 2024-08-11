@@ -1,24 +1,20 @@
 package synth
 
 import (
-	"fmt"
-	"math"
-
 	"github.com/iljarotar/synth/module"
-	"github.com/iljarotar/synth/ui"
 	"github.com/iljarotar/synth/utils"
 )
 
 const (
-	maxInitTime = 7200
-)
-
-type FadeDirection string
-
-const (
+	maxInitTime                    = 7200
 	FadeDirectionIn  FadeDirection = "in"
 	FadeDirectionOut FadeDirection = "out"
 )
+
+type FadeDirection string
+type Output struct {
+	Left, Right, Mono, Time float64
+}
 
 type Synth struct {
 	Volume             float64              `yaml:"vol"`
@@ -76,27 +72,21 @@ func (s *Synth) Initialize(sampleRate float64) {
 	s.makeMaps()
 }
 
-func (s *Synth) Play(output chan<- struct{ Left, Right float32 }, reportTime chan float64) {
-	defer close(output)
-	defer close(reportTime)
+func (s *Synth) Play(outputChan chan<- Output) {
+	defer close(outputChan)
 
 	for s.playing {
-		reportTime <- s.Time
-
 		left, right, mono := s.getCurrentValue()
 		s.adjustVolume()
 		left *= s.Volume
 		right *= s.Volume
-		mono *= s.Volume
 
-		// ignore exceeding limit if the difference is sufficiently small
-		if math.Abs(mono) >= 1.00001 && !ui.State.ShowingOverdriveWarning {
-			ui.Logger.ShowOverdriveWarning(true)
-			ui.Logger.Warning(fmt.Sprintf("Output value %f", mono))
+		outputChan <- Output{
+			Left:  left,
+			Right: right,
+			Mono:  mono,
+			Time:  s.Time,
 		}
-
-		y := struct{ Left, Right float32 }{Left: float32(left), Right: float32(right)}
-		output <- y
 	}
 }
 

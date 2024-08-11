@@ -14,6 +14,7 @@ import (
 )
 
 type Loader struct {
+	logger     *ui.Logger
 	watcher    *fsnotify.Watcher
 	watch      *bool
 	lastLoaded time.Time
@@ -21,17 +22,23 @@ type Loader struct {
 	file       string
 }
 
-func NewLoader(ctl *control.Control, file string) (*Loader, error) {
+func NewLoader(logger *ui.Logger, ctl *control.Control, file string) (*Loader, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
 	}
 
 	watch := true
-	l := Loader{watcher: watcher, watch: &watch, ctl: ctl, file: file}
+	l := &Loader{
+		logger:  logger,
+		watcher: watcher,
+		watch:   &watch,
+		ctl:     ctl,
+		file:    file,
+	}
 	go l.StartWatching()
 
-	return &l, nil
+	return l, nil
 }
 
 func (l *Loader) Close() error {
@@ -97,10 +104,10 @@ func (l *Loader) StartWatching() {
 
 				err := l.Load()
 				if err != nil {
-					ui.Logger.Error("could not load file. error: " + err.Error())
+					l.logger.Error("could not load file. error: " + err.Error())
 				} else {
-					ui.Logger.Info("reloaded patch file")
-					ui.Logger.ShowOverdriveWarning(false)
+					l.logger.Info("reloaded patch file")
+					l.logger.ShowOverdriveWarning(false)
 				}
 
 				l.ctl.FadeIn(0.01)
@@ -109,7 +116,7 @@ func (l *Loader) StartWatching() {
 			if !ok {
 				return
 			}
-			ui.Logger.Error("an error occurred. please restart synth. error: " + err.Error())
+			l.logger.Error("an error occurred. please restart synth. error: " + err.Error())
 		}
 	}
 }

@@ -4,14 +4,16 @@ import (
 	"github.com/gordonklaus/portaudio"
 )
 
-type ProcessCallback func([]float32)
+type AudioOutput struct {
+	Left, Right float64
+}
 
 type Context struct {
 	*portaudio.Stream
-	Input chan struct{ Left, Right float32 }
+	Input chan AudioOutput
 }
 
-func NewContext(input chan struct{ Left, Right float32 }, sampleRate float64) (*Context, error) {
+func NewContext(input chan AudioOutput, sampleRate float64) (*Context, error) {
 	ctx := &Context{Input: input}
 
 	var err error
@@ -26,8 +28,8 @@ func NewContext(input chan struct{ Left, Right float32 }, sampleRate float64) (*
 func (c *Context) Process(out [][]float32) {
 	for i := range out[0] {
 		y := <-c.Input
-		out[0][i] = y.Left
-		out[1][i] = y.Right
+		out[0][i] = float32(y.Left)
+		out[1][i] = float32(y.Right)
 	}
 }
 
