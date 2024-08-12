@@ -9,17 +9,19 @@ import (
 )
 
 type UI struct {
-	logger   *Logger
-	quit     chan bool
-	input    chan string
-	autoStop chan bool
-	file     string
-	logs     []string
-	time     string
-	duration float64
+	logger               *Logger
+	quit                 chan bool
+	input                chan string
+	autoStop             chan bool
+	file                 string
+	logs                 []string
+	time                 string
+	duration             float64
+	showOverdriveWarning bool
+	closing              *bool
 }
 
-func NewUI(logger *Logger, file string, quit chan bool, autoStop chan bool, duration float64) *UI {
+func NewUI(logger *Logger, file string, quit chan bool, autoStop chan bool, duration float64, closing *bool) *UI {
 	return &UI{
 		logger:   logger,
 		quit:     quit,
@@ -28,6 +30,7 @@ func NewUI(logger *Logger, file string, quit chan bool, autoStop chan bool, dura
 		file:     file,
 		time:     "00:00:00",
 		duration: duration,
+		closing:  closing,
 	}
 }
 
@@ -51,22 +54,23 @@ func (ui *UI) Enter() {
 		select {
 		case input := <-ui.input:
 			if input == "q" {
-				State.Closed = true
+				*ui.closing = true
 				ui.resetScreen()
 				ui.quit <- true
 			} else {
 				ui.resetScreen()
 			}
-		case time := <-ui.logger.time:
+		case time := <-ui.logger.timeChan:
 			ui.time = time
 			ui.updateTime()
-		case log := <-ui.logger.log:
+		case log := <-ui.logger.logChan:
 			ui.appendLog(log)
 			ui.resetScreen()
-		case <-ui.logger.overdriveWarning:
+		case overdriveWarning := <-ui.logger.overdriveWarningChan:
+			ui.showOverdriveWarning = overdriveWarning
 			ui.resetScreen()
 		case <-ui.autoStop:
-			State.Closed = true
+			*ui.closing = true
 			ui.quit <- true
 		}
 	}
@@ -93,7 +97,7 @@ func (ui *UI) resetScreen() {
 	if len(ui.logs) > 0 {
 		LineBreaks(1)
 	}
-	if State.ShowingOverdriveWarning {
+	if ui.showOverdriveWarning {
 		fmt.Printf("%s", colored("[WARNING] Volume exceeded 100%%", colorOrangeStorng))
 		LineBreaks(2)
 	}

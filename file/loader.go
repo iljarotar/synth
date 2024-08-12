@@ -22,7 +22,7 @@ type Loader struct {
 	file       string
 }
 
-func NewLoader(logger *ui.Logger, ctl *control.Control, file string) (*Loader, error) {
+func NewLoader(logger *ui.Logger, ctl *control.Control, file string, closing *bool) (*Loader, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func NewLoader(logger *ui.Logger, ctl *control.Control, file string) (*Loader, e
 		ctl:     ctl,
 		file:    file,
 	}
-	go l.StartWatching()
+	go l.StartWatching(closing)
 
 	return l, nil
 }
@@ -82,14 +82,14 @@ func (l *Loader) Watch(file string) error {
 	return l.watcher.Add(filePath)
 }
 
-func (l *Loader) StartWatching() {
+func (l *Loader) StartWatching(closed *bool) {
 	for *l.watch {
 		select {
 		case event, ok := <-l.watcher.Events:
 			if !ok {
 				return
 			}
-			if ui.State.Closed {
+			if *closed {
 				return
 			}
 

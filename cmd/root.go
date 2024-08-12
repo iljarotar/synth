@@ -123,7 +123,8 @@ func start(file string, config *c.Config) error {
 	logger := ui.NewLogger()
 	quit := make(chan bool)
 	autoStop := make(chan bool)
-	u := ui.NewUI(logger, file, quit, autoStop, config.Duration)
+	var closing bool
+	u := ui.NewUI(logger, file, quit, autoStop, config.Duration, &closing)
 	go u.Enter()
 
 	output := make(chan audio.AudioOutput)
@@ -138,11 +139,11 @@ func start(file string, config *c.Config) error {
 		return err
 	}
 
-	ctl := control.NewControl(logger, *config, output, autoStop)
+	ctl := control.NewControl(logger, *config, output, autoStop, &closing)
 	ctl.Start()
 	defer ctl.StopSynth()
 
-	loader, err := f.NewLoader(logger, ctl, file)
+	loader, err := f.NewLoader(logger, ctl, file, &closing)
 	if err != nil {
 		return err
 	}

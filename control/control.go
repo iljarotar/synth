@@ -20,9 +20,10 @@ type Control struct {
 	autoStop                      chan bool
 	maxOutput, lastNotifiedOutput float64
 	overdriveWarningTriggeredAt   float64
+	closing                       *bool
 }
 
-func NewControl(logger *ui.Logger, config cfg.Config, output chan audio.AudioOutput, autoStop chan bool) *Control {
+func NewControl(logger *ui.Logger, config cfg.Config, output chan audio.AudioOutput, autoStop chan bool, closing *bool) *Control {
 	var synth s.Synth
 	synth.Initialize(config.SampleRate)
 
@@ -33,6 +34,7 @@ func NewControl(logger *ui.Logger, config cfg.Config, output chan audio.AudioOut
 		output:    output,
 		SynthDone: make(chan bool),
 		autoStop:  autoStop,
+		closing:   closing,
 	}
 
 	return ctl
@@ -74,9 +76,8 @@ func (c *Control) receiveOutput(outputChan <-chan synth.Output) {
 	defer close(c.output)
 
 	for out := range outputChan {
-		c.logTime(out.Time)
+		c.logger.SendTime(out.Time)
 		c.checkDuration(out.Time)
-
 		c.checkOverdrive(out.Mono, out.Time)
 
 		c.output <- audio.AudioOutput{
@@ -106,19 +107,8 @@ func (c *Control) checkDuration(time float64) {
 		return
 	}
 	duration := c.config.Duration - c.config.FadeOut
-	if time < duration || ui.State.Closed {
+	if time < duration || *c.closing {
 		return
 	}
 	c.autoStop <- true
-}
-
-func (c *Control) logTime(time float64) {
-	if isNextSecond(time) {
-		c.logger.SendTime(int(time))
-	}
-}
-
-func isNextSecond(time float64) bool {
-	sec, _ := math.Modf(time)
-	return sec > float64(ui.State.CurrentTime)
 }

@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"math"
 )
 
 const (
@@ -11,22 +12,26 @@ const (
 )
 
 type Logger struct {
-	log              chan string
-	overdriveWarning chan bool
-	time             chan string
+	logChan              chan string
+	overdriveWarningChan chan bool
+	timeChan             chan string
+	currentTime          int
 }
 
 func NewLogger() *Logger {
 	return &Logger{
-		log:              make(chan string),
-		overdriveWarning: make(chan bool),
-		time:             make(chan string),
+		logChan:              make(chan string),
+		overdriveWarningChan: make(chan bool),
+		timeChan:             make(chan string),
 	}
 }
 
-func (l *Logger) SendTime(time int) {
-	State.CurrentTime = time
-	l.time <- formatTime(time)
+func (l *Logger) SendTime(time float64) {
+	if l.isNextSecond(time) {
+		seconds := int(time)
+		l.currentTime = seconds
+		l.timeChan <- formatTime(seconds)
+	}
 }
 
 func (l *Logger) Info(log string) {
@@ -42,14 +47,18 @@ func (l *Logger) Error(log string) {
 }
 
 func (l *Logger) ShowOverdriveWarning(limitExceeded bool) {
-	State.ShowingOverdriveWarning = limitExceeded
-	l.overdriveWarning <- limitExceeded
+	l.overdriveWarningChan <- limitExceeded
 }
 
 func (l *Logger) sendLog(log, label string, labelColor color) {
-	time := formatTime(State.CurrentTime)
+	time := formatTime(l.currentTime)
 	coloredLabel := fmt.Sprintf("%s", colored(label, labelColor))
-	l.log <- fmt.Sprintf("[%s] %s %s", time, coloredLabel, log)
+	l.logChan <- fmt.Sprintf("[%s] %s %s", time, coloredLabel, log)
+}
+
+func (l *Logger) isNextSecond(time float64) bool {
+	sec, _ := math.Modf(time)
+	return sec > float64(l.currentTime)
 }
 
 func colored(str string, col color) string {
@@ -77,3 +86,6 @@ func formatTime(time int) string {
 
 	return fmt.Sprintf("%s:%s:%s", hoursString, minutesString, secondsString)
 }
+
+// TODO:
+// implement publish/subscribe mechanism
