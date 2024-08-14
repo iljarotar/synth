@@ -50,6 +50,15 @@ func (ui *UI) Enter() {
 	go ui.read()
 	ui.resetScreen()
 
+	logChan := make(chan string)
+	ui.logger.SubscribeToLogs(logChan)
+
+	timeChan := make(chan string)
+	ui.logger.SubscribeToTime(timeChan)
+
+	stateChan := make(chan State)
+	ui.logger.SubscribeToState(stateChan)
+
 	for {
 		select {
 		case input := <-ui.input:
@@ -60,14 +69,14 @@ func (ui *UI) Enter() {
 			} else {
 				ui.resetScreen()
 			}
-		case time := <-ui.logger.timeChan:
+		case time := <-timeChan:
 			ui.time = time
 			ui.updateTime()
-		case log := <-ui.logger.logChan:
+		case log := <-logChan:
 			ui.appendLog(log)
 			ui.resetScreen()
-		case overdriveWarning := <-ui.logger.overdriveWarningChan:
-			ui.showOverdriveWarning = overdriveWarning
+		case state := <-stateChan:
+			ui.showOverdriveWarning = state.overdriveWarning
 			ui.resetScreen()
 		case <-ui.autoStop:
 			*ui.closing = true

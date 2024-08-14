@@ -120,7 +120,7 @@ func start(file string, config *c.Config) error {
 	}
 	defer audio.Terminate()
 
-	logger := ui.NewLogger()
+	logger := ui.NewLogger(10)
 	quit := make(chan bool)
 	autoStop := make(chan bool)
 	var closing bool
