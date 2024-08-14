@@ -9,9 +9,12 @@ on:
 jobs:
 
   build:
-    runs-on: arch
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+
+    - name: install portaudio
+      run: sudo apt update && sudo apt -y install portaudio19-dev
 
     - name: Set up Go
       uses: actions/setup-go@v4
