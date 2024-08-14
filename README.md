@@ -53,7 +53,7 @@ Run `synth -h` to see all configuration options.
 | Synth       |                   |                                                    |
 | ----------- | ----------------- | -------------------------------------------------- |
 | **Field**   | **Type**          | **Description**                                    |
-| vol         | Float             | main volume in range [0,1]                         |
+| vol         | Float             | main volume in range [0,2]                         |
 | out         | String [0..*]     | names of all modules whose outputs will be audible |
 | time        | Float             | initial time shift in seconds [0,7200]             |
 | oscillators | Oscillator [0..*] | all oscillators                                    |
@@ -68,7 +68,7 @@ Run `synth -h` to see all configuration options.
 | name       | String         | should be unique in the scope of the file |
 | type       | OscillatorType | wave form                                 |
 | freq       | Input          | frequency in range [0,20000]              |
-| amp        | Input          | amplitude in range [0,1]                  |
+| amp        | Input          | amplitude in range [0,2]                  |
 | phase      | Float          | phase in range [-1,1]                     |
 | pan        | Input          | stereo balance in range [-1,1]            |
 | filters    | String[0..*]   | names of the filters to apply             |
@@ -85,7 +85,7 @@ Run `synth -h` to see all configuration options.
 | --------- | ------------ | ----------------------------------------- |
 | **Field** | **Type**     | **Description**                           |
 | name      | String       | should be unique in the scope of the file |
-| amp       | Input        | amplitude in range [0,1]                  |
+| amp       | Input        | amplitude in range [0,2]                  |
 | pan       | Input        | stereo balance in range [-1,1]            |
 | filters   | String[0..*] | names of the filters to apply             |
 
@@ -93,7 +93,7 @@ Run `synth -h` to see all configuration options.
 | --------- | ------------ | ----------------------------------------- |
 | **Field** | **Type**     | **Description**                           |
 | name      | String       | should be unique in the scope of the file |
-| amp       | Input        | amplitude in range [0,1]                  |
+| amp       | Input        | amplitude in range [0,2]                  |
 | pan       | Input        | stereo balance in range [-1,1]            |
 | freq      | Input        | periods per second [0,20000]              |
 | table     | Float [0..*] | output values                             |
@@ -103,7 +103,7 @@ Run `synth -h` to see all configuration options.
 | --------- | ------------ | -------------------------------------------------- |
 | **Field** | **Type**     | **Description**                                    |
 | name      | String       | should be unique in the scope of the file          |
-| amp       | Input        | amplitude in range [0,1]                           |
+| amp       | Input        | amplitude in range [0,2]                           |
 | pan       | Input        | stereo balance in range [-1,1]                     |
 | freq      | Input        | frequency in range [0,SAMPLE_RATE (default 44100)] |
 | filters   | String[0..*] | names of the filters to apply                      |
