@@ -39,7 +39,7 @@ type Synth struct {
 func (s *Synth) Initialize(sampleRate float64) {
 	s.step = 1 / sampleRate
 	s.sampleRate = sampleRate
-	s.Volume = utils.Limit(s.Volume, 0, 1)
+	s.Volume = utils.Limit(s.Volume, 0, 2)
 	s.Time = utils.Limit(s.Time, 0, maxInitTime)
 	s.volumeMemory = s.Volume
 	s.Volume = 0 // start muted
@@ -80,6 +80,7 @@ func (s *Synth) Play(outputChan chan<- Output) {
 		s.adjustVolume()
 		left *= s.Volume
 		right *= s.Volume
+		mono *= s.Volume
 
 		outputChan <- Output{
 			Left:  left,
