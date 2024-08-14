@@ -1,10 +1,30 @@
 vol: 1
-out: [o1]
+out: [s1]
+wavetables:
+  - name: w1
+    amp: {val: 1}
+    freq: {val: 200}
+    table: [1,0]
+    envelope: e1
+
+samplers:
+  - name: s1
+    amp: {val: 1}
+    freq: {val: 44100}
+    inputs: [n1]
+    envelope: e1
+    
+noises:
+  - name: n1
+    amp: {val: 0.1}
+    envelope: e1
+  
 oscillators:
   - name: o1
     type: Triangle
     freq: {val: 200}
-    amp: {val: 0, mod: [e1], mod-amp: 1}
+    amp: {val: 1}
+    envelope: e1
 
   - name: lfo1
     type: Square

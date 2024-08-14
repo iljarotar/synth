@@ -12,6 +12,7 @@ type Noise struct {
 	Amp        Input    `yaml:"amp"`
 	Pan        Input    `yaml:"pan"`
 	Filters    []string `yaml:"filters"`
+	Envelope   string   `yaml:"envelope"`
 	inputs     []filterInputs
 	sampleRate float64
 }
@@ -23,7 +24,7 @@ func (n *Noise) Initialize(sampleRate float64) {
 	n.current = stereo(noise()*n.Amp.Val, n.Pan.Val)
 }
 
-func (n *Noise) Next(modMap ModulesMap, filtersMap FiltersMap) {
+func (n *Noise) Next(modMap ModulesMap, filtersMap FiltersMap, envelopesMap EnvelopesMap) {
 	pan := modulate(n.Pan, panLimits, modMap)
 	amp := modulate(n.Amp, ampLimits, modMap)
 
@@ -34,6 +35,7 @@ func (n *Noise) Next(modMap ModulesMap, filtersMap FiltersMap) {
 	}
 
 	y, newInputs := cfg.applyFilters(noise())
+	y = applyEnvelope(y, n.Envelope, envelopesMap)
 	n.integral += y / n.sampleRate
 	n.inputs = newInputs
 	n.current = stereo(y*amp, pan)

@@ -12,6 +12,7 @@ type Sampler struct {
 	Freq            Input    `yaml:"freq"`
 	Filters         []string `yaml:"filters"`
 	Inputs          []string `yaml:"inputs"`
+	Envelope        string   `yaml:"envelope"`
 	inputs          []filterInputs
 	lastTriggeredAt float64
 	limits
@@ -26,7 +27,7 @@ func (s *Sampler) Initialize(sampleRate float64) {
 	s.current = stereo(0, s.Pan.Val)
 }
 
-func (s *Sampler) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
+func (s *Sampler) Next(t float64, modMap ModulesMap, filtersMap FiltersMap, envelopesMap EnvelopesMap) {
 	amp := modulate(s.Amp, ampLimits, modMap)
 	pan := modulate(s.Pan, panLimits, modMap)
 	freq := modulate(s.Freq, s.limits, modMap)
@@ -39,6 +40,7 @@ func (s *Sampler) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 
 	x := s.sample(t, freq, amp, modMap)
 	y, newInputs := cfg.applyFilters(x)
+	y = applyEnvelope(y, s.Envelope, envelopesMap)
 	s.integral += y / s.sampleRate
 	s.inputs = newInputs
 	s.current = stereo(y, pan)

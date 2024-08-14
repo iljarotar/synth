@@ -6,8 +6,9 @@ import (
 	"github.com/iljarotar/synth/utils"
 )
 
+type EnvelopesMap map[string]*Envelope
+
 type Envelope struct {
-	Module
 	Name            string  `yaml:"name"`
 	Attack          Input   `yaml:"attack"`
 	Decay           Input   `yaml:"decay"`
@@ -17,6 +18,7 @@ type Envelope struct {
 	SustainLevel    Input   `yaml:"sustain-level"`
 	TimeShift       float64 `yaml:"time-shift"`
 	BPM             Input   `yaml:"bpm"`
+	current         float64
 	lastTriggeredAt *float64
 	currentConfig   envelopeConfig
 }
@@ -32,14 +34,13 @@ type envelopeConfig struct {
 
 func (e *Envelope) Initialize() {
 	e.limitParams()
-	e.current = output{Mono: 0, Left: 0, Right: 0}
 }
 
 func (e *Envelope) Next(t float64, modMap ModulesMap) {
 	bpm := modulate(e.BPM, bpmLimits, modMap)
 	e.trigger(t, bpm, modMap)
 	y := e.getCurrentValue(t)
-	e.current = output{Mono: y, Left: 0, Right: 0}
+	e.current = y
 }
 
 func (e *Envelope) getCurrentConfig(t float64, modMap ModulesMap) {

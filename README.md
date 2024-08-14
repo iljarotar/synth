@@ -72,6 +72,7 @@ Run `synth -h` to see all configuration options.
 | phase      | Float          | phase in range [-1,1]                     |
 | pan        | Input          | stereo balance in range [-1,1]            |
 | filters    | String[0..*]   | names of the filters to apply             |
+| envelope   | String         | name of the envelope to apply             |
 
 | OscillatorType  |
 | --------------- |
@@ -88,6 +89,7 @@ Run `synth -h` to see all configuration options.
 | amp       | Input        | amplitude in range [0,2]                  |
 | pan       | Input        | stereo balance in range [-1,1]            |
 | filters   | String[0..*] | names of the filters to apply             |
+| envelope  | String       | name of the envelope to apply             |
 
 | Wavetable |              |                                           |
 | --------- | ------------ | ----------------------------------------- |
@@ -98,6 +100,7 @@ Run `synth -h` to see all configuration options.
 | freq      | Input        | periods per second [0,20000]              |
 | table     | Float [0..*] | output values                             |
 | filters   | String[0..*] | names of the filters to apply             |
+| envelope  | String       | name of the envelope to apply             |
 
 | Sampler   |              |                                                    |
 | --------- | ------------ | -------------------------------------------------- |
@@ -108,6 +111,7 @@ Run `synth -h` to see all configuration options.
 | freq      | Input        | frequency in range [0,SAMPLE_RATE (default 44100)] |
 | filters   | String[0..*] | names of the filters to apply                      |
 | inputs    | String[0..*] | names of the modules that will be sampled          |
+| envelope  | String       | name of the envelope to apply                      |
 
 A sampler periodically samples the output values of the given inputs and outputs their sum.
 
@@ -135,12 +139,12 @@ transitioning at the `low-cutoff` frequency. If both cutoff frequencies are defi
 | bpm           | Input    | triggers per minute [0,600000]            |
 | time-shift    | Float    | initial time shift                        |
 
-| Input     |               |                                            |
-| --------- | ------------- | ------------------------------------------ |
-| **Field** | **Type**      | **Description**                            |
-| val       | Float         | initial value of the respective parameter  |
-| mod       | String [0..*] | names of modulating modules                |
-| mod-amp   | Float         | amplitude of the modulation in range [0,1] |
+| Input     |               |                                                                         |
+| --------- | ------------- | ----------------------------------------------------------------------- |
+| **Field** | **Type**      | **Description**                                                         |
+| val       | Float         | initial value of the respective parameter                               |
+| mod       | String [0..*] | names of modulating modules (oscillators, samplers, wavetables, noises) |
+| mod-amp   | Float         | amplitude of the modulation in range [0,1]                              |
 
 ## Example patch file
 

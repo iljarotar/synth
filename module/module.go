@@ -66,6 +66,13 @@ func modulate(param Input, lim limits, modMap ModulesMap) float64 {
 	return utils.Limit(y, lim.min, lim.max)
 }
 
+func applyEnvelope(x float64, envelopeName string, envelopesMap EnvelopesMap) float64 {
+	if e, ok := envelopesMap[envelopeName]; ok {
+		return x * e.current
+	}
+	return x
+}
+
 func stereo(x, pan float64) output {
 	out := output{}
 	p := utils.Percentage(pan, -1, 1)

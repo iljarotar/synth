@@ -29,6 +29,7 @@ type Oscillator struct {
 	Phase      float64        `yaml:"phase"`
 	Pan        Input          `yaml:"pan"`
 	Filters    []string       `yaml:"filters"`
+	Envelope   string         `yaml:"envelope"`
 	inputs     []filterInputs
 	signal     SignalFunc
 	sampleRate float64
@@ -44,7 +45,7 @@ func (o *Oscillator) Initialize(sampleRate float64) {
 	o.current = stereo(y, o.Pan.Val)
 }
 
-func (o *Oscillator) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
+func (o *Oscillator) Next(t float64, modMap ModulesMap, filtersMap FiltersMap, envelopesMap EnvelopesMap) {
 	pan := modulate(o.Pan, panLimits, modMap)
 	amp := modulate(o.Amp, ampLimits, modMap)
 	offset := o.getOffset(modMap)
@@ -57,6 +58,7 @@ func (o *Oscillator) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 
 	x := o.signalValue(t, amp, offset)
 	y, newInputs := cfg.applyFilters(x)
+	y = applyEnvelope(y, o.Envelope, envelopesMap)
 	avg := (y + o.Current().Mono) / 2
 	o.integral += avg / o.sampleRate
 	o.inputs = newInputs
