@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"math"
 )
 
 const (
@@ -10,38 +11,81 @@ const (
 	labelError   = "[ERROR]  "
 )
 
-type logger struct {
-	log              chan string
-	overdriveWarning chan bool
-	time             chan string
+type State struct {
+	overdriveWarning bool
 }
 
-func (l *logger) SendTime(time int) {
-	State.CurrentTime = time
-	l.time <- formatTime(time)
+type Logger struct {
+	logs []string
+	State
+	currentTime      int
+	maxLogs          uint
+	logSubscribers   []chan<- string
+	stateSubscribers []chan<- State
+	timeSubscribers  []chan<- string
 }
 
-func (l *logger) Info(log string) {
+func NewLogger(maxLogs uint) *Logger {
+	return &Logger{maxLogs: maxLogs}
+}
+
+func (l *Logger) SubscribeToLogs(subscriber chan<- string) {
+	l.logSubscribers = append(l.logSubscribers, subscriber)
+}
+
+func (l *Logger) SubscribeToState(subscriber chan<- State) {
+	l.stateSubscribers = append(l.stateSubscribers, subscriber)
+}
+
+func (l *Logger) SubscribeToTime(subscriber chan<- string) {
+	l.timeSubscribers = append(l.timeSubscribers, subscriber)
+}
+
+func (l *Logger) SendTime(time float64) {
+	if l.isNextSecond(time) {
+		seconds := int(time)
+		l.currentTime = seconds
+
+		for _, s := range l.timeSubscribers {
+			s <- formatTime(seconds)
+		}
+	}
+}
+
+func (l *Logger) Info(log string) {
 	l.sendLog(log, labelInfo, colorGreenStrong)
 }
 
-func (l *logger) Warning(log string) {
+func (l *Logger) Warning(log string) {
 	l.sendLog(log, labelWarning, colorOrangeStorng)
 }
 
-func (l *logger) Error(log string) {
+func (l *Logger) Error(log string) {
 	l.sendLog(log, labelError, colorRedStrong)
 }
 
-func (l *logger) ShowOverdriveWarning(limitExceeded bool) {
-	State.ShowingOverdriveWarning = limitExceeded
-	l.overdriveWarning <- limitExceeded
+func (l *Logger) ShowOverdriveWarning(limitExceeded bool) {
+	newState := l.State
+	newState.overdriveWarning = limitExceeded
+	l.State = newState
+
+	for _, s := range l.stateSubscribers {
+		s <- newState
+	}
 }
 
-func (l *logger) sendLog(log, label string, labelColor color) {
-	time := formatTime(State.CurrentTime)
+func (l *Logger) sendLog(log, label string, labelColor color) {
+	time := formatTime(l.currentTime)
 	coloredLabel := fmt.Sprintf("%s", colored(label, labelColor))
-	l.log <- fmt.Sprintf("[%s] %s %s", time, coloredLabel, log)
+
+	for _, s := range l.logSubscribers {
+		s <- fmt.Sprintf("[%s] %s %s", time, coloredLabel, log)
+	}
+}
+
+func (l *Logger) isNextSecond(time float64) bool {
+	sec, _ := math.Modf(time)
+	return sec > float64(l.currentTime)
 }
 
 func colored(str string, col color) string {
@@ -68,10 +112,4 @@ func formatTime(time int) string {
 	}
 
 	return fmt.Sprintf("%s:%s:%s", hoursString, minutesString, secondsString)
-}
-
-var Logger = &logger{
-	log:              make(chan string),
-	overdriveWarning: make(chan bool),
-	time:             make(chan string),
 }

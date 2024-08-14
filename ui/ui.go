@@ -6,26 +6,31 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-
-	"github.com/iljarotar/synth/config"
 )
 
 type UI struct {
-	quit     chan bool
-	input    chan string
-	autoStop chan bool
-	file     string
-	logs     []string
-	time     string
+	logger               *Logger
+	quit                 chan bool
+	input                chan string
+	autoStop             chan bool
+	file                 string
+	logs                 []string
+	time                 string
+	duration             float64
+	showOverdriveWarning bool
+	closing              *bool
 }
 
-func NewUI(file string, quit chan bool, autoStop chan bool) *UI {
+func NewUI(logger *Logger, file string, quit chan bool, autoStop chan bool, duration float64, closing *bool) *UI {
 	return &UI{
+		logger:   logger,
 		quit:     quit,
 		autoStop: autoStop,
 		input:    make(chan string),
 		file:     file,
 		time:     "00:00:00",
+		duration: duration,
+		closing:  closing,
 	}
 }
 
@@ -45,26 +50,36 @@ func (ui *UI) Enter() {
 	go ui.read()
 	ui.resetScreen()
 
+	logChan := make(chan string)
+	ui.logger.SubscribeToLogs(logChan)
+
+	timeChan := make(chan string)
+	ui.logger.SubscribeToTime(timeChan)
+
+	stateChan := make(chan State)
+	ui.logger.SubscribeToState(stateChan)
+
 	for {
 		select {
 		case input := <-ui.input:
 			if input == "q" {
-				State.Closed = true
+				*ui.closing = true
 				ui.resetScreen()
 				ui.quit <- true
 			} else {
 				ui.resetScreen()
 			}
-		case time := <-Logger.time:
+		case time := <-timeChan:
 			ui.time = time
 			ui.updateTime()
-		case log := <-Logger.log:
+		case log := <-logChan:
 			ui.appendLog(log)
 			ui.resetScreen()
-		case <-Logger.overdriveWarning:
+		case state := <-stateChan:
+			ui.showOverdriveWarning = state.overdriveWarning
 			ui.resetScreen()
 		case <-ui.autoStop:
-			State.Closed = true
+			*ui.closing = true
 			ui.quit <- true
 		}
 	}
@@ -91,13 +106,13 @@ func (ui *UI) resetScreen() {
 	if len(ui.logs) > 0 {
 		LineBreaks(1)
 	}
-	if State.ShowingOverdriveWarning {
+	if ui.showOverdriveWarning {
 		fmt.Printf("%s", colored("[WARNING] Volume exceeded 100%%", colorOrangeStorng))
 		LineBreaks(2)
 	}
 	fmt.Printf("%s", ui.time)
-	if config.Config.Duration >= 0 {
-		fmt.Printf(" - automatically stopping after %fs", config.Config.Duration)
+	if ui.duration >= 0 {
+		fmt.Printf(" - automatically stopping after %fs", ui.duration)
 	}
 	LineBreaks(1)
 	fmt.Printf("%s ", colored("Type 'q' to quit:", colorBlueStrong))

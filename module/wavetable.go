@@ -3,22 +3,23 @@ package module
 import (
 	"math"
 
-	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/utils"
 )
 
 type Wavetable struct {
 	Module
-	Name    string    `yaml:"name"`
-	Table   []float64 `yaml:"table"`
-	Freq    Input     `yaml:"freq"`
-	Amp     Input     `yaml:"amp"`
-	Pan     Input     `yaml:"pan"`
-	Filters []string  `yaml:"filters"`
-	inputs  []filterInputs
+	Name       string    `yaml:"name"`
+	Table      []float64 `yaml:"table"`
+	Freq       Input     `yaml:"freq"`
+	Amp        Input     `yaml:"amp"`
+	Pan        Input     `yaml:"pan"`
+	Filters    []string  `yaml:"filters"`
+	inputs     []filterInputs
+	sampleRate float64
 }
 
-func (w *Wavetable) Initialize() {
+func (w *Wavetable) Initialize(sampleRate float64) {
+	w.sampleRate = sampleRate
 	w.limitParams()
 	w.Table = utils.Normalize(w.Table, -1, 1)
 	w.inputs = make([]filterInputs, len(w.Filters))
@@ -40,7 +41,7 @@ func (w *Wavetable) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 
 	x := w.signalValue(t, amp, freq)
 	y, newInputs := cfg.applyFilters(x)
-	w.integral += y / config.Config.SampleRate
+	w.integral += y / w.sampleRate
 	w.inputs = newInputs
 	w.current = stereo(y, pan)
 }

@@ -1,25 +1,20 @@
 package synth
 
 import (
-	"fmt"
-	"math"
-
-	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/module"
-	"github.com/iljarotar/synth/ui"
 	"github.com/iljarotar/synth/utils"
 )
 
 const (
-	maxInitTime = 7200
-)
-
-type FadeDirection string
-
-const (
+	maxInitTime                    = 7200
 	FadeDirectionIn  FadeDirection = "in"
 	FadeDirectionOut FadeDirection = "out"
 )
+
+type FadeDirection string
+type Output struct {
+	Left, Right, Mono, Time float64
+}
 
 type Synth struct {
 	Volume             float64              `yaml:"vol"`
@@ -31,37 +26,39 @@ type Synth struct {
 	Envelopes          []*module.Envelope   `yaml:"envelopes"`
 	Filters            []*module.Filter     `yaml:"filters"`
 	Time               float64              `yaml:"time"`
+	sampleRate         float64
 	modMap             module.ModulesMap
 	filtersMap         module.FiltersMap
 	step, volumeMemory float64
 	notifyFadeOutDone  chan bool
 	fadeDirection      FadeDirection
 	fadeDuration       float64
-	playing            bool
+	active             bool
 }
 
-func (s *Synth) Initialize() {
-	s.step = 1 / config.Config.SampleRate
+func (s *Synth) Initialize(sampleRate float64) {
+	s.step = 1 / sampleRate
+	s.sampleRate = sampleRate
 	s.Volume = utils.Limit(s.Volume, 0, 1)
 	s.Time = utils.Limit(s.Time, 0, maxInitTime)
 	s.volumeMemory = s.Volume
 	s.Volume = 0 // start muted
-	s.playing = true
+	s.active = true
 
 	for _, osc := range s.Oscillators {
-		osc.Initialize()
+		osc.Initialize(sampleRate)
 	}
 
 	for _, n := range s.Noises {
-		n.Initialize()
+		n.Initialize(sampleRate)
 	}
 
 	for _, c := range s.Wavetables {
-		c.Initialize()
+		c.Initialize(sampleRate)
 	}
 
 	for _, smplr := range s.Samplers {
-		smplr.Initialize()
+		smplr.Initialize(sampleRate)
 	}
 
 	for _, e := range s.Envelopes {
@@ -69,38 +66,32 @@ func (s *Synth) Initialize() {
 	}
 
 	for _, f := range s.Filters {
-		f.Initialize()
+		f.Initialize(sampleRate)
 	}
 
 	s.makeMaps()
 }
 
-func (s *Synth) Play(output chan<- struct{ Left, Right float32 }, reportTime chan float64) {
-	defer close(output)
-	defer close(reportTime)
+func (s *Synth) Play(outputChan chan<- Output) {
+	defer close(outputChan)
 
-	for s.playing {
-		reportTime <- s.Time
-
+	for s.active {
 		left, right, mono := s.getCurrentValue()
 		s.adjustVolume()
 		left *= s.Volume
 		right *= s.Volume
-		mono *= s.Volume
 
-		// ignore exceeding limit if the difference is sufficiently small
-		if math.Abs(mono) >= 1.00001 && !ui.State.ShowingOverdriveWarning {
-			ui.Logger.ShowOverdriveWarning(true)
-			ui.Logger.Warning(fmt.Sprintf("Output value %f", mono))
+		outputChan <- Output{
+			Left:  left,
+			Right: right,
+			Mono:  mono,
+			Time:  s.Time,
 		}
-
-		y := struct{ Left, Right float32 }{Left: float32(left), Right: float32(right)}
-		output <- y
 	}
 }
 
 func (s *Synth) Stop() {
-	s.playing = false
+	s.active = false
 }
 
 func (s *Synth) Fade(direction FadeDirection, seconds float64) {
@@ -125,9 +116,9 @@ func (s *Synth) fadeIn() {
 		return
 	}
 
-	step := secondsToStep(s.fadeDuration, s.volumeMemory-s.Volume, config.Config.SampleRate)
+	step := secondsToStep(s.fadeDuration, s.volumeMemory-s.Volume, s.sampleRate)
 	s.Volume += step
-	s.fadeDuration -= 1 / config.Config.SampleRate
+	s.fadeDuration -= 1 / s.sampleRate
 
 	if s.Volume > s.volumeMemory {
 		s.Volume = s.volumeMemory
@@ -144,9 +135,9 @@ func (s *Synth) fadeOut() {
 		return
 	}
 
-	step := secondsToStep(s.fadeDuration, s.Volume, config.Config.SampleRate)
+	step := secondsToStep(s.fadeDuration, s.Volume, s.sampleRate)
 	s.Volume -= step
-	s.fadeDuration -= 1 / config.Config.SampleRate
+	s.fadeDuration -= 1 / s.sampleRate
 
 	if s.Volume < 0 {
 		s.Volume = 0

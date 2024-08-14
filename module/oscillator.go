@@ -3,7 +3,6 @@ package module
 import (
 	"math"
 
-	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/utils"
 )
 
@@ -23,18 +22,20 @@ const (
 
 type Oscillator struct {
 	Module
-	Name    string         `yaml:"name"`
-	Type    OscillatorType `yaml:"type"`
-	Freq    Input          `yaml:"freq"`
-	Amp     Input          `yaml:"amp"`
-	Phase   float64        `yaml:"phase"`
-	Pan     Input          `yaml:"pan"`
-	Filters []string       `yaml:"filters"`
-	inputs  []filterInputs
-	signal  SignalFunc
+	Name       string         `yaml:"name"`
+	Type       OscillatorType `yaml:"type"`
+	Freq       Input          `yaml:"freq"`
+	Amp        Input          `yaml:"amp"`
+	Phase      float64        `yaml:"phase"`
+	Pan        Input          `yaml:"pan"`
+	Filters    []string       `yaml:"filters"`
+	inputs     []filterInputs
+	signal     SignalFunc
+	sampleRate float64
 }
 
-func (o *Oscillator) Initialize() {
+func (o *Oscillator) Initialize(sampleRate float64) {
+	o.sampleRate = sampleRate
 	o.signal = newSignalFunc(o.Type)
 	o.limitParams()
 	o.inputs = make([]filterInputs, len(o.Filters))
@@ -57,7 +58,7 @@ func (o *Oscillator) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 	x := o.signalValue(t, amp, offset)
 	y, newInputs := cfg.applyFilters(x)
 	avg := (y + o.Current().Mono) / 2
-	o.integral += avg / config.Config.SampleRate
+	o.integral += avg / o.sampleRate
 	o.inputs = newInputs
 	o.current = stereo(y, pan)
 }
