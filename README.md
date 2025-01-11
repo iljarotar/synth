@@ -60,19 +60,18 @@ Run `synth -h` to see all configuration options.
 | noises      | Noise [0..*]      | all noise generators                               |
 | wavetables  | Wavetables [0..*] | all wavetables                                     |
 | samplers    | Sampler[0..*]     | all samplers                                       |
-| envelopes   | Envelope [0..*]   | all envelopes                                      |
 
-| Oscillator |                |                                           |
-| ---------- | -------------- | ----------------------------------------- |
-| **Field**  | **Type**       | **Description**                           |
-| name       | String         | should be unique in the scope of the file |
-| type       | OscillatorType | wave form                                 |
-| freq       | Input          | frequency in range [0,20000]              |
-| amp        | Input          | amplitude in range [0,2]                  |
-| phase      | Float          | phase in range [-1,1]                     |
-| pan        | Input          | stereo balance in range [-1,1]            |
-| filters    | String[0..*]   | names of the filters to apply             |
-| envelope   | String         | name of the envelope to apply             |
+| Oscillator |                |                                                                 |
+| ---------- | -------------- | --------------------------------------------------------------- |
+| **Field**  | **Type**       | **Description**                                                 |
+| name       | String         | should be unique in the scope of the file                       |
+| type       | OscillatorType | wave form                                                       |
+| freq       | Input          | frequency in range [0,20000]                                    |
+| amp        | Input          | amplitude in range [0,2]                                        |
+| phase      | Float          | phase in range [-1,1]                                           |
+| pan        | Input          | stereo balance in range [-1,1]                                  |
+| filters    | String[0..*]   | names of the filters to apply                                   |
+| envelope   | Envelope       | envelope to apply; if omitted, oscillator will constantly sound |
 
 | OscillatorType  |
 | --------------- |
@@ -82,36 +81,36 @@ Run `synth -h` to see all configuration options.
 | Sawtooth        |
 | ReverseSawtooth |
 
-| Noise     |              |                                           |
-| --------- | ------------ | ----------------------------------------- |
-| **Field** | **Type**     | **Description**                           |
-| name      | String       | should be unique in the scope of the file |
-| amp       | Input        | amplitude in range [0,2]                  |
-| pan       | Input        | stereo balance in range [-1,1]            |
-| filters   | String[0..*] | names of the filters to apply             |
-| envelope  | String       | name of the envelope to apply             |
+| Noise     |              |                                                            |
+| --------- | ------------ | ---------------------------------------------------------- |
+| **Field** | **Type**     | **Description**                                            |
+| name      | String       | should be unique in the scope of the file                  |
+| amp       | Input        | amplitude in range [0,2]                                   |
+| pan       | Input        | stereo balance in range [-1,1]                             |
+| filters   | String[0..*] | names of the filters to apply                              |
+| envelope  | Envelope     | envelope to apply; if omitted, noise will constantly sound |
 
-| Wavetable |              |                                           |
-| --------- | ------------ | ----------------------------------------- |
-| **Field** | **Type**     | **Description**                           |
-| name      | String       | should be unique in the scope of the file |
-| amp       | Input        | amplitude in range [0,2]                  |
-| pan       | Input        | stereo balance in range [-1,1]            |
-| freq      | Input        | periods per second [0,20000]              |
-| table     | Float [0..*] | output values                             |
-| filters   | String[0..*] | names of the filters to apply             |
-| envelope  | String       | name of the envelope to apply             |
+| Wavetable |              |                                                                |
+| --------- | ------------ | -------------------------------------------------------------- |
+| **Field** | **Type**     | **Description**                                                |
+| name      | String       | should be unique in the scope of the file                      |
+| amp       | Input        | amplitude in range [0,2]                                       |
+| pan       | Input        | stereo balance in range [-1,1]                                 |
+| freq      | Input        | periods per second [0,20000]                                   |
+| table     | Float [0..*] | output values                                                  |
+| filters   | String[0..*] | names of the filters to apply                                  |
+| envelope  | Envelope     | envelope to apply; if omitted, wavetable will constantly sound |
 
-| Sampler   |              |                                                    |
-| --------- | ------------ | -------------------------------------------------- |
-| **Field** | **Type**     | **Description**                                    |
-| name      | String       | should be unique in the scope of the file          |
-| amp       | Input        | amplitude in range [0,2]                           |
-| pan       | Input        | stereo balance in range [-1,1]                     |
-| freq      | Input        | frequency in range [0,SAMPLE_RATE (default 44100)] |
-| filters   | String[0..*] | names of the filters to apply                      |
-| inputs    | String[0..*] | names of the modules that will be sampled          |
-| envelope  | String       | name of the envelope to apply                      |
+| Sampler   |              |                                                              |
+| --------- | ------------ | ------------------------------------------------------------ |
+| **Field** | **Type**     | **Description**                                              |
+| name      | String       | should be unique in the scope of the file                    |
+| amp       | Input        | amplitude in range [0,2]                                     |
+| pan       | Input        | stereo balance in range [-1,1]                               |
+| freq      | Input        | frequency in range [0,SAMPLE_RATE (default 44100)]           |
+| filters   | String[0..*] | names of the filters to apply                                |
+| inputs    | String[0..*] | names of the modules that will be sampled                    |
+| envelope  | Envelope     | envelope to apply; if omitted, sampler will constantly sound |
 
 A sampler periodically samples the output values of the given inputs and outputs their sum.
 
@@ -126,18 +125,17 @@ If both `low-cutoff` and `high-cutoff` are omitted, the filter is disabled. If
 `high-cutoff` frequency. If `high-cutoff` is omitted, the filter is a highpass filter
 transitioning at the `low-cutoff` frequency. If both cutoff frequencies are defined, it becomes a bandpass filter.
 
-| Envelope      |          |                                           |
-| ------------- | -------- | ----------------------------------------- |
-| **Field**     | **Type** | **Description**                           |
-| name          | String   | should be unique in the scope of the file |
-| attack        | Input    | attack time in seconds [0,10000]          |
-| decay         | Input    | decay time in seconds [0,10000]           |
-| sustain       | Input    | sustain time in seconds [0,10000]         |
-| release       | Input    | release time in seconds [0,10000]         |
-| peak          | Input    | peak amplitude [0,1]                      |
-| sustain-level | Input    | sustain amplitude [0,1]                   |
-| bpm           | Input    | triggers per minute [0,600000]            |
-| time-shift    | Float    | initial time shift                        |
+| Envelope      |          |                                   |
+| ------------- | -------- | --------------------------------- |
+| **Field**     | **Type** | **Description**                   |
+| attack        | Input    | attack time in seconds [0,10000]  |
+| decay         | Input    | decay time in seconds [0,10000]   |
+| sustain       | Input    | sustain time in seconds [0,10000] |
+| release       | Input    | release time in seconds [0,10000] |
+| peak          | Input    | peak amplitude [0,1]              |
+| sustain-level | Input    | sustain amplitude [0,1]           |
+| bpm           | Input    | triggers per minute [0,600000]    |
+| time-shift    | Float    | initial time shift                |
 
 | Input     |               |                                                                         |
 | --------- | ------------- | ----------------------------------------------------------------------- |
