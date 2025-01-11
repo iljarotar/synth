@@ -9,7 +9,7 @@ import (
 type Sequence struct {
 	Module
 	Amp        Input          `yaml:"amp"`
-	Envelope   string         `yaml:"envelope"`
+	Envelope   *Envelope      `yaml:"envelope"`
 	Filters    []string       `yaml:"filters"`
 	Name       string         `yaml:"name"`
 	Pan        Input          `yaml:"pan"`
@@ -28,7 +28,7 @@ func (s *Sequence) Initialize(sampleRate float64) {
 	s.inputs = make([]filterInputs, len(s.Filters))
 }
 
-func (s *Sequence) Next(t float64, modMap ModulesMap, filtersMap FiltersMap, envelopesMap EnvelopesMap) {
+func (s *Sequence) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 }
 
 func (s *Sequence) stringToFreq(note string) float64 {

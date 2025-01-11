@@ -30,7 +30,6 @@ type Synth struct {
 	sampleRate         float64
 	modMap             module.ModulesMap
 	filtersMap         module.FiltersMap
-	envelopesMap       module.EnvelopesMap
 	step, volumeMemory float64
 	notifyFadeOutDone  chan bool
 	fadeDirection      FadeDirection
@@ -170,23 +169,23 @@ func (s *Synth) getCurrentValue() (left, right, mono float64) {
 func (s *Synth) updateCurrentValues() {
 	for _, o := range s.Oscillators {
 		osc := o
-		osc.Next(s.Time, s.modMap, s.filtersMap, s.envelopesMap)
+		osc.Next(s.Time, s.modMap, s.filtersMap)
 	}
 
 	for _, n := range s.Noises {
-		n.Next(s.modMap, s.filtersMap, s.envelopesMap)
+		n.Next(s.Time, s.modMap, s.filtersMap)
 	}
 
 	for _, c := range s.Wavetables {
-		c.Next(s.Time, s.modMap, s.filtersMap, s.envelopesMap)
+		c.Next(s.Time, s.modMap, s.filtersMap)
 	}
 
 	for _, smplr := range s.Samplers {
-		smplr.Next(s.Time, s.modMap, s.filtersMap, s.envelopesMap)
+		smplr.Next(s.Time, s.modMap, s.filtersMap)
 	}
 
 	for _, sq := range s.Sequences {
-		sq.Next(s.Time, s.modMap, s.filtersMap, s.envelopesMap)
+		sq.Next(s.Time, s.modMap, s.filtersMap)
 	}
 
 	for _, e := range s.Envelopes {
@@ -203,7 +202,6 @@ func (s *Synth) updateCurrentValues() {
 func (s *Synth) makeMaps() {
 	modMap := make(module.ModulesMap)
 	filtersMap := make(module.FiltersMap)
-	envelopesMap := make(module.EnvelopesMap)
 
 	for _, osc := range s.Oscillators {
 		modMap[osc.Name] = osc
@@ -229,13 +227,8 @@ func (s *Synth) makeMaps() {
 		filtersMap[f.Name] = f
 	}
 
-	for _, e := range s.Envelopes {
-		envelopesMap[e.Name] = e
-	}
-
 	s.modMap = modMap
 	s.filtersMap = filtersMap
-	s.envelopesMap = envelopesMap
 }
 
 func secondsToStep(seconds, delta, sampleRate float64) float64 {
