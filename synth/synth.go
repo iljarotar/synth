@@ -24,7 +24,6 @@ type Synth struct {
 	Wavetables         []*module.Wavetable  `yaml:"wavetables"`
 	Samplers           []*module.Sampler    `yaml:"samplers"`
 	Sequences          []*module.Sequence   `yaml:"sequences"`
-	Envelopes          []*module.Envelope   `yaml:"envelopes"`
 	Filters            []*module.Filter     `yaml:"filters"`
 	Time               float64              `yaml:"time"`
 	sampleRate         float64
@@ -64,10 +63,6 @@ func (s *Synth) Initialize(sampleRate float64) {
 
 	for _, sq := range s.Sequences {
 		sq.Initialize(sampleRate)
-	}
-
-	for _, e := range s.Envelopes {
-		e.Initialize()
 	}
 
 	for _, f := range s.Filters {
@@ -186,10 +181,6 @@ func (s *Synth) updateCurrentValues() {
 
 	for _, sq := range s.Sequences {
 		sq.Next(s.Time, s.modMap, s.filtersMap)
-	}
-
-	for _, e := range s.Envelopes {
-		e.Next(s.Time, s.modMap)
 	}
 
 	for _, f := range s.Filters {
