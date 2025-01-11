@@ -66,9 +66,9 @@ func modulate(param Input, lim limits, modMap ModulesMap) float64 {
 	return utils.Limit(y, lim.min, lim.max)
 }
 
-func applyEnvelope(x float64, envelopeName string, envelopesMap EnvelopesMap) float64 {
-	if e, ok := envelopesMap[envelopeName]; ok {
-		return x * e.current
+func applyEnvelope(x float64, envelope *Envelope) float64 {
+	if envelope != nil {
+		return x * envelope.current
 	}
 	return x
 }

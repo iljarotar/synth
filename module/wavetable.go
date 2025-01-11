@@ -14,12 +14,15 @@ type Wavetable struct {
 	Amp        Input     `yaml:"amp"`
 	Pan        Input     `yaml:"pan"`
 	Filters    []string  `yaml:"filters"`
-	Envelope   string    `yaml:"envelope"`
+	Envelope   *Envelope `yaml:"envelope"`
 	inputs     []filterInputs
 	sampleRate float64
 }
 
 func (w *Wavetable) Initialize(sampleRate float64) {
+	if w.Envelope != nil {
+		w.Envelope.Initialize()
+	}
 	w.sampleRate = sampleRate
 	w.limitParams()
 	w.Table = utils.Normalize(w.Table, -1, 1)
@@ -29,7 +32,11 @@ func (w *Wavetable) Initialize(sampleRate float64) {
 	w.current = stereo(y, w.Pan.Val)
 }
 
-func (w *Wavetable) Next(t float64, modMap ModulesMap, filtersMap FiltersMap, envelopesMap EnvelopesMap) {
+func (w *Wavetable) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
+	if w.Envelope != nil {
+		w.Envelope.Next(t, modMap)
+	}
+
 	pan := modulate(w.Pan, panLimits, modMap)
 	amp := modulate(w.Amp, ampLimits, modMap)
 	freq := modulate(w.Freq, freqLimits, modMap)
@@ -42,7 +49,7 @@ func (w *Wavetable) Next(t float64, modMap ModulesMap, filtersMap FiltersMap, en
 
 	x := w.signalValue(t, amp, freq)
 	y, newInputs := cfg.applyFilters(x)
-	y = applyEnvelope(y, w.Envelope, envelopesMap)
+	y = applyEnvelope(y, w.Envelope)
 	w.integral += y / w.sampleRate
 	w.inputs = newInputs
 	w.current = stereo(y, pan)

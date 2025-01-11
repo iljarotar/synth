@@ -6,10 +6,7 @@ import (
 	"github.com/iljarotar/synth/utils"
 )
 
-type EnvelopesMap map[string]*Envelope
-
 type Envelope struct {
-	Name            string  `yaml:"name"`
 	Attack          Input   `yaml:"attack"`
 	Decay           Input   `yaml:"decay"`
 	Sustain         Input   `yaml:"sustain"`

@@ -29,13 +29,16 @@ type Oscillator struct {
 	Phase      float64        `yaml:"phase"`
 	Pan        Input          `yaml:"pan"`
 	Filters    []string       `yaml:"filters"`
-	Envelope   string         `yaml:"envelope"`
+	Envelope   *Envelope      `yaml:"envelope"`
 	inputs     []filterInputs
 	signal     SignalFunc
 	sampleRate float64
 }
 
 func (o *Oscillator) Initialize(sampleRate float64) {
+	if o.Envelope != nil {
+		o.Envelope.Initialize()
+	}
 	o.sampleRate = sampleRate
 	o.signal = newSignalFunc(o.Type)
 	o.limitParams()
@@ -45,7 +48,11 @@ func (o *Oscillator) Initialize(sampleRate float64) {
 	o.current = stereo(y, o.Pan.Val)
 }
 
-func (o *Oscillator) Next(t float64, modMap ModulesMap, filtersMap FiltersMap, envelopesMap EnvelopesMap) {
+func (o *Oscillator) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
+	if o.Envelope != nil {
+		o.Envelope.Next(t, modMap)
+	}
+
 	pan := modulate(o.Pan, panLimits, modMap)
 	amp := modulate(o.Amp, ampLimits, modMap)
 	offset := o.getOffset(modMap)
@@ -58,7 +65,7 @@ func (o *Oscillator) Next(t float64, modMap ModulesMap, filtersMap FiltersMap, e
 
 	x := o.signalValue(t, amp, offset)
 	y, newInputs := cfg.applyFilters(x)
-	y = applyEnvelope(y, o.Envelope, envelopesMap)
+	y = applyEnvelope(y, o.Envelope)
 	avg := (y + o.Current().Mono) / 2
 	o.integral += avg / o.sampleRate
 	o.inputs = newInputs
