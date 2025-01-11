@@ -23,13 +23,11 @@ type Synth struct {
 	Noises             []*module.Noise      `yaml:"noises"`
 	Wavetables         []*module.Wavetable  `yaml:"wavetables"`
 	Samplers           []*module.Sampler    `yaml:"samplers"`
-	Envelopes          []*module.Envelope   `yaml:"envelopes"`
 	Filters            []*module.Filter     `yaml:"filters"`
 	Time               float64              `yaml:"time"`
 	sampleRate         float64
 	modMap             module.ModulesMap
 	filtersMap         module.FiltersMap
-	envelopesMap       module.EnvelopesMap
 	step, volumeMemory float64
 	notifyFadeOutDone  chan bool
 	fadeDirection      FadeDirection
@@ -60,10 +58,6 @@ func (s *Synth) Initialize(sampleRate float64) {
 
 	for _, smplr := range s.Samplers {
 		smplr.Initialize(sampleRate)
-	}
-
-	for _, e := range s.Envelopes {
-		e.Initialize()
 	}
 
 	for _, f := range s.Filters {
@@ -165,23 +159,19 @@ func (s *Synth) getCurrentValue() (left, right, mono float64) {
 func (s *Synth) updateCurrentValues() {
 	for _, o := range s.Oscillators {
 		osc := o
-		osc.Next(s.Time, s.modMap, s.filtersMap, s.envelopesMap)
+		osc.Next(s.Time, s.modMap, s.filtersMap)
 	}
 
 	for _, n := range s.Noises {
-		n.Next(s.modMap, s.filtersMap, s.envelopesMap)
+		n.Next(s.Time, s.modMap, s.filtersMap)
 	}
 
 	for _, c := range s.Wavetables {
-		c.Next(s.Time, s.modMap, s.filtersMap, s.envelopesMap)
+		c.Next(s.Time, s.modMap, s.filtersMap)
 	}
 
 	for _, smplr := range s.Samplers {
-		smplr.Next(s.Time, s.modMap, s.filtersMap, s.envelopesMap)
-	}
-
-	for _, e := range s.Envelopes {
-		e.Next(s.Time, s.modMap)
+		smplr.Next(s.Time, s.modMap, s.filtersMap)
 	}
 
 	for _, f := range s.Filters {
@@ -194,7 +184,6 @@ func (s *Synth) updateCurrentValues() {
 func (s *Synth) makeMaps() {
 	modMap := make(module.ModulesMap)
 	filtersMap := make(module.FiltersMap)
-	envelopesMap := make(module.EnvelopesMap)
 
 	for _, osc := range s.Oscillators {
 		modMap[osc.Name] = osc
@@ -216,13 +205,8 @@ func (s *Synth) makeMaps() {
 		filtersMap[f.Name] = f
 	}
 
-	for _, e := range s.Envelopes {
-		envelopesMap[e.Name] = e
-	}
-
 	s.modMap = modMap
 	s.filtersMap = filtersMap
-	s.envelopesMap = envelopesMap
 }
 
 func secondsToStep(seconds, delta, sampleRate float64) float64 {
