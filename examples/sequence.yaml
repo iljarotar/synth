@@ -1,0 +1,60 @@
+vol: 1
+out: [s1, s2, s3]
+
+sequences:
+  - name: s1
+    amp: {val: 0.2}
+    type: Sine
+    sequence: [a_4, c_5, b_4, f_4, d_4]
+    pan: {}
+    filters: []
+    pitch: {val: 440}
+    transpose: {}
+    randomize:
+    envelope:
+       attack: {val: 0.1}
+       decay: {val: 0.1}
+       sustain: {val: 1}
+       release: {val: 1}
+       peak: {val: 1}
+       sustain-level: {val: 0.6}
+       bpm: {val: 20}
+       time-shift:
+
+  - name: s2
+    amp: {val: 0.2}
+    type: Sine
+    sequence: [a_3, c_4, b_3, f_3, d_3, e_3]
+    pan: {}
+    filters: []
+    pitch: {val: 440}
+    transpose: {}
+    randomize: true
+    envelope:
+       attack: {val: 0.1}
+       decay: {val: 0.1}
+       sustain: {val: 1}
+       release: {val: 1}
+       peak: {val: 1}
+       sustain-level: {val: 0.6}
+       bpm: {val: 20}
+       time-shift:
+
+  - name: s3
+    amp: {val: 0.2}
+    type: Sine
+    sequence: [a_2, c_3, b_2, f_2, d_2, e_2, g_2]
+    pan: {}
+    filters: []
+    pitch: {val: 440}
+    transpose: {}
+    randomize: true
+    envelope:
+       attack: {val: 0.1}
+       decay: {val: 0.1}
+       sustain: {val: 1}
+       release: {val: 1}
+       peak: {val: 1}
+       sustain-level: {val: 0.6}
+       bpm: {val: 20}
+       time-shift:

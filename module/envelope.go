@@ -15,6 +15,7 @@ type Envelope struct {
 	SustainLevel    Input   `yaml:"sustain-level"`
 	TimeShift       float64 `yaml:"time-shift"`
 	BPM             Input   `yaml:"bpm"`
+	Triggered       bool
 	current         float64
 	lastTriggeredAt *float64
 	currentConfig   envelopeConfig
@@ -61,9 +62,12 @@ func (e *Envelope) getCurrentConfig(t float64, modMap ModulesMap) {
 }
 
 func (e *Envelope) trigger(t, bpm float64, modMap ModulesMap) {
+	e.Triggered = false
+
 	if bpm == 0 {
 		return
 	}
+
 	secondsBetweenTwoBeats := 60 / bpm
 	var triggerAt float64
 	if t >= e.TimeShift {
@@ -77,12 +81,14 @@ func (e *Envelope) trigger(t, bpm float64, modMap ModulesMap) {
 	oldLastTriggeredAt := e.lastTriggeredAt
 	if oldLastTriggeredAt == nil {
 		e.lastTriggeredAt = &triggerAt
+		e.Triggered = true
 		e.getCurrentConfig(t, modMap)
 		return
 	}
 
 	if t-*e.lastTriggeredAt >= secondsBetweenTwoBeats {
 		newLastTriggeredAt := t
+		e.Triggered = true
 		e.lastTriggeredAt = &newLastTriggeredAt
 		e.getCurrentConfig(t, modMap)
 	}
