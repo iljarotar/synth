@@ -111,7 +111,7 @@ func TestSequence_stringToFreq(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.s.stringToFreq(tt.note); got != tt.want {
+			if got := tt.s.stringToFreq(tt.note, tt.s.Pitch.Val); got != tt.want {
 				t.Errorf("Sequence.stringToFreq() = %v, want %v", got, tt.want)
 			}
 		})
