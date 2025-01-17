@@ -11,58 +11,77 @@ func TestEnvelope_trigger(t *testing.T) {
 		want     float64
 	}{
 		{
-			name:     "no time shift must trigger at 0",
-			envelope: Envelope{},
-			t:        0,
-			bpm:      10,
-			want:     0,
+			name: "no time shift must trigger at 0",
+			envelope: Envelope{
+				currentBPM: 10,
+			},
+			t:    0,
+			bpm:  10,
+			want: 0,
 		},
 		{
-			name:     "no time shift must trigger at multiples of seconds between two beats",
-			envelope: Envelope{},
-			t:        13,
-			bpm:      10,
-			want:     12,
+			name: "no time shift must trigger at multiples of seconds between two beats",
+			envelope: Envelope{
+				currentBPM: 10,
+			},
+			t:    13,
+			bpm:  10,
+			want: 12,
 		},
 		{
-			name:     "with time shift could first trigger at negative time",
-			envelope: Envelope{TimeShift: 10},
-			t:        0,
-			bpm:      10,
-			want:     -2,
+			name: "with time shift could first trigger at negative time",
+			envelope: Envelope{
+				currentBPM: 10,
+				TimeShift:  10,
+			},
+			t:    0,
+			bpm:  10,
+			want: -2,
 		},
 		{
-			name:     "with time shift must trigger at multiples of seconds between two beats plus time shift",
-			envelope: Envelope{TimeShift: 10},
-			t:        18,
-			bpm:      10,
-			want:     16,
+			name: "with time shift must trigger at multiples of seconds between two beats plus time shift",
+			envelope: Envelope{
+				currentBPM: 10,
+				TimeShift:  10,
+			},
+			t:    18,
+			bpm:  10,
+			want: 16,
 		},
 		{
-			name:     "negative time shift also works",
-			envelope: Envelope{TimeShift: -3},
-			t:        4,
-			bpm:      10,
-			want:     3,
+			name: "negative time shift also works",
+			envelope: Envelope{
+				currentBPM: 10,
+				TimeShift:  -3,
+			},
+			t:    4,
+			bpm:  10,
+			want: 3,
 		},
 		{
-			name:     "change from negative triggered time to positive",
-			envelope: Envelope{lastTriggeredAt: pointer(-1.0), TimeShift: 5},
-			t:        5,
-			bpm:      10,
-			want:     5,
+			name: "change from negative triggered time to positive",
+			envelope: Envelope{
+				lastTriggeredAt: pointer(-1.0),
+				currentBPM:      10,
+				TimeShift:       5,
+			},
+			t:    5,
+			bpm:  10,
+			want: 5,
 		},
 		{
-			name:     "no trigger if t is closer to last trigger than seconds between two beats",
-			envelope: Envelope{lastTriggeredAt: pointer(12.0)},
-			t:        17,
-			bpm:      10,
-			want:     12,
+			name: "no trigger if t is closer to last trigger than seconds between two beats",
+			envelope: Envelope{
+				lastTriggeredAt: pointer(12.0),
+				currentBPM:      10,
+			},
+			t:    17,
+			want: 12,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.envelope.trigger(tt.t, tt.bpm, make(ModulesMap))
+			tt.envelope.trigger(tt.t, make(ModulesMap))
 			if got := tt.envelope.lastTriggeredAt; *got != tt.want {
 				t.Errorf("Envelope.trigger() got %f, want %f", *got, tt.want)
 			}

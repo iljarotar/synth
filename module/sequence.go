@@ -64,23 +64,29 @@ func (s *Sequence) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 	s.current = stereo(y, pan)
 }
 
-func (s *Sequence) getCurrentNote() string {
-	if !s.Envelope.Triggered {
+func (s *Sequence) getCurrentNote(t float64) string {
+	if len(s.Sequence) == 0 {
+		return ""
+	}
+
+	if s.Envelope == nil || s.Envelope.currentBPM == 0 || !s.Envelope.triggered {
 		return s.Sequence[s.currentNoteIndex]
 	}
 
 	length := len(s.Sequence)
+
 	if s.Randomize {
 		s.currentNoteIndex = rand.Intn(length)
 	} else {
-		s.currentNoteIndex = (s.currentNoteIndex + 1) % length
+		noteLength := 60 / s.Envelope.currentBPM
+		s.currentNoteIndex = int(math.Floor(t/noteLength)) % length
 	}
 
 	return s.Sequence[s.currentNoteIndex]
 }
 
 func (s *Sequence) signalValue(t, amp, pitch, transpose float64) float64 {
-	note := s.getCurrentNote()
+	note := s.getCurrentNote(t)
 	freq := s.stringToFreq(note, pitch)
 	phi := 2 * math.Pi * freq * t
 	// TODO: transpose
