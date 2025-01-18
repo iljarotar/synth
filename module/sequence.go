@@ -18,10 +18,11 @@ type Sequence struct {
 	Pan              Input          `yaml:"pan"`
 	Sequence         []string       `yaml:"sequence"`
 	Transpose        Input          `yaml:"transpose"`
-	Pitch            Input          `yaml:"pitch"`
+	Pitch            float64        `yaml:"pitch"`
 	Randomize        bool           `yaml:"randomize"`
 	Type             OscillatorType `yaml:"type"`
 	currentNoteIndex int
+	freqSequence     []float64
 	inputs           []filterInputs
 	sampleRate       float64
 	signal           SignalFunc
@@ -31,11 +32,16 @@ func (s *Sequence) Initialize(sampleRate float64) {
 	if s.Envelope != nil {
 		s.Envelope.Initialize()
 	}
+
 	s.sampleRate = sampleRate
 	s.signal = newSignalFunc(s.Type)
 	s.inputs = make([]filterInputs, len(s.Filters))
 
-	y := s.signalValue(0, s.Amp.Val, s.Pitch.Val, s.Transpose.Val)
+	for _, note := range s.Sequence {
+		s.freqSequence = append(s.freqSequence, s.noteToFreq(note))
+	}
+
+	y := s.signalValue(0, s.Amp.Val, s.Transpose.Val)
 	s.current = stereo(y, s.Pan.Val)
 }
 
@@ -46,7 +52,6 @@ func (s *Sequence) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 
 	pan := modulate(s.Pan, panLimits, modMap)
 	amp := modulate(s.Amp, ampLimits, modMap)
-	pitch := modulate(s.Pitch, pitchLimits, modMap)
 	transpose := modulate(s.Transpose, transposeLimits, modMap)
 
 	cfg := filterConfig{
@@ -55,7 +60,7 @@ func (s *Sequence) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 		FiltersMap:  filtersMap,
 	}
 
-	x := s.signalValue(t, amp, pitch, transpose)
+	x := s.signalValue(t, amp, transpose)
 	y, newInputs := cfg.applyFilters(x)
 	y = applyEnvelope(y, s.Envelope)
 	avg := (y + s.Current().Mono) / 2
@@ -64,13 +69,13 @@ func (s *Sequence) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 	s.current = stereo(y, pan)
 }
 
-func (s *Sequence) getCurrentNote(t float64) string {
+func (s *Sequence) getCurrentFreq(t float64) float64 {
 	if len(s.Sequence) == 0 {
-		return ""
+		return 0
 	}
 
 	if s.Envelope == nil || s.Envelope.currentBPM == 0 || !s.Envelope.triggered {
-		return s.Sequence[s.currentNoteIndex]
+		return s.freqSequence[s.currentNoteIndex]
 	}
 
 	length := len(s.Sequence)
@@ -82,18 +87,17 @@ func (s *Sequence) getCurrentNote(t float64) string {
 		s.currentNoteIndex = int(math.Floor(t/noteLength)) % length
 	}
 
-	return s.Sequence[s.currentNoteIndex]
+	return s.freqSequence[s.currentNoteIndex]
 }
 
-func (s *Sequence) signalValue(t, amp, pitch, transpose float64) float64 {
-	note := s.getCurrentNote(t)
-	freq := s.stringToFreq(note, pitch)
+func (s *Sequence) signalValue(t, amp, transpose float64) float64 {
+	freq := s.getCurrentFreq(t)
 	phi := 2 * math.Pi * freq * t
 	// TODO: transpose
 	return s.signal(phi) * amp
 }
 
-func (s *Sequence) stringToFreq(note string, pitch float64) float64 {
+func (s *Sequence) noteToFreq(note string) float64 {
 	notesMap := map[string]int{
 		"c":  -9,
 		"c#": -8,
@@ -137,7 +141,7 @@ func (s *Sequence) stringToFreq(note string, pitch float64) float64 {
 		return 0
 	}
 
-	freq := math.Pow(2, float64(n)/12+float64(octave-4)) * s.Pitch.Val // TODO: use modulated pitch
+	freq := math.Pow(2, float64(n)/12+float64(octave-4)) * s.Pitch
 	return freq
 }
 
@@ -147,9 +151,6 @@ func (s *Sequence) limitParams() {
 
 	s.Pan.ModAmp = utils.Limit(s.Pan.ModAmp, panLimits.min, panLimits.max)
 	s.Pan.Val = utils.Limit(s.Pan.Val, panLimits.min, panLimits.max)
-
-	s.Pitch.ModAmp = utils.Limit(s.Pitch.ModAmp, pitchLimits.min, pitchLimits.max)
-	s.Pitch.Val = utils.Limit(s.Pitch.Val, pitchLimits.min, pitchLimits.max)
 
 	s.Transpose.ModAmp = utils.Limit(s.Transpose.ModAmp, transposeLimits.min, transposeLimits.max)
 	s.Transpose.Val = utils.Limit(s.Transpose.Val, transposeLimits.min, transposeLimits.max)

@@ -8,7 +8,7 @@ sequences:
     sequence: [a_4, c_5, b_4, f_4, d_4]
     pan: {}
     filters: []
-    pitch: {val: 440}
+    pitch: 440
     transpose: {}
     randomize:
     envelope:
@@ -27,7 +27,7 @@ sequences:
     sequence: [a_3, c_4, b_3, f_3, d_3, e_3]
     pan: {}
     filters: []
-    pitch: {val: 440}
+    pitch: 440
     transpose: {}
     randomize: true
     envelope:
@@ -46,7 +46,7 @@ sequences:
     sequence: [a_2, c_3, b_2, f_2, d_2, e_2, g_2]
     pan: {}
     filters: []
-    pitch: {val: 440}
+    pitch: 440
     transpose: {}
     randomize: true
     envelope:
