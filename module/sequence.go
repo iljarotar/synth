@@ -166,6 +166,8 @@ func (s *Sequence) limitParams() {
 	s.Pan.ModAmp = utils.Limit(s.Pan.ModAmp, panLimits.min, panLimits.max)
 	s.Pan.Val = utils.Limit(s.Pan.Val, panLimits.min, panLimits.max)
 
+	s.Pitch = utils.Limit(s.Pitch, pitchLimits.min, pitchLimits.max)
+
 	s.Transpose.ModAmp = utils.Limit(s.Transpose.ModAmp, transposeLimits.min, transposeLimits.max)
 	s.Transpose.Val = utils.Limit(s.Transpose.Val, transposeLimits.min, transposeLimits.max)
 }

@@ -50,16 +50,16 @@ Run `synth -h` to see all configuration options.
 
 ### Data types
 
-| Synth       |                   |                                                    |
-| ----------- | ----------------- | -------------------------------------------------- |
-| **Field**   | **Type**          | **Description**                                    |
-| vol         | Float             | main volume in range [0,2]                         |
-| out         | String [0..*]     | names of all modules whose outputs will be audible |
-| time        | Float             | initial time shift in seconds [0,7200]             |
-| oscillators | Oscillator [0..*] | all oscillators                                    |
-| noises      | Noise [0..*]      | all noise generators                               |
-| wavetables  | Wavetables [0..*] | all wavetables                                     |
-| samplers    | Sampler[0..*]     | all samplers                                       |
+| Synth       |                  |                                                    |
+| ----------- | ---------------- | -------------------------------------------------- |
+| **Field**   | **Type**         | **Description**                                    |
+| vol         | Float            | main volume in range [0,2]                         |
+| out         | String[0..*]     | names of all modules whose outputs will be audible |
+| time        | Float            | initial time shift in seconds [0,7200]             |
+| oscillators | Oscillator[0..*] | all oscillators                                    |
+| noises      | Noise[0..*]      | all noise generators                               |
+| wavetables  | Wavetables[0..*] | all wavetables                                     |
+| samplers    | Sampler[0..*]    | all samplers                                       |
 
 | Oscillator |                |                                                                 |
 | ---------- | -------------- | --------------------------------------------------------------- |
@@ -97,7 +97,7 @@ Run `synth -h` to see all configuration options.
 | amp       | Input        | amplitude in range [0,2]                                       |
 | pan       | Input        | stereo balance in range [-1,1]                                 |
 | freq      | Input        | periods per second [0,20000]                                   |
-| table     | Float [0..*] | output values                                                  |
+| table     | Float[0..*]  | output values                                                  |
 | filters   | String[0..*] | names of the filters to apply                                  |
 | envelope  | Envelope     | envelope to apply; if omitted, wavetable will constantly sound |
 
@@ -113,6 +113,20 @@ Run `synth -h` to see all configuration options.
 | envelope  | Envelope     | envelope to apply; if omitted, sampler will constantly sound |
 
 A sampler periodically samples the output values of the given inputs and outputs their sum.
+
+| Sequence  |                |                                                                                                                     |
+| --------- | -------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Field** | **Type**       | **Description**                                                                                                     |
+| name      | String         | should be unique in the scope of the file                                                                           |
+| amp       | Input          | amplitude in range [0,2]                                                                                            |
+| pan       | Input          | stereo balance in range [-1,1]                                                                                      |
+| type      | OscillatorType | wave form                                                                                                           |
+| sequence  | String[0..*]   | a sequence of notes written in [scientific pitch notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation) |
+| randomize | Boolean        | if true, the notes of the sequence will be played in random order                                                   |
+| pitch     | Float          | standard pitch in hz [400,500]                                                                                      |
+| transpose | Input          | transposition in semitones [-24,24]                                                                                 |
+| filters   | String[0..*]   | names of the filters to apply                                                                                       |
+| envelope  | Envelope       | envelope to apply; if omitted, first note of sequence will constantly sound                                         |
 
 | Filter      |          |                                                            |
 | ----------- | -------- | ---------------------------------------------------------- |
@@ -137,12 +151,12 @@ transitioning at the `low-cutoff` frequency. If both cutoff frequencies are defi
 | bpm           | Input    | triggers per minute [0,600000]    |
 | time-shift    | Float    | initial time shift                |
 
-| Input     |               |                                                                         |
-| --------- | ------------- | ----------------------------------------------------------------------- |
-| **Field** | **Type**      | **Description**                                                         |
-| val       | Float         | initial value of the respective parameter                               |
-| mod       | String [0..*] | names of modulating modules (oscillators, samplers, wavetables, noises) |
-| mod-amp   | Float         | amplitude of the modulation in range [0,1]                              |
+| Input     |              |                                                                         |
+| --------- | ------------ | ----------------------------------------------------------------------- |
+| **Field** | **Type**     | **Description**                                                         |
+| val       | Float        | initial value of the respective parameter                               |
+| mod       | String[0..*] | names of modulating modules (oscillators, samplers, wavetables, noises) |
+| mod-amp   | Float        | amplitude of the modulation in range [0,1]                              |
 
 ## Example patch file
 
