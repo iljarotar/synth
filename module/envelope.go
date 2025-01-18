@@ -16,8 +16,10 @@ type Envelope struct {
 	TimeShift       float64 `yaml:"time-shift"`
 	BPM             Input   `yaml:"bpm"`
 	current         float64
-	lastTriggeredAt *float64
+	currentBPM      float64
 	currentConfig   envelopeConfig
+	lastTriggeredAt *float64
+	triggered       bool
 }
 
 type envelopeConfig struct {
@@ -34,8 +36,8 @@ func (e *Envelope) Initialize() {
 }
 
 func (e *Envelope) Next(t float64, modMap ModulesMap) {
-	bpm := modulate(e.BPM, bpmLimits, modMap)
-	e.trigger(t, bpm, modMap)
+	e.currentBPM = modulate(e.BPM, bpmLimits, modMap)
+	e.trigger(t, modMap)
 	y := e.getCurrentValue(t)
 	e.current = y
 }
@@ -60,11 +62,14 @@ func (e *Envelope) getCurrentConfig(t float64, modMap ModulesMap) {
 	e.currentConfig = config
 }
 
-func (e *Envelope) trigger(t, bpm float64, modMap ModulesMap) {
-	if bpm == 0 {
+func (e *Envelope) trigger(t float64, modMap ModulesMap) {
+	e.triggered = false
+
+	if e.currentBPM == 0 {
 		return
 	}
-	secondsBetweenTwoBeats := 60 / bpm
+
+	secondsBetweenTwoBeats := 60 / e.currentBPM
 	var triggerAt float64
 	if t >= e.TimeShift {
 		numberOfTriggersMinusOne := math.Floor((t - e.TimeShift) / secondsBetweenTwoBeats)
@@ -76,12 +81,14 @@ func (e *Envelope) trigger(t, bpm float64, modMap ModulesMap) {
 
 	oldLastTriggeredAt := e.lastTriggeredAt
 	if oldLastTriggeredAt == nil {
+		e.triggered = true
 		e.lastTriggeredAt = &triggerAt
 		e.getCurrentConfig(t, modMap)
 		return
 	}
 
 	if t-*e.lastTriggeredAt >= secondsBetweenTwoBeats {
+		e.triggered = true
 		newLastTriggeredAt := t
 		e.lastTriggeredAt = &newLastTriggeredAt
 		e.getCurrentConfig(t, modMap)

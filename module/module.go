@@ -39,13 +39,15 @@ type output struct {
 }
 
 var (
-	ampLimits      limits = limits{min: 0, max: 2}
-	panLimits      limits = limits{min: -1, max: 1}
-	phaseLimits    limits = limits{min: -1, max: 1}
-	freqLimits     limits = limits{min: 0, max: 20000}
-	cutoffLimits   limits = limits{min: 1, max: 20000}
-	bpmLimits      limits = limits{min: 0, max: 600000}
-	envelopeLimits limits = limits{min: 0, max: 10000}
+	ampLimits       limits = limits{min: 0, max: 2}
+	bpmLimits       limits = limits{min: 0, max: 600000}
+	cutoffLimits    limits = limits{min: 1, max: 20000}
+	envelopeLimits  limits = limits{min: 0, max: 10000}
+	freqLimits      limits = limits{min: 0, max: 20000}
+	panLimits       limits = limits{min: -1, max: 1}
+	phaseLimits     limits = limits{min: -1, max: 1}
+	pitchLimits     limits = limits{min: 400, max: 500}
+	transposeLimits limits = limits{min: -24, max: 24}
 )
 
 func modulateValue(modulators []string, modMap ModulesMap) float64 {
