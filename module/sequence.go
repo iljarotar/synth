@@ -52,7 +52,7 @@ func (s *Sequence) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 
 	pan := modulate(s.Pan, panLimits, modMap)
 	amp := modulate(s.Amp, ampLimits, modMap)
-	transpose := modulate(s.Transpose, transposeLimits, modMap)
+	transpose := s.getTranspose(modMap)
 
 	cfg := filterConfig{
 		filterNames: s.Filters,
@@ -67,6 +67,27 @@ func (s *Sequence) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 	s.integral += avg / s.sampleRate
 	s.inputs = newInputs
 	s.current = stereo(y, pan)
+}
+
+func (s *Sequence) signalValue(t, amp, transpose float64) float64 {
+	freq := s.getCurrentFreq(t)
+	freq *= math.Pow(2, s.Transpose.Val/12)
+	offset := freq*math.Pow(2, transpose/12) - freq
+	phi := 2 * math.Pi * (freq*t + offset)
+	return s.signal(phi) * amp
+}
+
+func (s *Sequence) getTranspose(modMap ModulesMap) float64 {
+	var y float64
+
+	for _, m := range s.Transpose.Mod {
+		mod, ok := modMap[m]
+		if ok {
+			y += mod.Integral()
+		}
+	}
+
+	return y * s.Transpose.ModAmp
 }
 
 func (s *Sequence) getCurrentFreq(t float64) float64 {
@@ -88,13 +109,6 @@ func (s *Sequence) getCurrentFreq(t float64) float64 {
 	}
 
 	return s.freqSequence[s.currentNoteIndex]
-}
-
-func (s *Sequence) signalValue(t, amp, transpose float64) float64 {
-	freq := s.getCurrentFreq(t)
-	phi := 2 * math.Pi * freq * t
-	// TODO: transpose
-	return s.signal(phi) * amp
 }
 
 func (s *Sequence) noteToFreq(note string) float64 {

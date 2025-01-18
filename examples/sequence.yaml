@@ -1,21 +1,36 @@
 vol: 1
 out: [s1, s2, s3]
 
+oscillators:
+  - name: lfo1
+    type: Sine
+    freq: {val: 2.5}
+    amp: {val: 1}
+    envelope:
+       attack: {val: 0.1}
+       decay: {val: 0.1}
+       sustain: {val: 1}
+       release: {val: 1.6}
+       peak: {val: 1}
+       sustain-level: {val: 0.6}
+       bpm: {val: 20}
+       time-shift:
+
 sequences:
   - name: s1
-    amp: {val: 0.2}
-    type: Sine
+    amp: {val: 0.03}
+    type: Sawtooth
     sequence: [a_4, c_5, b_4, f_4, d_4]
     pan: {}
     filters: []
     pitch: 440
-    transpose: {}
+    transpose: {mod: [lfo1], mod-amp: 0.1}
     randomize:
     envelope:
        attack: {val: 0.1}
        decay: {val: 0.1}
        sustain: {val: 1}
-       release: {val: 1}
+       release: {val: 1.6}
        peak: {val: 1}
        sustain-level: {val: 0.6}
        bpm: {val: 20}
@@ -28,17 +43,17 @@ sequences:
     pan: {}
     filters: []
     pitch: 440
-    transpose: {}
+    transpose: {mod: [lfo1], mod-amp: 0.15}
     randomize: true
     envelope:
        attack: {val: 0.1}
        decay: {val: 0.1}
        sustain: {val: 1}
-       release: {val: 1}
+       release: {val: 1.6}
        peak: {val: 1}
        sustain-level: {val: 0.6}
        bpm: {val: 20}
-       time-shift:
+       time-shift: -0.03
 
   - name: s3
     amp: {val: 0.2}
@@ -47,14 +62,14 @@ sequences:
     pan: {}
     filters: []
     pitch: 440
-    transpose: {}
+    transpose: {mod: [lfo1], mod-amp: 0.15}
     randomize: true
     envelope:
        attack: {val: 0.1}
        decay: {val: 0.1}
        sustain: {val: 1}
-       release: {val: 1}
+       release: {val: 1.6}
        peak: {val: 1}
        sustain-level: {val: 0.6}
        bpm: {val: 20}
-       time-shift:
+       time-shift: 0.05
