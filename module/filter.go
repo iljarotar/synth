@@ -164,7 +164,7 @@ func (c *filterConfig) applyFilters(x float64) (float64, []filterInputs) {
 func (f *Filter) limitParams() {
 	f.LowCutoff.Val = utils.Limit(f.LowCutoff.Val, cutoffLimits.min, cutoffLimits.max)
 	f.LowCutoff.ModAmp = utils.Limit(f.LowCutoff.ModAmp, cutoffLimits.min, cutoffLimits.max)
-	f.HighCutoff.Val = utils.Limit(f.HighCutoff.Val, cutoffLimits.min, cutoffLimits.max)
+	f.HighCutoff.Val = utils.Limit(f.HighCutoff.Val, f.LowCutoff.Val, cutoffLimits.max)
 	f.HighCutoff.ModAmp = utils.Limit(f.HighCutoff.ModAmp, cutoffLimits.min, cutoffLimits.max)
 }
 
