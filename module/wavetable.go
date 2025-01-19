@@ -39,7 +39,7 @@ func (w *Wavetable) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 
 	pan := modulate(w.Pan, panLimits, modMap)
 	amp := modulate(w.Amp, ampLimits, modMap)
-	freq := modulate(w.Freq, freqLimits, modMap)
+	offset := w.getOffset(modMap)
 
 	cfg := filterConfig{
 		filterNames: w.Filters,
@@ -47,12 +47,41 @@ func (w *Wavetable) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 		FiltersMap:  filtersMap,
 	}
 
-	x := w.signalValue(t, amp, freq)
+	x := w.signalValue(t, amp, offset)
 	y, newInputs := cfg.applyFilters(x)
 	y = applyEnvelope(y, w.Envelope)
 	w.integral += y / w.sampleRate
 	w.inputs = newInputs
 	w.current = stereo(y, pan)
+}
+
+func (w *Wavetable) getOffset(modMap ModulesMap) float64 {
+	var y float64
+
+	for _, m := range w.Freq.Mod {
+		mod, ok := modMap[m]
+		if ok {
+			y += mod.Integral()
+		}
+	}
+
+	return y * w.Freq.ModAmp
+}
+
+func (w *Wavetable) signalValue(t, amp, offset float64) float64 {
+	length := len(w.Table)
+	if length == 0 {
+		return 0
+	}
+
+	idx := int(math.Floor((t*w.Freq.Val + offset) * float64(length)))
+	var val float64
+
+	val = w.Table[idx%length]
+
+	y := amp * val
+
+	return y
 }
 
 func (w *Wavetable) limitParams() {
@@ -64,17 +93,4 @@ func (w *Wavetable) limitParams() {
 
 	w.Freq.ModAmp = utils.Limit(w.Freq.ModAmp, freqLimits.min, freqLimits.max)
 	w.Freq.Val = utils.Limit(w.Freq.Val, freqLimits.min, freqLimits.max)
-}
-
-func (w *Wavetable) signalValue(t, amp, freq float64) float64 {
-	idx := int(math.Floor(t * float64(len(w.Table)) * freq))
-	var val float64
-
-	if l := len(w.Table); l > 0 {
-		val = w.Table[idx%l]
-	}
-
-	y := amp * val
-
-	return y
 }
