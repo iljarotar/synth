@@ -1,13 +1,14 @@
 vol: 1
 out: [w1]
+
 wavetables:
   - name: w1
-    table: [1,0,4,2,6,1,6]
-    freq: {val: 200}
-    amp: {val: 0.1}
+    table: [1, 0, 4, 2, 6, 1, 6]
+    freq: { val: 200 }
+    amp: { val: 0.1 }
     filters: [f1]
 
 filters:
   - name: f1
-    low-cutoff: {val: 300}
-    high-cutoff: {val: 400}
+    low-cutoff: { val: 300 }
+    high-cutoff: { val: 400 }

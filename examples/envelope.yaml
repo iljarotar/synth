@@ -1,21 +1,22 @@
 vol: 1
 out: [o1]
+
 oscillators:
   - name: o1
     type: Sine
-    freq: {val: 200}
-    amp: {val: 0.9, mod: [lfo1], mod-amp: 0.1}
+    freq: { val: 200 }
+    amp: { val: 0.9, mod: [lfo1], mod-amp: 0.1 }
     envelope:
-      attack: {val: 0.05}
-      decay: {val: 0.1}
-      sustain: {val: 0.5}
-      release: {val: 1}
-      peak: {val: 1}
-      sustain-level: {val: 0.1}
+      attack: { val: 0.05 }
+      decay: { val: 0.1 }
+      sustain: { val: 0.5 }
+      release: { val: 1 }
+      peak: { val: 1 }
+      sustain-level: { val: 0.1 }
       time-shift: 3
-      bpm: {val: 40}
+      bpm: { val: 40 }
 
   - name: lfo1
     type: Sine
-    freq: {val: 8}
-    amp: {val: 1}
+    freq: { val: 8 }
+    amp: { val: 1 }
