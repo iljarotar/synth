@@ -85,8 +85,8 @@ func init() {
 		os.Exit(1)
 	}
 	rootCmd.Flags().Float64P("sample-rate", "s", c.DefaultSampleRate, "sample rate")
-	rootCmd.Flags().Float64("fade-in", c.DefaultFadeIn, "fade-in in seconds")
-	rootCmd.Flags().Float64("fade-out", c.DefaultFadeOut, "fade-out in seconds")
+	rootCmd.Flags().Float64P("fade-in", "i", c.DefaultFadeIn, "fade-in in seconds")
+	rootCmd.Flags().Float64P("fade-out", "o", c.DefaultFadeOut, "fade-out in seconds")
 	rootCmd.Flags().StringP("config", "c", defaultConfigPath, "path to your config file")
 	rootCmd.Flags().Float64P("duration", "d", c.DefaultDuration, "duration in seconds; if positive duration is specified, synth will stop playing after the defined time")
 }
