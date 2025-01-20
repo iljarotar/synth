@@ -60,6 +60,8 @@ oscillators:
     amp: { val: 1 }
 ```
 
+In [examples/template.yaml](examples/template.yaml) you can find templates for all available modules.
+
 ### Data types
 
 | Envelope      |          |                                   |
@@ -171,6 +173,7 @@ Some examples of syntactically valid notes: `eb_5`, `c#_2`, `d_7`, `b#_4`, `fb_3
 | noises      | Noise[0..*]      | all noise generators                               |
 | wavetables  | Wavetables[0..*] | all wavetables                                     |
 | samplers    | Sampler[0..*]    | all samplers                                       |
+| sequences   | Sequence[0..*]   | all sequences                                      |
 
 | Wavetable |              |                                                                |
 | --------- | ------------ | -------------------------------------------------------------- |
