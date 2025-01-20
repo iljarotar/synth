@@ -4,17 +4,17 @@ out: [w1]
 oscillators:
   - name: lfo1
     type: Sine
-    freq: {val: 4}
-    amp: {val: 1}
+    freq: { val: 4 }
+    amp: { val: 1 }
 
 wavetables:
   - name: w1
-    table: [1,0,4,2,6,1,6]
-    freq: {val: 200, mod: [lfo1], mod-amp: 2}
-    amp: {val: 0.1}
+    table: [1, 0, 4, 2, 6, 1, 6]
+    freq: { val: 200, mod: [lfo1], mod-amp: 2 }
+    amp: { val: 0.1 }
     filters: [f1]
 
 filters:
   - name: f1
-    low-cutoff: {val: 300}
-    high-cutoff: {val: 400}
+    low-cutoff: { val: 300 }
+    high-cutoff: { val: 400 }

@@ -162,10 +162,15 @@ func (c *filterConfig) applyFilters(x float64) (float64, []filterInputs) {
 }
 
 func (f *Filter) limitParams() {
-	f.LowCutoff.Val = utils.Limit(f.LowCutoff.Val, cutoffLimits.min, cutoffLimits.max)
-	f.LowCutoff.ModAmp = utils.Limit(f.LowCutoff.ModAmp, cutoffLimits.min, cutoffLimits.max)
-	f.HighCutoff.Val = utils.Limit(f.HighCutoff.Val, f.LowCutoff.Val, cutoffLimits.max)
+	f.HighCutoff.Val = utils.Limit(f.HighCutoff.Val, cutoffLimits.min, cutoffLimits.max)
 	f.HighCutoff.ModAmp = utils.Limit(f.HighCutoff.ModAmp, cutoffLimits.min, cutoffLimits.max)
+
+	maxLowCutoff := cutoffLimits.max
+	if !isUnset(f.HighCutoff, cutoffLimits) {
+		maxLowCutoff = f.HighCutoff.Val
+	}
+	f.LowCutoff.Val = utils.Limit(f.LowCutoff.Val, cutoffLimits.min, maxLowCutoff)
+	f.LowCutoff.ModAmp = utils.Limit(f.LowCutoff.ModAmp, cutoffLimits.min, cutoffLimits.max)
 }
 
 func isUnset(p Input, lim limits) bool {

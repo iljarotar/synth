@@ -7,10 +7,11 @@ import (
 
 func TestSequence_stringToFreq(t *testing.T) {
 	tests := []struct {
-		name string
-		s    *Sequence
-		note string
-		want float64
+		name    string
+		s       *Sequence
+		note    string
+		want    float64
+		wantErr bool
 	}{
 		{
 			name: "pitch",
@@ -41,24 +42,27 @@ func TestSequence_stringToFreq(t *testing.T) {
 			s: &Sequence{
 				Pitch: 440,
 			},
-			note: "a'",
-			want: 0,
+			note:    "a'",
+			want:    0,
+			wantErr: true,
 		},
 		{
 			name: "invalid prefix",
 			s: &Sequence{
 				Pitch: 440,
 			},
-			note: "h_3",
-			want: 0,
+			note:    "h_3",
+			want:    0,
+			wantErr: true,
 		},
 		{
 			name: "invalid octave",
 			s: &Sequence{
 				Pitch: 440,
 			},
-			note: "a_-1",
-			want: 0,
+			note:    "a_-1",
+			want:    0,
+			wantErr: true,
 		},
 		{
 			name: "higher note in same octave",
@@ -111,7 +115,12 @@ func TestSequence_stringToFreq(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.s.noteToFreq(tt.note); got != tt.want {
+			got, err := tt.s.noteToFreq(tt.note)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Sequence.stringToFreq() error = %v, want %v", err, tt.wantErr)
+			}
+
+			if got != tt.want {
 				t.Errorf("Sequence.stringToFreq() = %v, want %v", got, tt.want)
 			}
 		})

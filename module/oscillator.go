@@ -35,17 +35,25 @@ type Oscillator struct {
 	sampleRate float64
 }
 
-func (o *Oscillator) Initialize(sampleRate float64) {
+func (o *Oscillator) Initialize(sampleRate float64) error {
 	if o.Envelope != nil {
 		o.Envelope.Initialize()
 	}
+
 	o.sampleRate = sampleRate
-	o.signal = newSignalFunc(o.Type)
+	signal, err := newSignalFunc(o.Type)
+	if err != nil {
+		return err
+	}
+	o.signal = signal
+
 	o.limitParams()
 	o.inputs = make([]filterInputs, len(o.Filters))
 
 	y := o.signalValue(0, o.Amp.Val, 0)
 	o.current = stereo(y, o.Pan.Val)
+
+	return nil
 }
 
 func (o *Oscillator) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {

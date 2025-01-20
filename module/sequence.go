@@ -1,6 +1,7 @@
 package module
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"strconv"
@@ -28,21 +29,31 @@ type Sequence struct {
 	signal           SignalFunc
 }
 
-func (s *Sequence) Initialize(sampleRate float64) {
+func (s *Sequence) Initialize(sampleRate float64) error {
 	if s.Envelope != nil {
 		s.Envelope.Initialize()
 	}
 
 	s.sampleRate = sampleRate
-	s.signal = newSignalFunc(s.Type)
+	signal, err := newSignalFunc(s.Type)
+	if err != nil {
+		return err
+	}
+	s.signal = signal
 	s.inputs = make([]filterInputs, len(s.Filters))
 
 	for _, note := range s.Sequence {
-		s.freqSequence = append(s.freqSequence, s.noteToFreq(note))
+		freq, err := s.noteToFreq(note)
+		if err != nil {
+			return err
+		}
+		s.freqSequence = append(s.freqSequence, freq)
 	}
 
 	y := s.signalValue(0, s.Amp.Val, s.Transpose.Val)
 	s.current = stereo(y, s.Pan.Val)
+
+	return nil
 }
 
 func (s *Sequence) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
@@ -111,7 +122,7 @@ func (s *Sequence) getCurrentFreq(t float64) float64 {
 	return s.freqSequence[s.currentNoteIndex]
 }
 
-func (s *Sequence) noteToFreq(note string) float64 {
+func (s *Sequence) noteToFreq(note string) (float64, error) {
 	notesMap := map[string]int{
 		"c":  -9,
 		"c#": -8,
@@ -138,25 +149,25 @@ func (s *Sequence) noteToFreq(note string) float64 {
 
 	noteString, octaveString, found := strings.Cut(note, "_")
 	if !found {
-		return 0
+		return 0, fmt.Errorf("invalid syntax for note %s, missing underscore", note)
 	}
 
 	octave, err := strconv.Atoi(string(octaveString))
 	if err != nil {
-		return 0
+		return 0, fmt.Errorf("unable to parse octave for note %s", note)
 	}
 
 	if octave < 0 || octave > 10 {
-		return 0
+		return 0, fmt.Errorf("octave must be at least 0 and at most 10 for note %s", note)
 	}
 
 	n, ok := notesMap[noteString]
 	if !ok {
-		return 0
+		return 0, fmt.Errorf("unknown note %s", noteString)
 	}
 
 	freq := math.Pow(2, float64(n)/12+float64(octave-4)) * s.Pitch
-	return freq
+	return freq, nil
 }
 
 func (s *Sequence) limitParams() {

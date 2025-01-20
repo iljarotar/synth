@@ -36,7 +36,7 @@ type Synth struct {
 	active             bool
 }
 
-func (s *Synth) Initialize(sampleRate float64) {
+func (s *Synth) Initialize(sampleRate float64) error {
 	s.step = 1 / sampleRate
 	s.sampleRate = sampleRate
 	s.Volume = utils.Limit(s.Volume, 0, 2)
@@ -46,7 +46,10 @@ func (s *Synth) Initialize(sampleRate float64) {
 	s.active = true
 
 	for _, osc := range s.Oscillators {
-		osc.Initialize(sampleRate)
+		err := osc.Initialize(sampleRate)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, n := range s.Noises {
@@ -62,7 +65,10 @@ func (s *Synth) Initialize(sampleRate float64) {
 	}
 
 	for _, sq := range s.Sequences {
-		sq.Initialize(sampleRate)
+		err := sq.Initialize(sampleRate)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, f := range s.Filters {
@@ -70,6 +76,8 @@ func (s *Synth) Initialize(sampleRate float64) {
 	}
 
 	s.makeMaps()
+
+	return nil
 }
 
 func (s *Synth) Play(outputChan chan<- Output) {

@@ -23,9 +23,12 @@ type Control struct {
 	closing                       *bool
 }
 
-func NewControl(logger *ui.Logger, config cfg.Config, output chan audio.AudioOutput, autoStop chan bool, closing *bool) *Control {
+func NewControl(logger *ui.Logger, config cfg.Config, output chan audio.AudioOutput, autoStop chan bool, closing *bool) (*Control, error) {
 	var synth s.Synth
-	synth.Initialize(config.SampleRate)
+	err := synth.Initialize(config.SampleRate)
+	if err != nil {
+		return nil, err
+	}
 
 	ctl := &Control{
 		logger:    logger,
@@ -37,7 +40,7 @@ func NewControl(logger *ui.Logger, config cfg.Config, output chan audio.AudioOut
 		closing:   closing,
 	}
 
-	return ctl
+	return ctl, nil
 }
 
 func (c *Control) Start() {
@@ -46,13 +49,20 @@ func (c *Control) Start() {
 	go c.receiveOutput(outputChan)
 }
 
-func (c *Control) LoadSynth(synth s.Synth) {
+func (c *Control) LoadSynth(synth s.Synth) error {
 	c.maxOutput = 0
 	c.lastNotifiedOutput = 0
-	synth.Initialize(c.config.SampleRate)
+
+	err := synth.Initialize(c.config.SampleRate)
+	if err != nil {
+		return err
+	}
+
 	synth.Time += c.synth.Time
 
 	*c.synth = synth
+
+	return nil
 }
 
 func (c *Control) Stop(fadeOut float64) {
