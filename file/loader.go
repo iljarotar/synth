@@ -63,7 +63,10 @@ func (l *Loader) Load() error {
 		return err
 	}
 
-	l.ctl.LoadSynth(synth)
+	err = l.ctl.LoadSynth(synth)
+	if err != nil {
+		return err
+	}
 
 	l.lastLoaded = time.Now()
 	return nil

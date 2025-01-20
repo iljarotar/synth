@@ -1,25 +1,26 @@
 package module
 
 import (
+	"fmt"
 	"math"
 )
 
 type SignalFunc func(x float64) float64
 
-func newSignalFunc(oscType OscillatorType) SignalFunc {
+func newSignalFunc(oscType OscillatorType) (SignalFunc, error) {
 	switch oscType {
 	case Sine:
-		return SineSignalFunc()
+		return SineSignalFunc(), nil
 	case Square:
-		return SquareSignalFunc()
+		return SquareSignalFunc(), nil
 	case Sawtooth:
-		return SawtoothSignalFunc()
+		return SawtoothSignalFunc(), nil
 	case Triangle:
-		return TriangleSignalFunc()
+		return TriangleSignalFunc(), nil
 	case ReverseSawtooth:
-		return ReverseSawtoothSignalFunc()
+		return ReverseSawtoothSignalFunc(), nil
 	default:
-		return NoSignalFunc()
+		return NoSignalFunc(), fmt.Errorf("unknow oscillator type %s", oscType)
 	}
 }
 

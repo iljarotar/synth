@@ -139,7 +139,10 @@ func start(file string, config *c.Config) error {
 		return err
 	}
 
-	ctl := control.NewControl(logger, *config, output, autoStop, &closing)
+	ctl, err := control.NewControl(logger, *config, output, autoStop, &closing)
+	if err != nil {
+		return err
+	}
 	ctl.Start()
 	defer ctl.StopSynth()
 
