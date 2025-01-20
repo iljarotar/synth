@@ -154,7 +154,7 @@ Notes are written in [scientific pitch notation](https://en.wikipedia.org/wiki/S
 The syntax for writing notes is the following:
 
 - a note starts with a lower case letter out of `a`, `b`, `c`, `d`, `e`, `f` or `g`
-- an accidental ('#' or `b`) can be added to make a note sharp or flat, e.g. `f#` is F sharp, `bb` is B flat, etc.
+- an accidental (`#` or `b`) can be added to make a note sharp or flat, e.g. `f#` is F sharp, `bb` is B flat, etc.
 - double accidentals are note allowed; use enharmonic equivalence instead
 - a note is followed by an underscore and a number denoting the octave
 - the lowest possible octave is 0, the highest is 10
