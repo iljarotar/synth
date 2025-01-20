@@ -62,7 +62,7 @@ oscillators:
 
 In [examples/template.yaml](examples/template.yaml) you can find templates for all available modules.
 
-### Data types
+### API Reference
 
 | Envelope      |          |                                   |
 | ------------- | -------- | --------------------------------- |
