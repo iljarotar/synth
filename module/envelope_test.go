@@ -7,39 +7,39 @@ func TestEnvelope_trigger(t *testing.T) {
 		name     string
 		envelope Envelope
 		t        float64
+		bpm      float64
 		want     *float64
 	}{
 		{
-			name: "no delay must trigger immediately",
-			envelope: Envelope{
-				currentBPM: 20,
-			},
-			t:    0,
-			want: pointer(0.0),
+			name:     "no delay must trigger immediately",
+			envelope: Envelope{},
+			bpm:      20,
+			t:        0,
+			want:     pointer(0.0),
 		},
 		{
 			name: "before time reaches delay no trigger occurs",
 			envelope: Envelope{
-				currentBPM: 20,
-				Delay:      10,
+				Delay: 10,
 			},
+			bpm:  20,
 			t:    5,
 			want: nil,
 		},
 		{
 			name: "in between two beats no trigger occurs",
 			envelope: Envelope{
-				currentBPM:      20,
 				Delay:           0,
 				lastTriggeredAt: pointer(2.9),
 			},
+			bpm:  20,
 			t:    5,
 			want: pointer(2.9),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.envelope.trigger(tt.t, make(ModulesMap))
+			tt.envelope.trigger(tt.t, tt.bpm, make(ModulesMap))
 			got := tt.envelope.lastTriggeredAt
 			if got == nil && tt.want == nil {
 				return

@@ -35,6 +35,7 @@ func (s *Sequence) Initialize(sampleRate float64) error {
 	}
 
 	s.sampleRate = sampleRate
+	s.currentNoteIndex = len(s.Sequence) - 1
 	signal, err := newSignalFunc(s.Type)
 	if err != nil {
 		return err
@@ -106,7 +107,7 @@ func (s *Sequence) getCurrentFreq(t float64) float64 {
 		return 0
 	}
 
-	if s.Envelope == nil || s.Envelope.currentBPM == 0 || !s.Envelope.triggered {
+	if s.Envelope == nil || !s.Envelope.triggered {
 		return s.freqSequence[s.currentNoteIndex]
 	}
 
@@ -115,8 +116,7 @@ func (s *Sequence) getCurrentFreq(t float64) float64 {
 	if s.Randomize {
 		s.currentNoteIndex = rand.Intn(length)
 	} else {
-		noteLength := 60 / s.Envelope.currentBPM
-		s.currentNoteIndex = int(math.Floor(t/noteLength)) % length
+		s.currentNoteIndex = (s.currentNoteIndex + 1) % length
 	}
 
 	return s.freqSequence[s.currentNoteIndex]

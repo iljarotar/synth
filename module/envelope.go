@@ -14,7 +14,6 @@ type Envelope struct {
 	Delay           float64 `yaml:"delay"`
 	BPM             Input   `yaml:"bpm"`
 	current         float64
-	currentBPM      float64
 	currentConfig   envelopeConfig
 	lastTriggeredAt *float64
 	triggered       bool
@@ -34,8 +33,8 @@ func (e *Envelope) Initialize() {
 }
 
 func (e *Envelope) Next(t float64, modMap ModulesMap) {
-	e.currentBPM = modulate(e.BPM, bpmLimits, modMap)
-	e.trigger(t, modMap)
+	bpm := modulate(e.BPM, bpmLimits, modMap)
+	e.trigger(t, bpm, modMap)
 	y := e.getCurrentValue(t)
 	e.current = y
 }
@@ -60,14 +59,14 @@ func (e *Envelope) getCurrentConfig(t float64, modMap ModulesMap) {
 	e.currentConfig = config
 }
 
-func (e *Envelope) trigger(t float64, modMap ModulesMap) {
+func (e *Envelope) trigger(t, bpm float64, modMap ModulesMap) {
 	e.triggered = false
 
-	if e.currentBPM == 0 {
+	if bpm == 0 {
 		return
 	}
 
-	secondsBetweenTwoBeats := 60 / e.currentBPM
+	secondsBetweenTwoBeats := 60 / bpm
 	if e.lastTriggeredAt != nil && t-*e.lastTriggeredAt < secondsBetweenTwoBeats {
 		return
 	}
