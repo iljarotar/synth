@@ -1,8 +1,6 @@
 package module
 
 import (
-	"math"
-
 	"github.com/iljarotar/synth/utils"
 )
 
@@ -13,7 +11,7 @@ type Envelope struct {
 	Release         Input   `yaml:"release"`
 	Peak            Input   `yaml:"peak"`
 	SustainLevel    Input   `yaml:"sustain-level"`
-	TimeShift       float64 `yaml:"time-shift"`
+	Delay           float64 `yaml:"delay"`
 	BPM             Input   `yaml:"bpm"`
 	current         float64
 	currentBPM      float64
@@ -33,10 +31,6 @@ type envelopeConfig struct {
 
 func (e *Envelope) Initialize() {
 	e.limitParams()
-	if e.TimeShift > 0 {
-		secondsBetweenTwoBeats := 60 / e.BPM.Val
-		e.TimeShift -= secondsBetweenTwoBeats // make time shift sound cyclic
-	}
 }
 
 func (e *Envelope) Next(t float64, modMap ModulesMap) {
@@ -74,16 +68,13 @@ func (e *Envelope) trigger(t float64, modMap ModulesMap) {
 	}
 
 	secondsBetweenTwoBeats := 60 / e.currentBPM
-	numberOfTriggersMinusOne := math.Floor((t - e.TimeShift) / secondsBetweenTwoBeats)
-	triggerAt := numberOfTriggersMinusOne*secondsBetweenTwoBeats + e.TimeShift
-
-	if t < triggerAt {
+	if e.lastTriggeredAt != nil && t-*e.lastTriggeredAt < secondsBetweenTwoBeats {
 		return
 	}
 
-	if e.lastTriggeredAt == nil || triggerAt > *e.lastTriggeredAt {
+	if t-e.Delay >= 0 || (e.lastTriggeredAt != nil && t-*e.lastTriggeredAt >= secondsBetweenTwoBeats) {
 		e.triggered = true
-		e.lastTriggeredAt = &triggerAt
+		e.lastTriggeredAt = &t
 		e.getCurrentConfig(t, modMap)
 	}
 }
@@ -162,4 +153,6 @@ func (e *Envelope) limitParams() {
 
 	e.BPM.Val = utils.Limit(e.BPM.Val, bpmLimits.min, bpmLimits.max)
 	e.BPM.ModAmp = utils.Limit(e.BPM.ModAmp, bpmLimits.min, bpmLimits.max)
+
+	e.Delay = utils.Limit(e.Delay, timeLimits.min, timeLimits.max)
 }

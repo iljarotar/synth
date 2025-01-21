@@ -23,7 +23,7 @@
 #        peak: { val: 0, mod: [], mod-amp: 0 }
 #        sustain-level: { val: 0, mod: [], mod-amp: 0 }
 #        bpm: { val: 0, mod: [], mod-amp: 0 }
-#        time-shift: 0
+#        delay: 0
 
 # noises:
 #   - name: ""
@@ -38,7 +38,7 @@
 #        peak: { val: 0, mod: [], mod-amp: 0 }
 #        sustain-level: { val: 0, mod: [], mod-amp: 0 }
 #        bpm: { val: 0, mod: [], mod-amp: 0 }
-#        time-shift: 0
+#        delay: 0
 
 # samplers:
 #   - name: ""
@@ -55,7 +55,7 @@
 #        peak: { val: 0, mod: [], mod-amp: 0 }
 #        sustain-level: { val: 0, mod: [], mod-amp: 0 }
 #        bpm: { val: 0, mod: [], mod-amp: 0 }
-#        time-shift: 0
+#        delay: 0
 
 # sequences:
 #   - name: ""
@@ -75,7 +75,7 @@
 #        peak: { val: 0, mod: [], mod-amp: 0 }
 #        sustain-level: { val: 0, mod: [], mod-amp: 0 }
 #        bpm: { val: 0, mod: [], mod-amp: 0 }
-#        time-shift: 0
+#        delay: 0
 
 # wavetables:
 #   - name: ""
@@ -92,4 +92,4 @@
 #        peak: { val: 0, mod: [], mod-amp: 0 }
 #        sustain-level: { val: 0, mod: [], mod-amp: 0 }
 #        bpm: { val: 0, mod: [], mod-amp: 0 }
-#        time-shift: 0
+#        delay: 0

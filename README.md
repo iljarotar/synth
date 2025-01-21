@@ -74,7 +74,7 @@ In [examples/template.yaml](examples/template.yaml) you can find templates for a
 | peak          | Input    | peak amplitude [0,1]              |
 | sustain-level | Input    | sustain amplitude [0,1]           |
 | bpm           | Input    | triggers per minute [0,600000]    |
-| time-shift    | Float    | initial time shift                |
+| delay         | Float    | initial delay                     |
 
 | Filter      |          |                                                            |
 | ----------- | -------- | ---------------------------------------------------------- |

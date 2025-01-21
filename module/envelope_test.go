@@ -7,83 +7,53 @@ func TestEnvelope_trigger(t *testing.T) {
 		name     string
 		envelope Envelope
 		t        float64
-		bpm      float64
-		want     float64
+		want     *float64
 	}{
 		{
-			name: "no time shift must trigger at 0",
+			name: "no delay must trigger immediately",
 			envelope: Envelope{
-				currentBPM: 10,
+				currentBPM: 20,
 			},
 			t:    0,
-			bpm:  10,
-			want: 0,
+			want: pointer(0.0),
 		},
 		{
-			name: "no time shift must trigger at multiples of seconds between two beats",
+			name: "before time reaches delay no trigger occurs",
 			envelope: Envelope{
-				currentBPM: 10,
-			},
-			t:    13,
-			bpm:  10,
-			want: 12,
-		},
-		{
-			name: "with time shift could first trigger at negative time",
-			envelope: Envelope{
-				currentBPM: 10,
-				TimeShift:  10,
-			},
-			t:    0,
-			bpm:  10,
-			want: -2,
-		},
-		{
-			name: "with time shift must trigger at multiples of seconds between two beats plus time shift",
-			envelope: Envelope{
-				currentBPM: 10,
-				TimeShift:  10,
-			},
-			t:    18,
-			bpm:  10,
-			want: 16,
-		},
-		{
-			name: "negative time shift also works",
-			envelope: Envelope{
-				currentBPM: 10,
-				TimeShift:  -3,
-			},
-			t:    4,
-			bpm:  10,
-			want: 3,
-		},
-		{
-			name: "change from negative triggered time to positive",
-			envelope: Envelope{
-				lastTriggeredAt: pointer(-1.0),
-				currentBPM:      10,
-				TimeShift:       5,
+				currentBPM: 20,
+				Delay:      10,
 			},
 			t:    5,
-			bpm:  10,
-			want: 5,
+			want: nil,
 		},
 		{
-			name: "no trigger if t is closer to last trigger than seconds between two beats",
+			name: "in between two beats no trigger occurs",
 			envelope: Envelope{
-				lastTriggeredAt: pointer(12.0),
-				currentBPM:      10,
+				currentBPM:      20,
+				Delay:           0,
+				lastTriggeredAt: pointer(2.9),
 			},
-			t:    17,
-			want: 12,
+			t:    5,
+			want: pointer(2.9),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.envelope.trigger(tt.t, make(ModulesMap))
-			if got := tt.envelope.lastTriggeredAt; *got != tt.want {
-				t.Errorf("Envelope.trigger() got %f, want %f", *got, tt.want)
+			got := tt.envelope.lastTriggeredAt
+			if got == nil && tt.want == nil {
+				return
+			}
+			if got == nil && tt.want != nil {
+				t.Errorf("Envelope.trigger() got %v, want %v", got, *tt.want)
+				return
+			}
+			if got != nil && tt.want == nil {
+				t.Errorf("Envelope.trigger() got %v, want %v", *got, tt.want)
+				return
+			}
+			if *got != *tt.want {
+				t.Errorf("Envelope.trigger() got %v, want %v", *got, *tt.want)
 			}
 		})
 	}
