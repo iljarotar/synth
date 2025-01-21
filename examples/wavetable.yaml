@@ -1,10 +1,16 @@
 vol: 1
 out: [w1]
 
+oscillators:
+  - name: lfo1
+    type: Sine
+    freq: { val: 4 }
+    amp: { val: 1 }
+
 wavetables:
   - name: w1
     table: [1, 0, 4, 2, 6, 1, 6]
-    freq: { val: 200 }
+    freq: { val: 200, mod: [lfo1], mod-amp: 2 }
     amp: { val: 0.1 }
     filters: [f1]
 

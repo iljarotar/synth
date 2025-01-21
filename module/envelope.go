@@ -1,8 +1,6 @@
 package module
 
 import (
-	"math"
-
 	"github.com/iljarotar/synth/utils"
 )
 
@@ -13,10 +11,9 @@ type Envelope struct {
 	Release         Input   `yaml:"release"`
 	Peak            Input   `yaml:"peak"`
 	SustainLevel    Input   `yaml:"sustain-level"`
-	TimeShift       float64 `yaml:"time-shift"`
+	Delay           float64 `yaml:"delay"`
 	BPM             Input   `yaml:"bpm"`
 	current         float64
-	currentBPM      float64
 	currentConfig   envelopeConfig
 	lastTriggeredAt *float64
 	triggered       bool
@@ -36,8 +33,8 @@ func (e *Envelope) Initialize() {
 }
 
 func (e *Envelope) Next(t float64, modMap ModulesMap) {
-	e.currentBPM = modulate(e.BPM, bpmLimits, modMap)
-	e.trigger(t, modMap)
+	bpm := modulate(e.BPM, bpmLimits, modMap)
+	e.trigger(t, bpm, modMap)
 	y := e.getCurrentValue(t)
 	e.current = y
 }
@@ -62,35 +59,21 @@ func (e *Envelope) getCurrentConfig(t float64, modMap ModulesMap) {
 	e.currentConfig = config
 }
 
-func (e *Envelope) trigger(t float64, modMap ModulesMap) {
+func (e *Envelope) trigger(t, bpm float64, modMap ModulesMap) {
 	e.triggered = false
 
-	if e.currentBPM == 0 {
+	if bpm == 0 {
 		return
 	}
 
-	secondsBetweenTwoBeats := 60 / e.currentBPM
-	var triggerAt float64
-	if t >= e.TimeShift {
-		numberOfTriggersMinusOne := math.Floor((t - e.TimeShift) / secondsBetweenTwoBeats)
-		triggerAt = numberOfTriggersMinusOne*secondsBetweenTwoBeats + e.TimeShift
-	} else {
-		numberOfTriggers := math.Ceil((e.TimeShift - t) / secondsBetweenTwoBeats)
-		triggerAt = e.TimeShift - numberOfTriggers*secondsBetweenTwoBeats
-	}
-
-	oldLastTriggeredAt := e.lastTriggeredAt
-	if oldLastTriggeredAt == nil {
-		e.triggered = true
-		e.lastTriggeredAt = &triggerAt
-		e.getCurrentConfig(t, modMap)
+	secondsBetweenTwoBeats := 60 / bpm
+	if e.lastTriggeredAt != nil && t-*e.lastTriggeredAt < secondsBetweenTwoBeats {
 		return
 	}
 
-	if t-*e.lastTriggeredAt >= secondsBetweenTwoBeats {
+	if t-e.Delay >= 0 || (e.lastTriggeredAt != nil && t-*e.lastTriggeredAt >= secondsBetweenTwoBeats) {
 		e.triggered = true
-		newLastTriggeredAt := t
-		e.lastTriggeredAt = &newLastTriggeredAt
+		e.lastTriggeredAt = &t
 		e.getCurrentConfig(t, modMap)
 	}
 }
@@ -169,4 +152,6 @@ func (e *Envelope) limitParams() {
 
 	e.BPM.Val = utils.Limit(e.BPM.Val, bpmLimits.min, bpmLimits.max)
 	e.BPM.ModAmp = utils.Limit(e.BPM.ModAmp, bpmLimits.min, bpmLimits.max)
+
+	e.Delay = utils.Limit(e.Delay, delayLimits.min, delayLimits.max)
 }
