@@ -47,7 +47,7 @@ var (
 	panLimits       limits = limits{min: -1, max: 1}
 	phaseLimits     limits = limits{min: -1, max: 1}
 	pitchLimits     limits = limits{min: 400, max: 500}
-	timeLimits      limits = limits{min: 0, max: 3600}
+	delayLimits     limits = limits{min: 0, max: 3600}
 	transposeLimits limits = limits{min: -24, max: 24}
 )
 

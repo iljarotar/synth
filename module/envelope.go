@@ -153,5 +153,5 @@ func (e *Envelope) limitParams() {
 	e.BPM.Val = utils.Limit(e.BPM.Val, bpmLimits.min, bpmLimits.max)
 	e.BPM.ModAmp = utils.Limit(e.BPM.ModAmp, bpmLimits.min, bpmLimits.max)
 
-	e.Delay = utils.Limit(e.Delay, timeLimits.min, timeLimits.max)
+	e.Delay = utils.Limit(e.Delay, delayLimits.min, delayLimits.max)
 }
