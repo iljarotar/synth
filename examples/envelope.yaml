@@ -13,8 +13,8 @@ oscillators:
       release: { val: 1 }
       peak: { val: 1 }
       sustain-level: { val: 0.1 }
-      time-shift: 3
-      bpm: { val: 40 }
+      time-shift: 2
+      bpm: { val: 20 }
 
   - name: lfo1
     type: Sine

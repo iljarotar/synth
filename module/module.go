@@ -40,7 +40,7 @@ type output struct {
 
 var (
 	ampLimits       limits = limits{min: 0, max: 2}
-	bpmLimits       limits = limits{min: 0, max: 600000}
+	bpmLimits       limits = limits{min: 0.0001, max: 600000}
 	cutoffLimits    limits = limits{min: 1, max: 20000}
 	envelopeLimits  limits = limits{min: 0, max: 10000}
 	freqLimits      limits = limits{min: 0, max: 20000}

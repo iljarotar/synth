@@ -33,6 +33,10 @@ type envelopeConfig struct {
 
 func (e *Envelope) Initialize() {
 	e.limitParams()
+	if e.TimeShift > 0 {
+		secondsBetweenTwoBeats := 60 / e.BPM.Val
+		e.TimeShift -= secondsBetweenTwoBeats // make time shift sound cyclic
+	}
 }
 
 func (e *Envelope) Next(t float64, modMap ModulesMap) {
@@ -70,27 +74,16 @@ func (e *Envelope) trigger(t float64, modMap ModulesMap) {
 	}
 
 	secondsBetweenTwoBeats := 60 / e.currentBPM
-	var triggerAt float64
-	if t >= e.TimeShift {
-		numberOfTriggersMinusOne := math.Floor((t - e.TimeShift) / secondsBetweenTwoBeats)
-		triggerAt = numberOfTriggersMinusOne*secondsBetweenTwoBeats + e.TimeShift
-	} else {
-		numberOfTriggers := math.Ceil((e.TimeShift - t) / secondsBetweenTwoBeats)
-		triggerAt = e.TimeShift - numberOfTriggers*secondsBetweenTwoBeats
-	}
+	numberOfTriggersMinusOne := math.Floor((t - e.TimeShift) / secondsBetweenTwoBeats)
+	triggerAt := numberOfTriggersMinusOne*secondsBetweenTwoBeats + e.TimeShift
 
-	oldLastTriggeredAt := e.lastTriggeredAt
-	if oldLastTriggeredAt == nil {
-		e.triggered = true
-		e.lastTriggeredAt = &triggerAt
-		e.getCurrentConfig(t, modMap)
+	if t < triggerAt {
 		return
 	}
 
-	if t-*e.lastTriggeredAt >= secondsBetweenTwoBeats {
+	if e.lastTriggeredAt == nil || triggerAt > *e.lastTriggeredAt {
 		e.triggered = true
-		newLastTriggeredAt := t
-		e.lastTriggeredAt = &newLastTriggeredAt
+		e.lastTriggeredAt = &triggerAt
 		e.getCurrentConfig(t, modMap)
 	}
 }
