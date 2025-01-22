@@ -147,9 +147,23 @@ func start(file string, config *c.Config) error {
 	}
 
 	p := tea.NewProgram(ui.NewModel(ctl), tea.WithAltScreen())
-	ctl.SetQuitFunc(func() {
-		p.Send(ui.QuitMsg(true))
-	})
+
+	callbacks := s.Callbacks{
+		Quit: func() {
+			p.Send(ui.QuitMsg(true))
+		},
+		UpdateTime: func(time float64) {
+			p.Send(ui.TimeMsg(time))
+		},
+		SendVolumeWarning: func(output float64) {
+			p.Send(ui.VolumeWarningMsg(output))
+		},
+		ShowVolume: func(volume float64) {
+			p.Send(ui.VolumeMsg(volume))
+		},
+	}
+
+	ctl.SetCallbacks(callbacks)
 	if _, err := p.Run(); err != nil {
 		return fmt.Errorf("unable to start synth: %w", err)
 	}

@@ -7,16 +7,29 @@ import (
 	cfg "github.com/iljarotar/synth/config"
 )
 
+type QuitFunc func()
+type UpdateTimeFunc func(time float64)
+type ShowVolumeWarningFunc func(output float64)
+type ShowVolumeFunc func(volume float64)
+
+type Callbacks struct {
+	Quit              QuitFunc
+	UpdateTime        UpdateTimeFunc
+	SendVolumeWarning ShowVolumeWarningFunc
+	ShowVolume        ShowVolumeFunc
+}
+
 type Control struct {
-	config                        cfg.Config
-	synth                         *Synth
-	output                        chan audio.AudioOutput
-	synthDone                     chan bool
-	autoStop                      chan bool
-	maxOutput, lastNotifiedOutput float64
-	overdriveWarningTriggeredAt   float64
-	quitFunc                      func()
-	quitting                      bool
+	config                   cfg.Config
+	synth                    *Synth
+	output                   chan audio.AudioOutput
+	synthDone                chan bool
+	autoStop                 chan bool
+	maxOutput                float64
+	volumeWarningTriggeredAt float64
+	callbacks                Callbacks
+	quitting                 bool
+	secondsPassed            float64
 }
 
 func NewControl(synth *Synth, config cfg.Config, output chan audio.AudioOutput) (*Control, error) {
@@ -25,19 +38,27 @@ func NewControl(synth *Synth, config cfg.Config, output chan audio.AudioOutput) 
 		return nil, err
 	}
 
+	callbacks := Callbacks{
+		Quit:              func() {},
+		UpdateTime:        func(time float64) {},
+		SendVolumeWarning: func(output float64) {},
+		ShowVolume:        func(volume float64) {},
+	}
+
 	ctl := &Control{
 		config:    config,
 		synth:     synth,
 		output:    output,
 		synthDone: make(chan bool),
 		autoStop:  make(chan bool),
+		callbacks: callbacks,
 	}
 
 	return ctl, nil
 }
 
 func (c *Control) GetVolume() float64 {
-	return c.synth.Volume
+	return c.synth.volumeMemory
 }
 
 func (c *Control) IncreaseVolume() {
@@ -56,10 +77,22 @@ func (c *Control) DecreaseVolume() {
 	}
 	c.synth.volumeMemory = vol
 	c.synth.Volume = vol
+	c.maxOutput = 0
 }
 
-func (c *Control) SetQuitFunc(quitFunc func()) {
-	c.quitFunc = quitFunc
+func (c *Control) SetCallbacks(callbacks Callbacks) {
+	if callbacks.Quit != nil {
+		c.callbacks.Quit = callbacks.Quit
+	}
+	if callbacks.SendVolumeWarning != nil {
+		c.callbacks.SendVolumeWarning = callbacks.SendVolumeWarning
+	}
+	if callbacks.ShowVolume != nil {
+		c.callbacks.ShowVolume = callbacks.ShowVolume
+	}
+	if callbacks.UpdateTime != nil {
+		c.callbacks.UpdateTime = callbacks.UpdateTime
+	}
 }
 
 func (c *Control) Start() {
@@ -77,17 +110,20 @@ func (c *Control) Stop() {
 	c.synth.active = false
 }
 
-func (c *Control) checkOverdrive(output, time float64) {
+func (c *Control) checkVolume(output, time float64) {
 	// only consider up to three decimals
 	abs := math.Round(math.Abs(output)*1000) / 1000
-	if abs > c.maxOutput {
+
+	if abs > 1 && abs > c.maxOutput && time-c.volumeWarningTriggeredAt >= 0.5 {
 		c.maxOutput = abs
+		c.volumeWarningTriggeredAt = time
+		c.callbacks.SendVolumeWarning(abs)
+		return
 	}
 
-	if c.maxOutput > 1 && c.maxOutput > c.lastNotifiedOutput && time-c.overdriveWarningTriggeredAt >= 0.5 {
-		c.lastNotifiedOutput = c.maxOutput
-		// TODO: overdrive warning
-		c.overdriveWarningTriggeredAt = time
+	if c.maxOutput <= 1 && c.volumeWarningTriggeredAt > 0 {
+		c.volumeWarningTriggeredAt = 0
+		c.callbacks.SendVolumeWarning(0)
 	}
 }
 
@@ -96,7 +132,8 @@ func (c *Control) receiveOutput(outputChan <-chan Output) {
 
 	for out := range outputChan {
 		c.checkDuration(out.Time)
-		c.checkOverdrive(out.Mono, out.Time)
+		c.checkVolume(out.Mono, out.Time)
+		c.sendTime(out.Time)
 
 		c.output <- audio.AudioOutput{
 			Left:  out.Left,
@@ -105,14 +142,24 @@ func (c *Control) receiveOutput(outputChan <-chan Output) {
 	}
 }
 
+func (c *Control) sendTime(time float64) {
+	if time-c.secondsPassed >= 1 {
+		c.secondsPassed += 1
+		c.callbacks.UpdateTime(c.secondsPassed)
+	}
+}
+
 func (c *Control) checkDuration(time float64) {
 	if c.config.Duration < 0 {
 		return
 	}
+	if c.quitting {
+		return
+	}
 	duration := c.config.Duration - c.config.FadeOut
-	if time < duration || c.quitting {
+	if time < duration {
 		return
 	}
 	c.quitting = true
-	c.quitFunc()
+	c.callbacks.Quit()
 }
