@@ -15,10 +15,11 @@ type Control struct {
 	autoStop                      chan bool
 	maxOutput, lastNotifiedOutput float64
 	overdriveWarningTriggeredAt   float64
-	closing                       *bool
+	quitFunc                      func()
+	quitting                      bool
 }
 
-func NewControl(synth *Synth, config cfg.Config, output chan audio.AudioOutput, autoStop chan bool) (*Control, error) {
+func NewControl(synth *Synth, config cfg.Config, output chan audio.AudioOutput) (*Control, error) {
 	err := synth.initialize(config.SampleRate)
 	if err != nil {
 		return nil, err
@@ -29,7 +30,7 @@ func NewControl(synth *Synth, config cfg.Config, output chan audio.AudioOutput, 
 		synth:     synth,
 		output:    output,
 		synthDone: make(chan bool),
-		autoStop:  autoStop,
+		autoStop:  make(chan bool),
 	}
 
 	return ctl, nil
@@ -55,6 +56,10 @@ func (c *Control) DecreaseVolume() {
 	}
 	c.synth.volumeMemory = vol
 	c.synth.Volume = vol
+}
+
+func (c *Control) SetQuitFunc(quitFunc func()) {
+	c.quitFunc = quitFunc
 }
 
 func (c *Control) Start() {
@@ -86,17 +91,6 @@ func (c *Control) checkOverdrive(output, time float64) {
 	}
 }
 
-func (c *Control) checkDuration(time float64) {
-	if c.config.Duration < 0 {
-		return
-	}
-	duration := c.config.Duration - c.config.FadeOut
-	if time < duration || *c.closing {
-		return
-	}
-	c.autoStop <- true
-}
-
 func (c *Control) receiveOutput(outputChan <-chan Output) {
 	defer close(c.output)
 
@@ -109,4 +103,16 @@ func (c *Control) receiveOutput(outputChan <-chan Output) {
 			Right: out.Right,
 		}
 	}
+}
+
+func (c *Control) checkDuration(time float64) {
+	if c.config.Duration < 0 {
+		return
+	}
+	duration := c.config.Duration - c.config.FadeOut
+	if time < duration || c.quitting {
+		return
+	}
+	c.quitting = true
+	c.quitFunc()
 }

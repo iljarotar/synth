@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/iljarotar/synth/audio"
@@ -119,8 +118,6 @@ func start(file string, config *c.Config) error {
 	}
 	defer audio.Terminate()
 
-	autoStop := make(chan bool)
-
 	output := make(chan audio.AudioOutput)
 	ctx, err := audio.NewContext(output, config.SampleRate)
 	if err != nil {
@@ -144,16 +141,18 @@ func start(file string, config *c.Config) error {
 		return err
 	}
 
-	ctl, err := s.NewControl(&synth, *config, output, autoStop)
+	ctl, err := s.NewControl(&synth, *config, output)
 	if err != nil {
 		return err
 	}
 
-	p := tea.NewProgram(ui.NewModel(ctl))
+	p := tea.NewProgram(ui.NewModel(ctl), tea.WithAltScreen())
+	ctl.SetQuitFunc(func() {
+		p.Send(ui.QuitMsg(true))
+	})
 	if _, err := p.Run(); err != nil {
 		return fmt.Errorf("unable to start synth: %w", err)
 	}
 
-	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
-	return err
+	return nil
 }
