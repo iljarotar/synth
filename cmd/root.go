@@ -3,16 +3,15 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/iljarotar/synth/audio"
+	"github.com/iljarotar/synth/ui"
+	"gopkg.in/yaml.v2"
 
 	c "github.com/iljarotar/synth/config"
-	"github.com/iljarotar/synth/control"
-	f "github.com/iljarotar/synth/file"
-	"github.com/iljarotar/synth/ui"
+	s "github.com/iljarotar/synth/synth"
 	"github.com/spf13/cobra"
 )
 
@@ -120,12 +119,7 @@ func start(file string, config *c.Config) error {
 	}
 	defer audio.Terminate()
 
-	logger := ui.NewLogger(10)
-	quit := make(chan bool)
 	autoStop := make(chan bool)
-	var closing bool
-	u := ui.NewUI(logger, file, quit, autoStop, config.Duration, &closing)
-	go u.Enter()
 
 	output := make(chan audio.AudioOutput)
 	ctx, err := audio.NewContext(output, config.SampleRate)
@@ -139,57 +133,27 @@ func start(file string, config *c.Config) error {
 		return err
 	}
 
-	ctl, err := control.NewControl(logger, *config, output, autoStop, &closing)
+	bytes, err := os.ReadFile(file)
 	if err != nil {
 		return err
 	}
-	ctl.Start()
-	defer ctl.StopSynth()
 
-	loader, err := f.NewLoader(logger, ctl, file, &closing)
+	synth := s.Synth{}
+	err = yaml.Unmarshal(bytes, &synth)
 	if err != nil {
 		return err
 	}
-	defer loader.Close()
 
-	err = loader.Load()
+	ctl, err := s.NewControl(&synth, *config, output, autoStop)
 	if err != nil {
-		ui.Clear()
-		return fmt.Errorf("unable to load file %s: %w", file, err)
+		return err
 	}
 
-	sig := make(chan os.Signal, 2)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-	interrupt := make(chan bool)
-	go catchInterrupt(interrupt, sig)
-
-	ctl.FadeIn(config.FadeIn)
-	var fadingOut bool
-
-Loop:
-	for {
-		select {
-		case <-quit:
-			if fadingOut {
-				logger.Info("already received quit signal")
-				continue
-			}
-			fadingOut = true
-			logger.Info(fmt.Sprintf("fading out in %fs", config.FadeOut))
-			ctl.Stop(config.FadeOut)
-		case <-interrupt:
-			ctl.Stop(0.05)
-		case <-ctl.SynthDone:
-			break Loop
-		}
+	p := tea.NewProgram(ui.NewModel(ctl))
+	if _, err := p.Run(); err != nil {
+		return fmt.Errorf("unable to start synth: %w", err)
 	}
 
 	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
-	ui.LineBreaks(2)
 	return err
-}
-
-func catchInterrupt(stop chan bool, sig chan os.Signal) {
-	<-sig
-	stop <- true
 }

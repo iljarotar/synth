@@ -6,12 +6,17 @@ import (
 )
 
 const (
-	maxInitTime                    = 7200
+	maxInitTime = 7200
+	maxVolume   = 2
+)
+
+type FadeDirection string
+
+const (
 	FadeDirectionIn  FadeDirection = "in"
 	FadeDirectionOut FadeDirection = "out"
 )
 
-type FadeDirection string
 type Output struct {
 	Left, Right, Mono, Time float64
 }
@@ -30,20 +35,19 @@ type Synth struct {
 	modMap             module.ModulesMap
 	filtersMap         module.FiltersMap
 	step, volumeMemory float64
-	notifyFadeOutDone  chan bool
+	fadeOutDone        chan bool
 	fadeDirection      FadeDirection
 	fadeDuration       float64
 	active             bool
 }
 
-func (s *Synth) Initialize(sampleRate float64) error {
+func (s *Synth) initialize(sampleRate float64) error {
 	s.step = 1 / sampleRate
 	s.sampleRate = sampleRate
-	s.Volume = utils.Limit(s.Volume, 0, 2)
+	s.Volume = utils.Limit(s.Volume, 0, maxVolume)
 	s.Time = utils.Limit(s.Time, 0, maxInitTime)
 	s.volumeMemory = s.Volume
 	s.Volume = 0 // start muted
-	s.active = true
 
 	for _, osc := range s.Oscillators {
 		err := osc.Initialize(sampleRate)
@@ -74,18 +78,17 @@ func (s *Synth) Initialize(sampleRate float64) error {
 	for _, f := range s.Filters {
 		f.Initialize(sampleRate)
 	}
-
 	s.makeMaps()
 
 	return nil
 }
 
-func (s *Synth) Play(outputChan chan<- Output) {
+func (s *Synth) play(outputChan chan<- Output) {
 	defer close(outputChan)
 
 	for s.active {
 		left, right, mono := s.getCurrentValue()
-		s.adjustVolume()
+		s.fade()
 		left *= s.Volume
 		right *= s.Volume
 		mono *= s.Volume
@@ -99,20 +102,16 @@ func (s *Synth) Play(outputChan chan<- Output) {
 	}
 }
 
-func (s *Synth) Stop() {
-	s.active = false
-}
-
-func (s *Synth) Fade(direction FadeDirection, seconds float64) {
+func (s *Synth) startFading(direction FadeDirection, seconds float64) {
 	s.fadeDirection = direction
 	s.fadeDuration = seconds
 }
 
-func (s *Synth) NotifyFadeOutDone(notify chan bool) {
-	s.notifyFadeOutDone = notify
+func (s *Synth) notifyFadeOutDone(notify chan bool) {
+	s.fadeOutDone = notify
 }
 
-func (s *Synth) adjustVolume() {
+func (s *Synth) fade() {
 	if s.fadeDirection == FadeDirectionIn {
 		s.fadeIn()
 	} else {
@@ -136,10 +135,10 @@ func (s *Synth) fadeIn() {
 
 func (s *Synth) fadeOut() {
 	if s.Volume == 0 {
-		if s.notifyFadeOutDone != nil {
-			s.notifyFadeOutDone <- true
-			close(s.notifyFadeOutDone)
-			s.notifyFadeOutDone = nil
+		if s.fadeOutDone != nil {
+			s.fadeOutDone <- true
+			close(s.fadeOutDone)
+			s.fadeOutDone = nil
 		}
 		return
 	}
