@@ -33,10 +33,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q":
-			// FIX: need to handle this in a non-blocking way
-			// m.ctl.Stop()
+		case "ctrl+c":
 			return m, tea.Quit
+		case "q":
+			m.ctl.Stop()
 
 		case "up", "d":
 			m.ctl.IncreaseVolume()
@@ -45,16 +45,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.ctl.DecreaseVolume()
 		}
 
+	case QuitMsg:
+		return m, tea.Quit
+
+	case TimeIsUpMsg:
+		m.ctl.Stop()
+
 	case TimeMsg:
 		m.time = float64(msg)
 
 	case VolumeWarningMsg:
 		m.exceedingVolume = float64(msg)
-
-	case QuitMsg:
-		// FIX: need to handle this in a non-blocking way
-		// m.ctl.Stop()
-		return m, tea.Quit
 	}
 
 	return m, nil

@@ -8,12 +8,14 @@ import (
 )
 
 type QuitFunc func()
+type TimeIsUpFunc func()
 type UpdateTimeFunc func(time float64)
 type ShowVolumeWarningFunc func(output float64)
 type ShowVolumeFunc func(volume float64)
 
 type Callbacks struct {
 	Quit              QuitFunc
+	TimeIsUp          TimeIsUpFunc
 	UpdateTime        UpdateTimeFunc
 	SendVolumeWarning ShowVolumeWarningFunc
 	ShowVolume        ShowVolumeFunc
@@ -40,6 +42,7 @@ func NewControl(synth *Synth, config cfg.Config, output chan audio.AudioOutput) 
 
 	callbacks := Callbacks{
 		Quit:              func() {},
+		TimeIsUp:          func() {},
 		UpdateTime:        func(time float64) {},
 		SendVolumeWarning: func(output float64) {},
 		ShowVolume:        func(volume float64) {},
@@ -81,18 +84,7 @@ func (c *Control) DecreaseVolume() {
 }
 
 func (c *Control) SetCallbacks(callbacks Callbacks) {
-	if callbacks.Quit != nil {
-		c.callbacks.Quit = callbacks.Quit
-	}
-	if callbacks.SendVolumeWarning != nil {
-		c.callbacks.SendVolumeWarning = callbacks.SendVolumeWarning
-	}
-	if callbacks.ShowVolume != nil {
-		c.callbacks.ShowVolume = callbacks.ShowVolume
-	}
-	if callbacks.UpdateTime != nil {
-		c.callbacks.UpdateTime = callbacks.UpdateTime
-	}
+	c.callbacks = callbacks
 }
 
 func (c *Control) Start() {
@@ -106,8 +98,11 @@ func (c *Control) Start() {
 func (c *Control) Stop() {
 	c.synth.notifyFadeOutDone(c.synthDone)
 	c.synth.startFading(FadeDirectionOut, c.config.FadeOut)
-	<-c.synthDone
-	c.synth.active = false
+	go func() {
+		<-c.synthDone
+		c.synth.active = false
+		c.callbacks.Quit()
+	}()
 }
 
 func (c *Control) checkVolume(output, time float64) {
@@ -161,5 +156,5 @@ func (c *Control) checkDuration(time float64) {
 		return
 	}
 	c.quitting = true
-	c.callbacks.Quit()
+	c.callbacks.TimeIsUp()
 }

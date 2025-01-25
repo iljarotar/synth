@@ -152,6 +152,9 @@ func start(file string, config *c.Config) error {
 		Quit: func() {
 			p.Send(ui.QuitMsg(true))
 		},
+		TimeIsUp: func() {
+			p.Send(ui.TimeIsUpMsg(true))
+		},
 		UpdateTime: func(time float64) {
 			p.Send(ui.TimeMsg(time))
 		},
