@@ -5,23 +5,36 @@ import (
 	s "github.com/iljarotar/synth/synth"
 )
 
-type app struct {
-	ctl    *s.Control
-	layout tea.Model
+type appModel struct {
+	ctl     *s.Control
+	layout  layoutModel
+	current tea.Model
 }
 
-func NewApp(ctl *s.Control, fileName string) *app {
-	return &app{
-		ctl:    ctl,
-		layout: layout{file: fileName},
+func NewAppModel(ctl *s.Control, fileName string) *appModel {
+	current := synthModel{
+		synth: ctl.Synth,
+		table: getSynthTable(ctl.Synth),
+	}
+
+	return &appModel{
+		ctl: ctl,
+		layout: layoutModel{
+			file: fileName,
+		},
+		current: current,
 	}
 }
 
-func (a app) Init() tea.Cmd {
-	return a.start
+func (m appModel) Init() tea.Cmd {
+	init := func() tea.Msg {
+		m.ctl.Start()
+		return nil
+	}
+	return init
 }
 
-func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -29,36 +42,37 @@ func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":
-			return a, tea.Quit
+			return m, tea.Quit
 
 		case "q":
-			a.ctl.Stop()
+			m.ctl.Stop()
 
-		case "up", "d":
-			a.ctl.IncreaseVolume()
+		case "d":
+			m.ctl.IncreaseVolume()
 
-		case "down", "s":
-			a.ctl.DecreaseVolume()
+		case "s":
+			m.ctl.DecreaseVolume()
+
+		default:
+			m.current, cmd = m.current.Update(msg)
 		}
 
 	case QuitMsg:
-		return a, tea.Quit
+		return m, tea.Quit
 
 	case TimeIsUpMsg:
-		a.ctl.Stop()
+		m.ctl.Stop()
 
 	case TimeMsg, VolumeWarningMsg, tea.WindowSizeMsg:
-		a.layout, cmd = a.layout.Update(msg)
+		layout, cmd := m.layout.Update(msg)
+		m.layout = layout.(layoutModel)
+		cmd = cmd
 	}
 
-	return a, cmd
+	return m, cmd
 }
 
-func (a app) View() string {
-	return a.layout.View()
-}
-
-func (a app) start() tea.Msg {
-	a.ctl.Start()
-	return nil
+func (m appModel) View() string {
+	m.layout.content = m.current.View()
+	return m.layout.View()
 }

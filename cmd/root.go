@@ -146,7 +146,7 @@ func start(file string, config *c.Config) error {
 		return err
 	}
 
-	p := tea.NewProgram(ui.NewApp(ctl, file), tea.WithAltScreen())
+	p := tea.NewProgram(ui.NewAppModel(ctl, file), tea.WithAltScreen())
 
 	callbacks := s.Callbacks{
 		Quit: func() {

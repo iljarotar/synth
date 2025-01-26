@@ -1,8 +1,8 @@
 package ui
 
-import "github.com/charmbracelet/lipgloss"
+import lg "github.com/charmbracelet/lipgloss"
 
-func applyStyles(content string, styles ...lipgloss.Style) string {
+func applyStyles(content string, styles ...lg.Style) string {
 	styled := content
 
 	for _, style := range styles {

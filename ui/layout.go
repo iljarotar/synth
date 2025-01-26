@@ -4,61 +4,60 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	lg "github.com/charmbracelet/lipgloss"
 )
 
-type layout struct {
-	content       string
+type layoutModel struct {
 	file          string
 	maxOutput     float64
 	time          float64
 	height, width float64
+	content       string
 }
 
-func (l layout) Init() tea.Cmd {
+func (m layoutModel) Init() tea.Cmd {
 	return nil
 }
 
-func (l layout) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m layoutModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case TimeMsg:
-		l.time = float64(msg)
+		m.time = float64(msg)
 
 	case VolumeWarningMsg:
-		l.maxOutput = float64(msg)
+		m.maxOutput = float64(msg)
 
 	case tea.WindowSizeMsg:
-		l.height = float64(msg.Height)
-		l.width = float64(msg.Width)
-		return l, tea.ClearScreen
+		m.width = float64(msg.Width)
+		m.height = float64(msg.Height)
 	}
 
-	return l, nil
+	return m, nil
 }
 
-func (l layout) View() string {
+func (m layoutModel) View() string {
 	paddingX, paddingY := 1, 4
-	padding := lipgloss.NewStyle().Padding(paddingX, paddingY)
-	width := l.halfWidth(0)
-	rightAlign := l.halfWidth(0).AlignHorizontal(lipgloss.Right)
-	borderBottom := lipgloss.NewStyle().Border(lipgloss.NormalBorder(), false, false, true, false)
+	padding := lg.NewStyle().Padding(paddingX, paddingY)
+	width := m.halfWidth(0)
+	rightAlign := m.halfWidth(0).AlignHorizontal(lg.Right)
+	borderBottom := lg.NewStyle().Border(lg.NormalBorder(), false, false, true, false)
 
 	logo := applyStyles("Synth", padding, width)
-	file := applyStyles(l.file, padding, rightAlign)
-	top := lipgloss.JoinHorizontal(0, logo, file)
+	file := applyStyles(m.file, padding, rightAlign)
+	top := lg.JoinHorizontal(0, logo, file)
 
-	volumeWarning := applyStyles(showVolumeWarning(l.maxOutput), padding, width)
-	time := applyStyles(formatTime(int(l.time)), padding, rightAlign)
-	second := lipgloss.JoinHorizontal(0, volumeWarning, time)
+	volumeWarning := applyStyles(showVolumeWarning(m.maxOutput), padding, width)
+	time := applyStyles(formatTime(int(m.time)), padding, rightAlign)
+	second := lg.JoinHorizontal(0, volumeWarning, time)
 
-	header := applyStyles(lipgloss.JoinVertical(0, top, second), borderBottom)
+	header := applyStyles(lg.JoinVertical(0, top, second), borderBottom)
 
-	return header
+	return lg.JoinVertical(0, header, m.content)
 }
 
-func (l layout) halfWidth(margin int) lipgloss.Style {
-	return lipgloss.NewStyle().Width(int(l.width)/2 - margin*2)
+func (m layoutModel) halfWidth(margin int) lg.Style {
+	return lg.NewStyle().Width(int(m.width)/2 - margin*2)
 }
 
 func formatTime(time int) string {
@@ -87,7 +86,7 @@ func showVolumeWarning(output float64) string {
 	if output <= 1 {
 		return ""
 	}
-	colored := lipgloss.NewStyle().Foreground(lipgloss.Color("220"))
+	colored := lg.NewStyle().Foreground(lg.Color("220"))
 
 	return colored.Render(fmt.Sprintf("Volume reached %v", output))
 }
