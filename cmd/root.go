@@ -146,7 +146,7 @@ func start(file string, config *c.Config) error {
 		return err
 	}
 
-	p := tea.NewProgram(ui.NewModel(ctl), tea.WithAltScreen())
+	p := tea.NewProgram(ui.NewApp(ctl, file), tea.WithAltScreen())
 
 	callbacks := s.Callbacks{
 		Quit: func() {
@@ -160,9 +160,6 @@ func start(file string, config *c.Config) error {
 		},
 		SendVolumeWarning: func(output float64) {
 			p.Send(ui.VolumeWarningMsg(output))
-		},
-		ShowVolume: func(volume float64) {
-			p.Send(ui.VolumeMsg(volume))
 		},
 	}
 

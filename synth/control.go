@@ -18,12 +18,11 @@ type Callbacks struct {
 	TimeIsUp          TimeIsUpFunc
 	UpdateTime        UpdateTimeFunc
 	SendVolumeWarning ShowVolumeWarningFunc
-	ShowVolume        ShowVolumeFunc
 }
 
 type Control struct {
 	config                   cfg.Config
-	synth                    *Synth
+	Synth                    *Synth
 	output                   chan audio.AudioOutput
 	synthDone                chan bool
 	autoStop                 chan bool
@@ -45,12 +44,11 @@ func NewControl(synth *Synth, config cfg.Config, output chan audio.AudioOutput) 
 		TimeIsUp:          func() {},
 		UpdateTime:        func(time float64) {},
 		SendVolumeWarning: func(output float64) {},
-		ShowVolume:        func(volume float64) {},
 	}
 
 	ctl := &Control{
 		config:    config,
-		synth:     synth,
+		Synth:     synth,
 		output:    output,
 		synthDone: make(chan bool),
 		autoStop:  make(chan bool),
@@ -60,26 +58,22 @@ func NewControl(synth *Synth, config cfg.Config, output chan audio.AudioOutput) 
 	return ctl, nil
 }
 
-func (c *Control) GetVolume() float64 {
-	return c.synth.volumeMemory
-}
-
 func (c *Control) IncreaseVolume() {
-	vol := c.synth.Volume + 0.02
+	vol := c.Synth.Volume + 0.02
 	if vol > maxVolume {
 		vol = maxVolume
 	}
-	c.synth.volumeMemory = vol
-	c.synth.Volume = vol
+	c.Synth.volumeMemory = vol
+	c.Synth.Volume = vol
 }
 
 func (c *Control) DecreaseVolume() {
-	vol := c.synth.Volume - 0.02
+	vol := c.Synth.Volume - 0.02
 	if vol < 0 {
 		vol = 0
 	}
-	c.synth.volumeMemory = vol
-	c.synth.Volume = vol
+	c.Synth.volumeMemory = vol
+	c.Synth.Volume = vol
 	c.maxOutput = 0
 }
 
@@ -89,18 +83,18 @@ func (c *Control) SetCallbacks(callbacks Callbacks) {
 
 func (c *Control) Start() {
 	outputChan := make(chan Output)
-	c.synth.active = true
-	go c.synth.play(outputChan)
+	c.Synth.active = true
+	go c.Synth.play(outputChan)
 	go c.receiveOutput(outputChan)
-	c.synth.startFading(FadeDirectionIn, c.config.FadeIn)
+	c.Synth.startFading(FadeDirectionIn, c.config.FadeIn)
 }
 
 func (c *Control) Stop() {
-	c.synth.notifyFadeOutDone(c.synthDone)
-	c.synth.startFading(FadeDirectionOut, c.config.FadeOut)
+	c.Synth.notifyFadeOutDone(c.synthDone)
+	c.Synth.startFading(FadeDirectionOut, c.config.FadeOut)
 	go func() {
 		<-c.synthDone
-		c.synth.active = false
+		c.Synth.active = false
 		c.callbacks.Quit()
 	}()
 }
