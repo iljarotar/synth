@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
-	lg "github.com/charmbracelet/lipgloss"
+	l "github.com/charmbracelet/lipgloss"
 )
 
 type layoutModel struct {
@@ -38,26 +38,26 @@ func (m layoutModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m layoutModel) View() string {
 	paddingX, paddingY := 1, 4
-	padding := lg.NewStyle().Padding(paddingX, paddingY)
+	padding := l.NewStyle().Padding(paddingX, paddingY)
 	width := m.halfWidth(0)
-	rightAlign := m.halfWidth(0).AlignHorizontal(lg.Right)
-	borderBottom := lg.NewStyle().Border(lg.NormalBorder(), false, false, true, false)
+	rightAlign := m.halfWidth(0).AlignHorizontal(l.Right)
+	borderBottom := l.NewStyle().Border(l.NormalBorder(), false, false, true, false)
 
 	logo := applyStyles("Synth", padding, width)
 	file := applyStyles(m.file, padding, rightAlign)
-	top := lg.JoinHorizontal(0, logo, file)
+	top := l.JoinHorizontal(0, logo, file)
 
 	volumeWarning := applyStyles(showVolumeWarning(m.maxOutput), padding, width)
 	time := applyStyles(formatTime(int(m.time)), padding, rightAlign)
-	second := lg.JoinHorizontal(0, volumeWarning, time)
+	second := l.JoinHorizontal(0, volumeWarning, time)
 
-	header := applyStyles(lg.JoinVertical(0, top, second), borderBottom)
+	header := applyStyles(l.JoinVertical(0, top, second), borderBottom)
 
-	return lg.JoinVertical(0, header, m.content)
+	return l.JoinVertical(0, header, m.content)
 }
 
-func (m layoutModel) halfWidth(margin int) lg.Style {
-	return lg.NewStyle().Width(int(m.width)/2 - margin*2)
+func (m layoutModel) halfWidth(margin int) l.Style {
+	return l.NewStyle().Width(int(m.width)/2 - margin*2)
 }
 
 func formatTime(time int) string {
@@ -86,7 +86,7 @@ func showVolumeWarning(output float64) string {
 	if output <= 1 {
 		return ""
 	}
-	colored := lg.NewStyle().Foreground(lg.Color("220"))
+	colored := l.NewStyle().Foreground(l.Color("220"))
 
 	return colored.Render(fmt.Sprintf("Volume reached %v", output))
 }

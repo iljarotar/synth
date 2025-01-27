@@ -30,7 +30,7 @@ type Synth struct {
 	Samplers           []*module.Sampler    `yaml:"samplers"`
 	Sequences          []*module.Sequence   `yaml:"sequences"`
 	Filters            []*module.Filter     `yaml:"filters"`
-	Time               float64              `yaml:"time"`
+	time               float64
 	sampleRate         float64
 	modMap             module.ModulesMap
 	filtersMap         module.FiltersMap
@@ -45,7 +45,7 @@ func (s *Synth) initialize(sampleRate float64) error {
 	s.step = 1 / sampleRate
 	s.sampleRate = sampleRate
 	s.Volume = utils.Limit(s.Volume, 0, maxVolume)
-	s.Time = utils.Limit(s.Time, 0, maxInitTime)
+	s.time = utils.Limit(s.time, 0, maxInitTime)
 	s.volumeMemory = s.Volume
 	s.Volume = 0 // start muted
 
@@ -97,7 +97,7 @@ func (s *Synth) play(outputChan chan<- Output) {
 			Left:  left,
 			Right: right,
 			Mono:  mono,
-			Time:  s.Time,
+			Time:  s.time,
 		}
 	}
 }
@@ -171,30 +171,30 @@ func (s *Synth) getCurrentValue() (left, right, mono float64) {
 func (s *Synth) updateCurrentValues() {
 	for _, o := range s.Oscillators {
 		osc := o
-		osc.Next(s.Time, s.modMap, s.filtersMap)
+		osc.Next(s.time, s.modMap, s.filtersMap)
 	}
 
 	for _, n := range s.Noises {
-		n.Next(s.Time, s.modMap, s.filtersMap)
+		n.Next(s.time, s.modMap, s.filtersMap)
 	}
 
 	for _, c := range s.Wavetables {
-		c.Next(s.Time, s.modMap, s.filtersMap)
+		c.Next(s.time, s.modMap, s.filtersMap)
 	}
 
 	for _, smplr := range s.Samplers {
-		smplr.Next(s.Time, s.modMap, s.filtersMap)
+		smplr.Next(s.time, s.modMap, s.filtersMap)
 	}
 
 	for _, sq := range s.Sequences {
-		sq.Next(s.Time, s.modMap, s.filtersMap)
+		sq.Next(s.time, s.modMap, s.filtersMap)
 	}
 
 	for _, f := range s.Filters {
 		f.NextCoeffs(s.modMap)
 	}
 
-	s.Time += s.step
+	s.time += s.step
 }
 
 func (s *Synth) makeMaps() {

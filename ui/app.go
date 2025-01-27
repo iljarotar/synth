@@ -14,7 +14,7 @@ type appModel struct {
 func NewAppModel(ctl *s.Control, fileName string) *appModel {
 	current := synthModel{
 		synth: ctl.Synth,
-		table: getSynthTable(ctl.Synth),
+		table: getSynthTable(ctl.Synth, 1, 1),
 	}
 
 	return &appModel{
@@ -63,10 +63,17 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case TimeIsUpMsg:
 		m.ctl.Stop()
 
-	case TimeMsg, VolumeWarningMsg, tea.WindowSizeMsg:
+	case TimeMsg, VolumeWarningMsg:
 		layout, cmd := m.layout.Update(msg)
 		m.layout = layout.(layoutModel)
 		cmd = cmd
+
+	case tea.WindowSizeMsg:
+		layout, layoutCmd := m.layout.Update(msg)
+		m.layout = layout.(layoutModel)
+		current, currentCmd := m.current.Update(msg)
+		m.current = current
+		cmd = tea.Batch(layoutCmd, currentCmd)
 	}
 
 	return m, cmd
