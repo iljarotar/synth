@@ -14,7 +14,7 @@ type appModel struct {
 func NewAppModel(ctl *s.Control, fileName string) *appModel {
 	current := synthModel{
 		synth: ctl.Synth,
-		table: getSynthTable(ctl.Synth, 1, 1),
+		table: getSynthTable(ctl.Synth),
 	}
 
 	return &appModel{

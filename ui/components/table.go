@@ -2,6 +2,7 @@ package components
 
 import (
 	"fmt"
+	"math"
 
 	tea "github.com/charmbracelet/bubbletea"
 	l "github.com/charmbracelet/lipgloss"
@@ -10,24 +11,17 @@ import (
 type Row []string
 
 type TableModel struct {
-	columns  int
-	rows     []Row
-	selected int
+	columns       int
+	Rows          []Row
+	selected      int
+	Height, Width int
 }
 
 func NewTable(columns int, rows []Row) TableModel {
 	return TableModel{
 		columns: columns,
-		rows:    rows,
+		Rows:    rows,
 	}
-}
-
-func (m TableModel) Rows() []Row {
-	return m.rows
-}
-
-func (m TableModel) SetRows(rows []Row) {
-	m.rows = rows
 }
 
 func (m TableModel) Init() tea.Cmd {
@@ -42,7 +36,7 @@ func (m TableModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "j":
-			if m.selected < len(m.rows)-1 {
+			if m.selected < len(m.Rows)-1 {
 				m.selected++
 			}
 		case "k":
@@ -56,17 +50,35 @@ func (m TableModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m TableModel) View() string {
+	rows, selected := truncateRows(m.Rows, m.selected, m.Height)
+	style := l.NewStyle().MaxHeight(m.Height)
 	var s string
 
-	for idx, row := range m.rows {
+	for i, row := range rows {
 		rowString := fmt.Sprintf("%v", row)
-		if idx == m.selected {
+		if i == selected {
 			rowString = l.NewStyle().Background(l.Color("101")).Render(rowString)
 		}
+		rowString = l.NewStyle().MaxWidth(m.Width).Render(rowString)
 		s = l.JoinVertical(0, s, rowString)
 	}
 
-	// TOOD: consider height and width
+	return style.Render(s)
+}
 
-	return s
+func truncateRows(rows []Row, selected, height int) ([]Row, int) {
+	if selected < 0 || selected >= len(rows) || height < 0 {
+		return rows, selected
+	}
+	truncated := rows
+
+	length := float64(len(rows))
+
+	left := math.Max(0, float64(selected-height/2))
+	right := math.Min(length, left+float64(height))
+
+	truncated = truncated[int(left):int(right)]
+	newSelected := selected - int(left)
+
+	return truncated, newSelected
 }

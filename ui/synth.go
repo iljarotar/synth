@@ -41,26 +41,25 @@ func (m synthModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m synthModel) View() string {
 	height := m.height - 8
 	width := m.width / 3
-	table := getSynthTable(m.synth, height, width)
-	m.table.SetRows(table.Rows())
+	table := getSynthTable(m.synth)
+	m.table.Rows = table.Rows
+	m.table.Height = int(height)
+	m.table.Width = int(width)
 
 	return m.table.View()
 }
 
-func getSynthTable(synth *s.Synth, height, width float64) components.TableModel {
+func getSynthTable(synth *s.Synth) components.TableModel {
 	rows := []components.Row{
 		{"Volume", fmt.Sprintf("%v", synth.Volume)},
 		{"Out", fmt.Sprintf("%v", synth.Out)},
-		{"Height", fmt.Sprintf("%v", height)},
-		{"Filters", fmt.Sprintf("%v", getFilterNames(synth.Filters))},
-		{"Noises", fmt.Sprintf("%v", getNoiseNames(synth.Noises))},
-		{"Oscillators", fmt.Sprintf("%v", getOscillatorNames(synth.Oscillators))},
-		{"Samplers", fmt.Sprintf("%v", getSamplerNames(synth.Samplers))},
-		{"Sequences", fmt.Sprintf("%v", getSequenceNames(synth.Sequences))},
+		{"Filters", ""},
+		{"Noises", ""},
+		{"Oscillators", ""},
+		{"Samplers", ""},
+		{"Sequences", ""},
 	}
 	table := components.NewTable(2, rows)
-
-	// TODO: set height and width
 
 	return table
 }

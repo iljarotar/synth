@@ -5,7 +5,6 @@ go 1.19
 require github.com/gordonklaus/portaudio v0.0.0-20221027163845-7c3b689db3cc
 
 require (
-	github.com/charmbracelet/bubbles v0.20.0
 	github.com/charmbracelet/bubbletea v1.2.4
 	github.com/charmbracelet/lipgloss v1.0.0
 	github.com/google/go-cmp v0.5.8
