@@ -58,22 +58,7 @@ func NewControl(synth *Synth, config cfg.Config, output chan audio.AudioOutput) 
 	return ctl, nil
 }
 
-func (c *Control) IncreaseVolume() {
-	vol := c.Synth.Volume + 0.02
-	if vol > maxVolume {
-		vol = maxVolume
-	}
-	c.Synth.volumeMemory = vol
-	c.Synth.Volume = vol
-}
-
-func (c *Control) DecreaseVolume() {
-	vol := c.Synth.Volume - 0.02
-	if vol < 0 {
-		vol = 0
-	}
-	c.Synth.volumeMemory = vol
-	c.Synth.Volume = vol
+func (c *Control) ResetMaxOutput() {
 	c.maxOutput = 0
 }
 

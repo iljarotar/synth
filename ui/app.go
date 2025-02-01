@@ -47,11 +47,8 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q":
 			m.ctl.Stop()
 
-		case "d":
-			m.ctl.IncreaseVolume()
-
-		case "s":
-			m.ctl.DecreaseVolume()
+		case "r":
+			m.ctl.ResetMaxOutput()
 
 		default:
 			m.current, cmd = m.current.Update(msg)

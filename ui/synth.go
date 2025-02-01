@@ -24,12 +24,10 @@ func (m synthModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "j", "k":
-			table, cmd := m.table.Update(msg)
-			m.table = table.(components.TableModel)
-			cmd = cmd
-		}
+		table, cmd := m.table.Update(msg)
+		m.table = table.(components.TableModel)
+		cmd = cmd
+
 	case tea.WindowSizeMsg:
 		m.width = float64(msg.Width)
 		m.height = float64(msg.Height)
@@ -51,15 +49,36 @@ func (m synthModel) View() string {
 
 func getSynthTable(synth *s.Synth) components.TableModel {
 	rows := []components.Row{
-		{"Volume", fmt.Sprintf("%v", synth.Volume)},
-		{"Out", fmt.Sprintf("%v", synth.Out)},
-		{"Filters", ""},
-		{"Noises", ""},
-		{"Oscillators", ""},
-		{"Samplers", ""},
-		{"Sequences", ""},
+		{
+			Columns: []string{"Volume", fmt.Sprintf("%v", synth.Volume)},
+			KeyMap: components.KeyMap{
+				"d": func() { synth.IncreaseVolume() },
+				"s": func() { synth.DecreaseVolume() },
+			},
+		},
+		{
+			Columns: []string{"Out", fmt.Sprintf("%v", synth.Out)},
+		},
+		{
+			Columns: []string{"Filters", ""},
+		},
+		{
+			Columns: []string{"Oscillators", ""},
+		},
+		{
+			Columns: []string{"Noises", ""},
+		},
+		{
+			Columns: []string{"Samplers", ""},
+		},
+		{
+			Columns: []string{"Sequences", ""},
+		},
 	}
-	table := components.NewTable(2, rows)
+	table := components.TableModel{
+		Columns: 2,
+		Rows:    rows,
+	}
 
 	return table
 }

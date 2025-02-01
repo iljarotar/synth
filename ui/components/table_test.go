@@ -18,68 +18,126 @@ func Test_truncateRows(t *testing.T) {
 		{
 			name: "height big enough no truncation necessary",
 			rows: []Row{
-				{"1"},
+				{
+					Columns: []string{"1"},
+				},
 			},
 			selected: 0,
 			height:   10,
 			wantRow: []Row{
-				{"1"},
+				{
+					Columns: []string{"1"},
+				},
 			},
 		},
 		{
 			name: "middle selected",
 			rows: []Row{
-				{"1"},
-				{"2"},
-				{"3"},
-				{"4"},
-				{"5"},
+				{
+					Columns: []string{"1"},
+				},
+				{
+					Columns: []string{"2"},
+				},
+				{
+					Columns: []string{"3"},
+				},
+				{
+					Columns: []string{"4"},
+				},
+				{
+					Columns: []string{"5"},
+				},
 			},
 			selected: 2,
 			height:   3,
 			wantRow: []Row{
-				{"2"},
-				{"3"},
-				{"4"},
+				{
+					Columns: []string{"2"},
+				},
+				{
+					Columns: []string{"3"},
+				},
+				{
+					Columns: []string{"4"},
+				},
 			},
 			wantSelected: 1,
 		},
 		{
 			name: "lower middle selected even number",
 			rows: []Row{
-				{"1"},
-				{"2"},
-				{"3"},
-				{"4"},
-				{"5"},
-				{"6"},
+				{
+					Columns: []string{"1"},
+				},
+				{
+					Columns: []string{"2"},
+				},
+				{
+					Columns: []string{"3"},
+				},
+				{
+					Columns: []string{"4"},
+				},
+				{
+					Columns: []string{"5"},
+				},
+				{
+					Columns: []string{"6"},
+				},
 			},
 			selected: 2,
 			height:   3,
 			wantRow: []Row{
-				{"2"},
-				{"3"},
-				{"4"},
+				{
+					Columns: []string{"2"},
+				},
+				{
+					Columns: []string{"3"},
+				},
+				{
+					Columns: []string{"4"},
+				},
 			},
 			wantSelected: 1,
 		},
 		{
 			name: "0 selected",
 			rows: []Row{
-				{"1"},
-				{"2"},
-				{"3"},
-				{"4"},
-				{"5"},
-				{"6"},
+				{
+					Columns: []string{"1"},
+				},
+				{
+					Columns: []string{"2"},
+				},
+				{
+					Columns: []string{"3"},
+				},
+				{
+					Columns: []string{"4"},
+				},
+				{
+					Columns: []string{"5"},
+				},
+				{
+					Columns: []string{"6"},
+				},
 			},
 			selected: 0,
 			height:   4,
 			wantRow: []Row{
-				{"1"},
-				{"2"},
-				{"3"},
-				{"4"},
+				{
+					Columns: []string{"1"},
+				},
+				{
+					Columns: []string{"2"},
+				},
+				{
+					Columns: []string{"3"},
+				},
+				{
+					Columns: []string{"4"},
+				},
 			},
 		},
 	}

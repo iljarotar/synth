@@ -8,20 +8,19 @@ import (
 	l "github.com/charmbracelet/lipgloss"
 )
 
-type Row []string
+type Callback func()
+type KeyMap map[string]Callback
+
+type Row struct {
+	Columns []string
+	KeyMap  KeyMap
+}
 
 type TableModel struct {
-	columns       int
+	Columns       int
 	Rows          []Row
 	selected      int
 	Height, Width int
-}
-
-func NewTable(columns int, rows []Row) TableModel {
-	return TableModel{
-		columns: columns,
-		Rows:    rows,
-	}
 }
 
 func (m TableModel) Init() tea.Cmd {
@@ -39,9 +38,17 @@ func (m TableModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.selected < len(m.Rows)-1 {
 				m.selected++
 			}
+
 		case "k":
 			if m.selected > 0 {
 				m.selected--
+			}
+
+		default:
+			row := m.Rows[m.selected]
+			callback, ok := row.KeyMap[msg.String()]
+			if ok {
+				callback()
 			}
 		}
 	}
@@ -55,7 +62,7 @@ func (m TableModel) View() string {
 	var s string
 
 	for i, row := range rows {
-		rowString := fmt.Sprintf("%v", row)
+		rowString := fmt.Sprintf("%v", row.Columns)
 		if i == selected {
 			rowString = l.NewStyle().Background(l.Color("101")).Render(rowString)
 		}

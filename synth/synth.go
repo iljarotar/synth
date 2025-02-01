@@ -41,6 +41,24 @@ type Synth struct {
 	active             bool
 }
 
+func (s *Synth) IncreaseVolume() {
+	vol := s.Volume + 0.02
+	if vol > maxVolume {
+		vol = maxVolume
+	}
+	s.volumeMemory = vol
+	s.Volume = vol
+}
+
+func (s *Synth) DecreaseVolume() {
+	vol := s.Volume - 0.02
+	if vol < 0 {
+		vol = 0
+	}
+	s.volumeMemory = vol
+	s.Volume = vol
+}
+
 func (s *Synth) initialize(sampleRate float64) error {
 	s.step = 1 / sampleRate
 	s.sampleRate = sampleRate
