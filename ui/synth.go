@@ -11,6 +11,7 @@ import (
 type synthModel struct {
 	synth         *s.Synth
 	table         components.TableModel
+	changeView    changeView
 	height, width float64
 }
 
@@ -58,6 +59,11 @@ func getSynthTable(synth *s.Synth) components.TableModel {
 		},
 		{
 			Columns: []string{"Out", fmt.Sprintf("%v", synth.Out)},
+			KeyMap: components.KeyMap{
+				"l": func() {
+					// CONTINUE
+				},
+			},
 		},
 		{
 			Columns: []string{"Filters", ""},

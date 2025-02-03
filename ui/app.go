@@ -12,18 +12,23 @@ type appModel struct {
 }
 
 func NewAppModel(ctl *s.Control, fileName string) *appModel {
-	current := synthModel{
-		synth: ctl.Synth,
-		table: getSynthTable(ctl.Synth),
-	}
-
-	return &appModel{
+	model := &appModel{
 		ctl: ctl,
 		layout: layoutModel{
 			file: fileName,
 		},
-		current: current,
 	}
+
+	current := synthModel{
+		synth: ctl.Synth,
+		table: getSynthTable(ctl.Synth),
+		changeView: func(view tea.Model) {
+			model.current = view
+		},
+	}
+	model.current = current
+
+	return model
 }
 
 func (m appModel) Init() tea.Cmd {
