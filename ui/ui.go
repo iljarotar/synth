@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
+
+	"golang.org/x/term"
 )
 
 type UI struct {
@@ -19,18 +20,20 @@ type UI struct {
 	duration             float64
 	showOverdriveWarning bool
 	closing              *bool
+	interrupt            chan bool
 }
 
-func NewUI(logger *Logger, file string, quit chan bool, autoStop chan bool, duration float64, closing *bool) *UI {
+func NewUI(logger *Logger, file string, quit chan bool, autoStop chan bool, duration float64, closing *bool, interrupt chan bool) *UI {
 	return &UI{
-		logger:   logger,
-		quit:     quit,
-		autoStop: autoStop,
-		input:    make(chan string),
-		file:     file,
-		time:     "00:00:00",
-		duration: duration,
-		closing:  closing,
+		logger:    logger,
+		quit:      quit,
+		autoStop:  autoStop,
+		input:     make(chan string),
+		file:      file,
+		time:      "00:00:00",
+		duration:  duration,
+		closing:   closing,
+		interrupt: interrupt,
 	}
 }
 
@@ -42,7 +45,7 @@ func Clear() {
 
 func LineBreaks(number int) {
 	for i := 0; i < number; i++ {
-		fmt.Print("\n")
+		fmt.Print("\r\n")
 	}
 }
 
@@ -86,11 +89,27 @@ func (ui *UI) Enter() {
 }
 
 func (ui *UI) read() {
+	state, err := term.MakeRaw(0)
+	if err != nil {
+		ui.logger.Error(fmt.Sprintf("failed to read input %v", err))
+	}
+	defer func() {
+		if err := term.Restore(0, state); err != nil {
+			ui.logger.Error(fmt.Sprintf("failed to restore terminal %v", err))
+		}
+	}()
+
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		in, _ := reader.ReadString('\n')
-		ui.input <- strings.TrimSpace(in)
+		r, _, err := reader.ReadRune()
+		if err != nil {
+			ui.logger.Error(fmt.Sprintf("failed to read input %v", err))
+		}
+		if r == rune(3) {
+			ui.interrupt <- true
+		}
+		ui.input <- string(r)
 	}
 }
 
@@ -101,7 +120,7 @@ func (ui *UI) resetScreen() {
 	LineBreaks(2)
 
 	for _, log := range ui.logs {
-		fmt.Println(log)
+		fmt.Print(log + "\r\n")
 	}
 	if len(ui.logs) > 0 {
 		LineBreaks(1)

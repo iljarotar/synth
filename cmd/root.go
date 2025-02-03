@@ -3,8 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/iljarotar/synth/audio"
@@ -124,7 +122,8 @@ func start(file string, config *c.Config) error {
 	quit := make(chan bool)
 	autoStop := make(chan bool)
 	var closing bool
-	u := ui.NewUI(logger, file, quit, autoStop, config.Duration, &closing)
+	interrupt := make(chan bool)
+	u := ui.NewUI(logger, file, quit, autoStop, config.Duration, &closing, interrupt)
 	go u.Enter()
 
 	output := make(chan audio.AudioOutput)
@@ -158,11 +157,6 @@ func start(file string, config *c.Config) error {
 		return fmt.Errorf("unable to load file %s: %w", file, err)
 	}
 
-	sig := make(chan os.Signal, 2)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-	interrupt := make(chan bool)
-	go catchInterrupt(interrupt, sig)
-
 	ctl.FadeIn(config.FadeIn)
 	var fadingOut bool
 
@@ -187,9 +181,4 @@ Loop:
 	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
 	ui.LineBreaks(2)
 	return err
-}
-
-func catchInterrupt(stop chan bool, sig chan os.Signal) {
-	<-sig
-	stop <- true
 }
