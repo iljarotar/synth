@@ -75,8 +75,10 @@ func (ui *UI) Enter() {
 				ui.quit <- true
 			case "d":
 				ui.ctl.IncreaseVolume()
+				ui.resetScreen()
 			case "s":
 				ui.ctl.DecreaseVolume()
+				ui.resetScreen()
 			}
 		case time := <-timeChan:
 			ui.time = time
@@ -111,8 +113,9 @@ func (ui *UI) read() {
 
 func (ui *UI) resetScreen() {
 	Clear()
-	LineBreaks(1)
 	fmt.Printf("%s %s", log.Colored("Synth playing", log.ColorBlueStrong), ui.file)
+	LineBreaks(1)
+	fmt.Printf("%s %s", log.Colored("Volume", log.ColorBlueStrong), fmt.Sprintf("%v", ui.ctl.GetVolume()))
 	LineBreaks(2)
 
 	for _, log := range ui.logs {

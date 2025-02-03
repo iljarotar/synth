@@ -92,6 +92,10 @@ func (c *Control) DecreaseVolume() {
 	c.lastNotifiedOutput = 0
 }
 
+func (c *Control) GetVolume() float64 {
+	return c.synth.VolumeMemory
+}
+
 func (c *Control) receiveOutput(outputChan <-chan synth.Output) {
 	defer close(c.output)
 

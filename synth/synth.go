@@ -30,7 +30,7 @@ type Synth struct {
 	sampleRate         float64
 	modMap             module.ModulesMap
 	filtersMap         module.FiltersMap
-	step, volumeMemory float64
+	step, VolumeMemory float64
 	notifyFadeOutDone  chan bool
 	fadeDirection      FadeDirection
 	fadeDuration       float64
@@ -42,7 +42,7 @@ func (s *Synth) Initialize(sampleRate float64) error {
 	s.sampleRate = sampleRate
 	s.Volume = utils.Limit(s.Volume, 0, maxVolume)
 	s.Time = utils.Limit(s.Time, 0, maxInitTime)
-	s.volumeMemory = s.Volume
+	s.VolumeMemory = s.Volume
 	s.Volume = 0 // start muted
 	s.active = true
 
@@ -118,7 +118,7 @@ func (s *Synth) IncreaseVolume() {
 	if vol > maxVolume {
 		vol = maxVolume
 	}
-	s.volumeMemory = vol
+	s.VolumeMemory = vol
 	s.Volume = vol
 }
 
@@ -127,7 +127,7 @@ func (s *Synth) DecreaseVolume() {
 	if vol < 0 {
 		vol = 0
 	}
-	s.volumeMemory = vol
+	s.VolumeMemory = vol
 	s.Volume = vol
 }
 
@@ -140,16 +140,16 @@ func (s *Synth) adjustVolume() {
 }
 
 func (s *Synth) fadeIn() {
-	if s.Volume == s.volumeMemory {
+	if s.Volume == s.VolumeMemory {
 		return
 	}
 
-	step := secondsToStep(s.fadeDuration, s.volumeMemory-s.Volume, s.sampleRate)
+	step := secondsToStep(s.fadeDuration, s.VolumeMemory-s.Volume, s.sampleRate)
 	s.Volume += step
 	s.fadeDuration -= 1 / s.sampleRate
 
-	if s.Volume > s.volumeMemory {
-		s.Volume = s.volumeMemory
+	if s.Volume > s.VolumeMemory {
+		s.Volume = s.VolumeMemory
 	}
 }
 
