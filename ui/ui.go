@@ -6,12 +6,12 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/iljarotar/synth/control"
+	c "github.com/iljarotar/synth/control"
 	"github.com/iljarotar/synth/log"
 )
 
 type UI struct {
-	ctl                  *control.Control
+	ctl                  *c.Control
 	logger               *log.Logger
 	quit                 chan bool
 	input                chan string
@@ -25,8 +25,9 @@ type UI struct {
 	interrupt            chan bool
 }
 
-func NewUI(logger *log.Logger, file string, quit chan bool, autoStop chan bool, duration float64, closing *bool, interrupt chan bool) *UI {
+func NewUI(logger *log.Logger, file string, quit chan bool, autoStop chan bool, duration float64, closing *bool, interrupt chan bool, ctl *c.Control) *UI {
 	return &UI{
+		ctl:       ctl,
 		logger:    logger,
 		quit:      quit,
 		autoStop:  autoStop,
@@ -73,7 +74,9 @@ func (ui *UI) Enter() {
 				ui.resetScreen()
 				ui.quit <- true
 			case "d":
+				ui.ctl.IncreaseVolume()
 			case "s":
+				ui.ctl.DecreaseVolume()
 			}
 		case time := <-timeChan:
 			ui.time = time

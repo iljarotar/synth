@@ -88,6 +88,8 @@ func (c *Control) IncreaseVolume() {
 
 func (c *Control) DecreaseVolume() {
 	c.synth.DecreaseVolume()
+	c.maxOutput = 0
+	c.lastNotifiedOutput = 0
 }
 
 func (c *Control) receiveOutput(outputChan <-chan synth.Output) {
@@ -117,6 +119,9 @@ func (c *Control) checkOverdrive(output, time float64) {
 		c.logger.ShowOverdriveWarning(true)
 		c.logger.Warning(fmt.Sprintf("Output value %f", c.maxOutput))
 		c.overdriveWarningTriggeredAt = time
+	}
+	if c.logger.OverdriveWarning && c.maxOutput <= 1 {
+		c.logger.ShowOverdriveWarning(false)
 	}
 }
 

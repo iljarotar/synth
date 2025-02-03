@@ -136,9 +136,6 @@ func start(file string, config *c.Config) error {
 		}
 	}()
 
-	u := ui.NewUI(logger, file, quit, autoStop, config.Duration, &closing, interrupt)
-	go u.Enter()
-
 	output := make(chan audio.AudioOutput)
 	ctx, err := audio.NewContext(output, config.SampleRate)
 	if err != nil {
@@ -157,6 +154,9 @@ func start(file string, config *c.Config) error {
 	}
 	ctl.Start()
 	defer ctl.StopSynth()
+
+	u := ui.NewUI(logger, file, quit, autoStop, config.Duration, &closing, interrupt, ctl)
+	go u.Enter()
 
 	loader, err := f.NewLoader(logger, ctl, file, &closing)
 	if err != nil {
