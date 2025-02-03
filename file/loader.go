@@ -7,14 +7,14 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/iljarotar/synth/control"
+	"github.com/iljarotar/synth/log"
 	s "github.com/iljarotar/synth/synth"
-	"github.com/iljarotar/synth/ui"
 	"golang.org/x/exp/slices"
 	"gopkg.in/yaml.v2"
 )
 
 type Loader struct {
-	logger     *ui.Logger
+	logger     *log.Logger
 	watcher    *fsnotify.Watcher
 	watch      *bool
 	lastLoaded time.Time
@@ -22,7 +22,7 @@ type Loader struct {
 	file       string
 }
 
-func NewLoader(logger *ui.Logger, ctl *control.Control, file string, closing *bool) (*Loader, error) {
+func NewLoader(logger *log.Logger, ctl *control.Control, file string, closing *bool) (*Loader, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err

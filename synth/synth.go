@@ -7,6 +7,7 @@ import (
 
 const (
 	maxInitTime                    = 7200
+	maxVolume                      = 2
 	FadeDirectionIn  FadeDirection = "in"
 	FadeDirectionOut FadeDirection = "out"
 )
@@ -39,7 +40,7 @@ type Synth struct {
 func (s *Synth) Initialize(sampleRate float64) error {
 	s.step = 1 / sampleRate
 	s.sampleRate = sampleRate
-	s.Volume = utils.Limit(s.Volume, 0, 2)
+	s.Volume = utils.Limit(s.Volume, 0, maxVolume)
 	s.Time = utils.Limit(s.Time, 0, maxInitTime)
 	s.volumeMemory = s.Volume
 	s.Volume = 0 // start muted
@@ -110,6 +111,24 @@ func (s *Synth) Fade(direction FadeDirection, seconds float64) {
 
 func (s *Synth) NotifyFadeOutDone(notify chan bool) {
 	s.notifyFadeOutDone = notify
+}
+
+func (s *Synth) IncreaseVolume() {
+	vol := s.Volume + 0.02
+	if vol > maxVolume {
+		vol = maxVolume
+	}
+	s.volumeMemory = vol
+	s.Volume = vol
+}
+
+func (s *Synth) DecreaseVolume() {
+	vol := s.Volume - 0.02
+	if vol < 0 {
+		vol = 0
+	}
+	s.volumeMemory = vol
+	s.Volume = vol
 }
 
 func (s *Synth) adjustVolume() {

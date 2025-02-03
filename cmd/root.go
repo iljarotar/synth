@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/iljarotar/synth/audio"
+	"github.com/iljarotar/synth/log"
+	"golang.org/x/term"
 
 	c "github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/control"
@@ -118,11 +120,22 @@ func start(file string, config *c.Config) error {
 	}
 	defer audio.Terminate()
 
-	logger := ui.NewLogger(10)
+	logger := log.NewLogger(10)
 	quit := make(chan bool)
 	autoStop := make(chan bool)
 	var closing bool
 	interrupt := make(chan bool)
+
+	state, err := term.MakeRaw(int(os.Stdin.Fd()))
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to read input %v", err))
+	}
+	defer func() {
+		if err := term.Restore(int(os.Stdin.Fd()), state); err != nil {
+			logger.Error(fmt.Sprintf("failed to restore terminal %v", err))
+		}
+	}()
+
 	u := ui.NewUI(logger, file, quit, autoStop, config.Duration, &closing, interrupt)
 	go u.Enter()
 

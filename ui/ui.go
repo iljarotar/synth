@@ -6,11 +6,13 @@ import (
 	"os"
 	"os/exec"
 
-	"golang.org/x/term"
+	"github.com/iljarotar/synth/control"
+	"github.com/iljarotar/synth/log"
 )
 
 type UI struct {
-	logger               *Logger
+	ctl                  *control.Control
+	logger               *log.Logger
 	quit                 chan bool
 	input                chan string
 	autoStop             chan bool
@@ -23,7 +25,7 @@ type UI struct {
 	interrupt            chan bool
 }
 
-func NewUI(logger *Logger, file string, quit chan bool, autoStop chan bool, duration float64, closing *bool, interrupt chan bool) *UI {
+func NewUI(logger *log.Logger, file string, quit chan bool, autoStop chan bool, duration float64, closing *bool, interrupt chan bool) *UI {
 	return &UI{
 		logger:    logger,
 		quit:      quit,
@@ -59,18 +61,19 @@ func (ui *UI) Enter() {
 	timeChan := make(chan string)
 	ui.logger.SubscribeToTime(timeChan)
 
-	stateChan := make(chan State)
+	stateChan := make(chan log.State)
 	ui.logger.SubscribeToState(stateChan)
 
 	for {
 		select {
 		case input := <-ui.input:
-			if input == "q" {
+			switch input {
+			case "q":
 				*ui.closing = true
 				ui.resetScreen()
 				ui.quit <- true
-			} else {
-				ui.resetScreen()
+			case "d":
+			case "s":
 			}
 		case time := <-timeChan:
 			ui.time = time
@@ -79,7 +82,7 @@ func (ui *UI) Enter() {
 			ui.appendLog(log)
 			ui.resetScreen()
 		case state := <-stateChan:
-			ui.showOverdriveWarning = state.overdriveWarning
+			ui.showOverdriveWarning = state.OverdriveWarning
 			ui.resetScreen()
 		case <-ui.autoStop:
 			*ui.closing = true
@@ -89,16 +92,6 @@ func (ui *UI) Enter() {
 }
 
 func (ui *UI) read() {
-	state, err := term.MakeRaw(0)
-	if err != nil {
-		ui.logger.Error(fmt.Sprintf("failed to read input %v", err))
-	}
-	defer func() {
-		if err := term.Restore(0, state); err != nil {
-			ui.logger.Error(fmt.Sprintf("failed to restore terminal %v", err))
-		}
-	}()
-
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
@@ -116,7 +109,7 @@ func (ui *UI) read() {
 func (ui *UI) resetScreen() {
 	Clear()
 	LineBreaks(1)
-	fmt.Printf("%s %s", colored("Synth playing", colorBlueStrong), ui.file)
+	fmt.Printf("%s %s", log.Colored("Synth playing", log.ColorBlueStrong), ui.file)
 	LineBreaks(2)
 
 	for _, log := range ui.logs {
@@ -126,7 +119,7 @@ func (ui *UI) resetScreen() {
 		LineBreaks(1)
 	}
 	if ui.showOverdriveWarning {
-		fmt.Printf("%s", colored("[WARNING] Volume exceeded 100%%", colorOrangeStorng))
+		fmt.Printf("%s", log.Colored("[WARNING] Volume exceeded 100%%", log.ColorOrangeStorng))
 		LineBreaks(2)
 	}
 	fmt.Printf("%s", ui.time)
@@ -134,7 +127,7 @@ func (ui *UI) resetScreen() {
 		fmt.Printf(" - automatically stopping after %fs", ui.duration)
 	}
 	LineBreaks(1)
-	fmt.Printf("%s ", colored("Type 'q' to quit:", colorBlueStrong))
+	fmt.Printf("%s ", log.Colored("Type 'q' to quit:", log.ColorBlueStrong))
 }
 
 func (ui *UI) updateTime() {
