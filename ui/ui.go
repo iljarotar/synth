@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
+
+	c "github.com/iljarotar/synth/control"
+	"github.com/iljarotar/synth/log"
 )
 
 type UI struct {
-	logger               *Logger
+	ctl                  *c.Control
+	logger               *log.Logger
 	quit                 chan bool
 	input                chan string
 	autoStop             chan bool
@@ -19,18 +22,21 @@ type UI struct {
 	duration             float64
 	showOverdriveWarning bool
 	closing              *bool
+	interrupt            chan bool
 }
 
-func NewUI(logger *Logger, file string, quit chan bool, autoStop chan bool, duration float64, closing *bool) *UI {
+func NewUI(logger *log.Logger, file string, quit chan bool, autoStop chan bool, duration float64, closing *bool, interrupt chan bool, ctl *c.Control) *UI {
 	return &UI{
-		logger:   logger,
-		quit:     quit,
-		autoStop: autoStop,
-		input:    make(chan string),
-		file:     file,
-		time:     "00:00:00",
-		duration: duration,
-		closing:  closing,
+		ctl:       ctl,
+		logger:    logger,
+		quit:      quit,
+		autoStop:  autoStop,
+		input:     make(chan string),
+		file:      file,
+		time:      "00:00:00",
+		duration:  duration,
+		closing:   closing,
+		interrupt: interrupt,
 	}
 }
 
@@ -42,7 +48,7 @@ func Clear() {
 
 func LineBreaks(number int) {
 	for i := 0; i < number; i++ {
-		fmt.Print("\n")
+		fmt.Print("\r\n")
 	}
 }
 
@@ -56,17 +62,22 @@ func (ui *UI) Enter() {
 	timeChan := make(chan string)
 	ui.logger.SubscribeToTime(timeChan)
 
-	stateChan := make(chan State)
+	stateChan := make(chan log.State)
 	ui.logger.SubscribeToState(stateChan)
 
 	for {
 		select {
 		case input := <-ui.input:
-			if input == "q" {
+			switch input {
+			case "q":
 				*ui.closing = true
 				ui.resetScreen()
 				ui.quit <- true
-			} else {
+			case "d":
+				ui.ctl.IncreaseVolume()
+				ui.resetScreen()
+			case "s":
+				ui.ctl.DecreaseVolume()
 				ui.resetScreen()
 			}
 		case time := <-timeChan:
@@ -76,7 +87,7 @@ func (ui *UI) Enter() {
 			ui.appendLog(log)
 			ui.resetScreen()
 		case state := <-stateChan:
-			ui.showOverdriveWarning = state.overdriveWarning
+			ui.showOverdriveWarning = state.OverdriveWarning
 			ui.resetScreen()
 		case <-ui.autoStop:
 			*ui.closing = true
@@ -89,25 +100,32 @@ func (ui *UI) read() {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		in, _ := reader.ReadString('\n')
-		ui.input <- strings.TrimSpace(in)
+		r, _, err := reader.ReadRune()
+		if err != nil {
+			ui.logger.Error(fmt.Sprintf("failed to read input %v", err))
+		}
+		if r == rune(3) {
+			ui.interrupt <- true
+		}
+		ui.input <- string(r)
 	}
 }
 
 func (ui *UI) resetScreen() {
 	Clear()
+	fmt.Printf("%s %s", log.Colored("Synth playing", log.ColorBlueStrong), ui.file)
 	LineBreaks(1)
-	fmt.Printf("%s %s", colored("Synth playing", colorBlueStrong), ui.file)
+	fmt.Printf("%s %s", log.Colored("Volume", log.ColorBlueStrong), fmt.Sprintf("%v", ui.ctl.GetVolume()))
 	LineBreaks(2)
 
 	for _, log := range ui.logs {
-		fmt.Println(log)
+		fmt.Print(log + "\r\n")
 	}
 	if len(ui.logs) > 0 {
 		LineBreaks(1)
 	}
 	if ui.showOverdriveWarning {
-		fmt.Printf("%s", colored("[WARNING] Volume exceeded 100%%", colorOrangeStorng))
+		fmt.Printf("%s", log.Colored("[WARNING] Volume exceeded 100%%", log.ColorOrangeStorng))
 		LineBreaks(2)
 	}
 	fmt.Printf("%s", ui.time)
@@ -115,7 +133,7 @@ func (ui *UI) resetScreen() {
 		fmt.Printf(" - automatically stopping after %fs", ui.duration)
 	}
 	LineBreaks(1)
-	fmt.Printf("%s ", colored("Type 'q' to quit:", colorBlueStrong))
+	fmt.Printf("%s ", log.Colored("Type 'q' to quit:", log.ColorBlueStrong))
 }
 
 func (ui *UI) updateTime() {

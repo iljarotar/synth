@@ -7,6 +7,7 @@ require github.com/gordonklaus/portaudio v0.0.0-20221027163845-7c3b689db3cc
 require (
 	github.com/google/go-cmp v0.5.8
 	golang.org/x/exp v0.0.0-20230307190834-24139beb5833
+	golang.org/x/term v0.28.0
 )
 
 require (
@@ -17,6 +18,6 @@ require (
 
 require (
 	github.com/fsnotify/fsnotify v1.6.0
-	golang.org/x/sys v0.1.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )

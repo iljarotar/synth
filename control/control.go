@@ -6,13 +6,13 @@ import (
 
 	"github.com/iljarotar/synth/audio"
 	cfg "github.com/iljarotar/synth/config"
+	"github.com/iljarotar/synth/log"
 	"github.com/iljarotar/synth/synth"
 	s "github.com/iljarotar/synth/synth"
-	"github.com/iljarotar/synth/ui"
 )
 
 type Control struct {
-	logger                        *ui.Logger
+	logger                        *log.Logger
 	config                        cfg.Config
 	synth                         *s.Synth
 	output                        chan audio.AudioOutput
@@ -23,7 +23,7 @@ type Control struct {
 	closing                       *bool
 }
 
-func NewControl(logger *ui.Logger, config cfg.Config, output chan audio.AudioOutput, autoStop chan bool, closing *bool) (*Control, error) {
+func NewControl(logger *log.Logger, config cfg.Config, output chan audio.AudioOutput, autoStop chan bool, closing *bool) (*Control, error) {
 	var synth s.Synth
 	err := synth.Initialize(config.SampleRate)
 	if err != nil {
@@ -82,6 +82,20 @@ func (c *Control) FadeOut(fadeOut float64, notifyDone chan bool) {
 	c.synth.Fade(s.FadeDirectionOut, fadeOut)
 }
 
+func (c *Control) IncreaseVolume() {
+	c.synth.IncreaseVolume()
+}
+
+func (c *Control) DecreaseVolume() {
+	c.synth.DecreaseVolume()
+	c.maxOutput = 0
+	c.lastNotifiedOutput = 0
+}
+
+func (c *Control) GetVolume() float64 {
+	return c.synth.VolumeMemory
+}
+
 func (c *Control) receiveOutput(outputChan <-chan synth.Output) {
 	defer close(c.output)
 
@@ -109,6 +123,9 @@ func (c *Control) checkOverdrive(output, time float64) {
 		c.logger.ShowOverdriveWarning(true)
 		c.logger.Warning(fmt.Sprintf("Output value %f", c.maxOutput))
 		c.overdriveWarningTriggeredAt = time
+	}
+	if c.logger.OverdriveWarning && c.maxOutput <= 1 {
+		c.logger.ShowOverdriveWarning(false)
 	}
 }
 

@@ -1,4 +1,4 @@
-package ui
+package log
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ const (
 )
 
 type State struct {
-	overdriveWarning bool
+	OverdriveWarning bool
 }
 
 type Logger struct {
@@ -53,20 +53,20 @@ func (l *Logger) SendTime(time float64) {
 }
 
 func (l *Logger) Info(log string) {
-	l.sendLog(log, labelInfo, colorGreenStrong)
+	l.sendLog(log, labelInfo, ColorGreenStrong)
 }
 
 func (l *Logger) Warning(log string) {
-	l.sendLog(log, labelWarning, colorOrangeStorng)
+	l.sendLog(log, labelWarning, ColorOrangeStorng)
 }
 
 func (l *Logger) Error(log string) {
-	l.sendLog(log, labelError, colorRedStrong)
+	l.sendLog(log, labelError, ColorRedStrong)
 }
 
 func (l *Logger) ShowOverdriveWarning(limitExceeded bool) {
 	newState := l.State
-	newState.overdriveWarning = limitExceeded
+	newState.OverdriveWarning = limitExceeded
 	l.State = newState
 
 	for _, s := range l.stateSubscribers {
@@ -74,9 +74,9 @@ func (l *Logger) ShowOverdriveWarning(limitExceeded bool) {
 	}
 }
 
-func (l *Logger) sendLog(log, label string, labelColor color) {
+func (l *Logger) sendLog(log, label string, labelColor Color) {
 	time := formatTime(l.currentTime)
-	coloredLabel := fmt.Sprintf("%s", colored(label, labelColor))
+	coloredLabel := fmt.Sprintf("%s", Colored(label, labelColor))
 
 	for _, s := range l.logSubscribers {
 		s <- fmt.Sprintf("[%s] %s %s", time, coloredLabel, log)
@@ -88,8 +88,8 @@ func (l *Logger) isNextSecond(time float64) bool {
 	return sec > float64(l.currentTime)
 }
 
-func colored(str string, col color) string {
-	return fmt.Sprintf("%s%s%s", col, str, colorWhite)
+func Colored(str string, col Color) string {
+	return fmt.Sprintf("%s%s%s", col, str, ColorWhite)
 }
 
 func formatTime(time int) string {

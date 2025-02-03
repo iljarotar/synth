@@ -1,4 +1,4 @@
-package ui
+package log
 
 import "testing"
 
