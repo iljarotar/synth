@@ -132,8 +132,14 @@ func (ui *UI) resetScreen() {
 	if ui.duration >= 0 {
 		fmt.Printf(" - automatically stopping after %fs", ui.duration)
 	}
+	LineBreaks(2)
+	fmt.Printf("%s ", log.Colored("Keybindings", log.ColorBlueStrong))
 	LineBreaks(1)
-	fmt.Printf("%s ", log.Colored("Type 'q' to quit:", log.ColorBlueStrong))
+	fmt.Print("q: quit")
+	LineBreaks(1)
+	fmt.Print("d: raise volume")
+	LineBreaks(1)
+	fmt.Print("s: reduce volume")
 }
 
 func (ui *UI) updateTime() {
@@ -142,7 +148,7 @@ func (ui *UI) updateTime() {
 	// \033[1A to move cursor up one line
 	// \r to move cursor to beginning of line
 	// \0338 to restore original cursor location
-	fmt.Printf("\0337\033[1A\r%s\0338", ui.time)
+	fmt.Printf("\0337\033[5A\r%s\0338", ui.time)
 }
 
 func (ui *UI) appendLog(log string) {
