@@ -114,7 +114,7 @@ func (s *Synth) NotifyFadeOutDone(notify chan bool) {
 }
 
 func (s *Synth) IncreaseVolume() {
-	vol := s.Volume + 0.01
+	vol := s.Volume + 0.003
 	if vol > maxVolume {
 		vol = maxVolume
 	}
@@ -123,7 +123,7 @@ func (s *Synth) IncreaseVolume() {
 }
 
 func (s *Synth) DecreaseVolume() {
-	vol := s.Volume - 0.01
+	vol := s.Volume - 0.003
 	if vol < 0 {
 		vol = 0
 	}
