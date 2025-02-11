@@ -33,8 +33,9 @@ func (s *Sequence) Initialize(sampleRate float64) error {
 	if s.Envelope != nil {
 		s.Envelope.Initialize()
 	}
-
 	s.sampleRate = sampleRate
+	s.limitParams()
+
 	s.currentNoteIndex = len(s.Sequence) - 1
 	signal, err := newSignalFunc(s.Type)
 	if err != nil {
@@ -82,7 +83,10 @@ func (s *Sequence) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 }
 
 func (s *Sequence) signalValue(t, amp, transpose float64) float64 {
-	freq := s.getCurrentFreq(t)
+	freq := s.getCurrentFreq()
+	if freq == 0 {
+		return 0
+	}
 	freq *= math.Pow(2, s.Transpose.Val/12)
 	offset := freq*math.Pow(2, transpose/12) - freq
 	phi := 2 * math.Pi * (freq*t + offset)
@@ -102,7 +106,7 @@ func (s *Sequence) getTranspose(modMap ModulesMap) float64 {
 	return y * s.Transpose.ModAmp
 }
 
-func (s *Sequence) getCurrentFreq(t float64) float64 {
+func (s *Sequence) getCurrentFreq() float64 {
 	if len(s.Sequence) == 0 {
 		return 0
 	}
@@ -123,6 +127,10 @@ func (s *Sequence) getCurrentFreq(t float64) float64 {
 }
 
 func (s *Sequence) noteToFreq(note string) (float64, error) {
+	if note == "n" {
+		return 0, nil
+	}
+
 	notesMap := map[string]int{
 		"c":  -9,
 		"c#": -8,
@@ -172,7 +180,7 @@ func (s *Sequence) noteToFreq(note string) (float64, error) {
 
 func (s *Sequence) limitParams() {
 	s.Amp.ModAmp = utils.Limit(s.Amp.ModAmp, ampLimits.min, ampLimits.max)
-	s.Amp.Val = utils.Limit(s.Amp.Val, ampLimits.min, ampLimits.max)
+	s.Amp.Val = utils.Limit(s.Amp.Val, -ampLimits.max, ampLimits.max)
 
 	s.Pan.ModAmp = utils.Limit(s.Pan.ModAmp, panLimits.min, panLimits.max)
 	s.Pan.Val = utils.Limit(s.Pan.Val, panLimits.min, panLimits.max)

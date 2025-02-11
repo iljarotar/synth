@@ -25,7 +25,7 @@ func (w *Wavetable) Initialize(sampleRate float64) {
 	}
 	w.sampleRate = sampleRate
 	w.limitParams()
-	w.Table = utils.Normalize(w.Table, -1, 1)
+	w.Table = normalizeWavetable(w.Table)
 	w.inputs = make([]filterInputs, len(w.Filters))
 
 	y := w.signalValue(0, w.Amp.Val, w.Freq.Val)
@@ -86,11 +86,26 @@ func (w *Wavetable) signalValue(t, amp, offset float64) float64 {
 
 func (w *Wavetable) limitParams() {
 	w.Amp.ModAmp = utils.Limit(w.Amp.ModAmp, ampLimits.min, ampLimits.max)
-	w.Amp.Val = utils.Limit(w.Amp.Val, ampLimits.min, ampLimits.max)
+	w.Amp.Val = utils.Limit(w.Amp.Val, -ampLimits.max, ampLimits.max)
 
 	w.Pan.ModAmp = utils.Limit(w.Pan.ModAmp, panLimits.min, panLimits.max)
 	w.Pan.Val = utils.Limit(w.Pan.Val, panLimits.min, panLimits.max)
 
 	w.Freq.ModAmp = utils.Limit(w.Freq.ModAmp, freqLimits.min, freqLimits.max)
-	w.Freq.Val = utils.Limit(w.Freq.Val, freqLimits.min, freqLimits.max)
+	w.Freq.Val = utils.Limit(w.Freq.Val, -freqLimits.max, freqLimits.max)
+}
+
+func normalizeWavetable(values []float64) []float64 {
+	normalized := make([]float64, 0)
+	var max float64
+
+	for _, v := range values {
+		max = math.Max(max, math.Abs(v))
+	}
+
+	for _, v := range values {
+		normalized = append(normalized, v/max)
+	}
+
+	return normalized
 }

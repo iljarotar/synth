@@ -49,7 +49,7 @@ func (n *Noise) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
 }
 
 func (n *Noise) limitParams() {
-	n.Amp.ModAmp = utils.Limit(n.Amp.ModAmp, ampLimits.min, ampLimits.max)
+	n.Amp.ModAmp = utils.Limit(n.Amp.ModAmp, -ampLimits.max, ampLimits.max)
 	n.Amp.Val = utils.Limit(n.Amp.Val, ampLimits.min, ampLimits.max)
 
 	n.Pan.ModAmp = utils.Limit(n.Pan.ModAmp, panLimits.min, panLimits.max)

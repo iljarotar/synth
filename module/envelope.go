@@ -39,7 +39,7 @@ func (e *Envelope) Next(t float64, modMap ModulesMap) {
 	e.current = y
 }
 
-func (e *Envelope) getCurrentConfig(t float64, modMap ModulesMap) {
+func (e *Envelope) getCurrentConfig(modMap ModulesMap) {
 	attack := modulate(e.Attack, envelopeLimits, modMap)
 	decay := modulate(e.Decay, envelopeLimits, modMap)
 	sustain := modulate(e.Sustain, envelopeLimits, modMap)
@@ -74,7 +74,7 @@ func (e *Envelope) trigger(t, bpm float64, modMap ModulesMap) {
 	if t-e.Delay >= 0 || (e.lastTriggeredAt != nil && t-*e.lastTriggeredAt >= secondsBetweenTwoBeats) {
 		e.triggered = true
 		e.lastTriggeredAt = &t
-		e.getCurrentConfig(t, modMap)
+		e.getCurrentConfig(modMap)
 	}
 }
 
@@ -133,25 +133,25 @@ func releaseFunc(envelope envelopeConfig, triggeredAt float64) stageFunc {
 
 func (e *Envelope) limitParams() {
 	e.Attack.Val = utils.Limit(e.Attack.Val, envelopeLimits.min, envelopeLimits.max)
-	e.Attack.ModAmp = utils.Limit(e.Attack.ModAmp, envelopeLimits.min, envelopeLimits.max)
+	e.Attack.ModAmp = utils.Limit(e.Attack.ModAmp, -envelopeLimits.max, envelopeLimits.max)
 
 	e.Decay.Val = utils.Limit(e.Decay.Val, envelopeLimits.min, envelopeLimits.max)
-	e.Decay.ModAmp = utils.Limit(e.Decay.ModAmp, envelopeLimits.min, envelopeLimits.max)
+	e.Decay.ModAmp = utils.Limit(e.Decay.ModAmp, -envelopeLimits.max, envelopeLimits.max)
 
 	e.Sustain.Val = utils.Limit(e.Sustain.Val, envelopeLimits.min, envelopeLimits.max)
-	e.Sustain.ModAmp = utils.Limit(e.Sustain.ModAmp, envelopeLimits.min, envelopeLimits.max)
+	e.Sustain.ModAmp = utils.Limit(e.Sustain.ModAmp, -envelopeLimits.max, envelopeLimits.max)
 
 	e.Release.Val = utils.Limit(e.Release.Val, envelopeLimits.min, envelopeLimits.max)
-	e.Release.ModAmp = utils.Limit(e.Release.ModAmp, envelopeLimits.min, envelopeLimits.max)
+	e.Release.ModAmp = utils.Limit(e.Release.ModAmp, -envelopeLimits.max, envelopeLimits.max)
 
 	e.Peak.Val = utils.Limit(e.Peak.Val, ampLimits.min, ampLimits.max)
-	e.Peak.ModAmp = utils.Limit(e.Peak.ModAmp, ampLimits.min, ampLimits.max)
+	e.Peak.ModAmp = utils.Limit(e.Peak.ModAmp, -ampLimits.max, ampLimits.max)
 
 	e.SustainLevel.Val = utils.Limit(e.SustainLevel.Val, ampLimits.min, ampLimits.max)
-	e.SustainLevel.ModAmp = utils.Limit(e.SustainLevel.ModAmp, ampLimits.min, ampLimits.max)
+	e.SustainLevel.ModAmp = utils.Limit(e.SustainLevel.ModAmp, -ampLimits.max, ampLimits.max)
 
 	e.BPM.Val = utils.Limit(e.BPM.Val, bpmLimits.min, bpmLimits.max)
-	e.BPM.ModAmp = utils.Limit(e.BPM.ModAmp, bpmLimits.min, bpmLimits.max)
+	e.BPM.ModAmp = utils.Limit(e.BPM.ModAmp, -bpmLimits.max, bpmLimits.max)
 
 	e.Delay = utils.Limit(e.Delay, delayLimits.min, delayLimits.max)
 }

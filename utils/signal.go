@@ -17,23 +17,3 @@ func Limit(x, min, max float64) float64 {
 
 	return y
 }
-
-func Normalize(signal []float64, min, max float64) []float64 {
-	var m, M float64
-
-	for _, y := range signal {
-		if y > M {
-			M = y
-			continue
-		}
-		if y < m {
-			m = y
-		}
-	}
-
-	for i, y := range signal {
-		signal[i] = Percentage(y, m, M)*(max-min) + min
-	}
-
-	return signal
-}

@@ -2,8 +2,6 @@ package utils
 
 import (
 	"testing"
-
-	"github.com/google/go-cmp/cmp"
 )
 
 func TestPercentage(t *testing.T) {
@@ -133,63 +131,6 @@ func TestLimit(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := Limit(tt.args.x, tt.args.min, tt.args.max); got != tt.want {
 				t.Errorf("Limit() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestNormalize(t *testing.T) {
-	type args struct {
-		signal []float64
-		min    float64
-		max    float64
-	}
-	tests := []struct {
-		name string
-		args args
-		want []float64
-	}{
-		{
-			name: "unchanged",
-			args: args{
-				signal: []float64{1, 0, -1},
-				min:    -1,
-				max:    1,
-			},
-			want: []float64{1, 0, -1},
-		},
-		{
-			name: "symmetric",
-			args: args{
-				signal: []float64{2, 0, -2},
-				min:    -1,
-				max:    1,
-			},
-			want: []float64{1, 0, -1},
-		},
-		{
-			name: "asymmetric",
-			args: args{
-				signal: []float64{1, 0, -3},
-				min:    -1,
-				max:    1,
-			},
-			want: []float64{1, 0.5, -1},
-		},
-		{
-			name: "asymmetric range",
-			args: args{
-				signal: []float64{1, 0, -3},
-				min:    0,
-				max:    2,
-			},
-			want: []float64{2, 1.5, 0},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Normalize(tt.args.signal, tt.args.min, tt.args.max); !cmp.Equal(got, tt.want) {
-				t.Errorf("Normalize() = %v, want %v", got, tt.want)
 			}
 		})
 	}

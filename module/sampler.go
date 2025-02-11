@@ -79,11 +79,11 @@ func (s *Sampler) getCurrentOutputValue(modMap ModulesMap) float64 {
 
 func (s *Sampler) limitParams() {
 	s.Amp.Val = utils.Limit(s.Amp.Val, ampLimits.min, ampLimits.max)
-	s.Amp.ModAmp = utils.Limit(s.Amp.ModAmp, ampLimits.min, ampLimits.max)
+	s.Amp.ModAmp = utils.Limit(s.Amp.ModAmp, -ampLimits.max, ampLimits.max)
 
 	s.Pan.Val = utils.Limit(s.Pan.Val, panLimits.min, panLimits.max)
 	s.Pan.ModAmp = utils.Limit(s.Pan.ModAmp, panLimits.min, panLimits.max)
 
 	s.Freq.Val = utils.Limit(s.Freq.Val, s.limits.min, s.limits.max)
-	s.Freq.ModAmp = utils.Limit(s.Freq.ModAmp, s.limits.min, s.limits.max)
+	s.Freq.ModAmp = utils.Limit(s.Freq.ModAmp, -s.limits.min, s.limits.max)
 }

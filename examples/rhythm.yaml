@@ -1,0 +1,35 @@
+vol: 1
+out: [seq1]
+
+sequences:
+  - name: seq1
+    amp: { val: 1, mod: [], mod-amp: 0 }
+    type: Sine
+    sequence: [a_3, n, n, c_4, e_3, n]
+    pan: { val: 0, mod: [], mod-amp: 0 }
+    filters: []
+    pitch: 440
+    transpose: { val: 0, mod: [], mod-amp: 0 }
+    randomize: false
+    envelope:
+      attack: { val: 0.1, mod: [], mod-amp: 0 }
+      decay: { val: 0.1, mod: [], mod-amp: 0 }
+      sustain: { val: 0.2, mod: [w2], mod-amp: 0.5 }
+      release: { val: 0.1, mod: [], mod-amp: 0 }
+      peak: { val: 1, mod: [], mod-amp: 0 }
+      sustain-level: { val: 0.8, mod: [], mod-amp: 0 }
+      bpm: { val: 120, mod: [w1], mod-amp: -80 }
+      delay: 0
+
+wavetables:
+  - name: w1
+    amp: { val: 1, mod: [], mod-amp: 0 }
+    pan: { val: 0, mod: [], mod-amp: 0 }
+    freq: { val: 0.25, mod: [], mod-amp: 0 }
+    table: [0, 0, 0, 0, 1, 1, 1, 0]
+
+  - name: w2
+    amp: { val: 1, mod: [], mod-amp: 0 }
+    pan: { val: 0, mod: [], mod-amp: 0 }
+    freq: { val: 0.25, mod: [], mod-amp: 0 }
+    table: [0, 0, 0, 1, 1, 1, 0, 0]
