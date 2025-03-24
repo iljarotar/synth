@@ -9,9 +9,9 @@ import (
 	"github.com/iljarotar/synth/log"
 	"golang.org/x/term"
 
-	c "github.com/iljarotar/synth/config"
+	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/control"
-	f "github.com/iljarotar/synth/file"
+	"github.com/iljarotar/synth/file"
 	"github.com/iljarotar/synth/ui"
 	"github.com/spf13/cobra"
 )
@@ -38,13 +38,13 @@ documentation and usage: https://github.com/iljarotar/synth`,
 		}
 		file := args[0]
 
-		err := c.EnsureDefaultConfig()
+		err := config.EnsureDefaultConfig()
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
-		defaultConfigPath, err := c.GetDefaultConfigPath()
+		defaultConfigPath, err := config.GetDefaultConfigPath()
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -53,7 +53,7 @@ documentation and usage: https://github.com/iljarotar/synth`,
 		if cfg == "" {
 			cfg = defaultConfigPath
 		}
-		config, err := c.LoadConfig(cfg)
+		config, err := config.LoadConfig(cfg)
 		if err != nil {
 			fmt.Printf("could not load config file: %v\n", err)
 			return
@@ -80,18 +80,18 @@ func Execute() {
 }
 
 func init() {
-	defaultConfigPath, err := c.GetDefaultConfigPath()
+	defaultConfigPath, err := config.GetDefaultConfigPath()
 	if err != nil {
 		os.Exit(1)
 	}
-	rootCmd.Flags().Float64P("sample-rate", "s", c.DefaultSampleRate, "sample rate")
-	rootCmd.Flags().Float64P("fade-in", "i", c.DefaultFadeIn, "fade-in in seconds")
-	rootCmd.Flags().Float64P("fade-out", "o", c.DefaultFadeOut, "fade-out in seconds")
+	rootCmd.Flags().Float64P("sample-rate", "s", config.DefaultSampleRate, "sample rate")
+	rootCmd.Flags().Float64P("fade-in", "i", config.DefaultFadeIn, "fade-in in seconds")
+	rootCmd.Flags().Float64P("fade-out", "o", config.DefaultFadeOut, "fade-out in seconds")
 	rootCmd.Flags().StringP("config", "c", defaultConfigPath, "path to your config file")
-	rootCmd.Flags().Float64P("duration", "d", c.DefaultDuration, "duration in seconds; if positive duration is specified, synth will stop playing after the defined time")
+	rootCmd.Flags().Float64P("duration", "d", config.DefaultDuration, "duration in seconds; if positive duration is specified, synth will stop playing after the defined time")
 }
 
-func parseFlags(cmd *cobra.Command, config *c.Config) error {
+func parseFlags(cmd *cobra.Command, config *config.Config) error {
 	s, _ := cmd.Flags().GetFloat64("sample-rate")
 	in, _ := cmd.Flags().GetFloat64("fade-in")
 	out, _ := cmd.Flags().GetFloat64("fade-out")
@@ -113,13 +113,7 @@ func parseFlags(cmd *cobra.Command, config *c.Config) error {
 	return config.Validate()
 }
 
-func start(file string, config *c.Config) error {
-	err := audio.Init()
-	if err != nil {
-		return err
-	}
-	defer audio.Terminate()
-
+func start(fileName string, cfg *config.Config) error {
 	logger := log.NewLogger(10)
 	quit := make(chan bool)
 	autoStop := make(chan bool)
@@ -137,28 +131,28 @@ func start(file string, config *c.Config) error {
 	}()
 
 	output := make(chan audio.AudioOutput)
-	ctx, err := audio.NewContext(output, config.SampleRate)
+	a, err := audio.NewAudio(output, int(cfg.SampleRate))
 	if err != nil {
 		return err
 	}
-	defer ctx.Close()
+	defer func() {
+		err := a.Close()
+		if err != nil {
+			fmt.Printf("%v\n", err)
+		}
+	}()
 
-	err = ctx.Start()
-	if err != nil {
-		return err
-	}
-
-	ctl, err := control.NewControl(logger, *config, output, autoStop, &closing)
+	ctl, err := control.NewControl(logger, *cfg, output, autoStop, &closing)
 	if err != nil {
 		return err
 	}
 	ctl.Start()
 	defer ctl.StopSynth()
 
-	u := ui.NewUI(logger, file, quit, autoStop, config.Duration, &closing, interrupt, ctl)
+	u := ui.NewUI(logger, fileName, quit, autoStop, cfg.Duration, &closing, interrupt, ctl)
 	go u.Enter()
 
-	loader, err := f.NewLoader(logger, ctl, file, &closing)
+	loader, err := file.NewLoader(logger, ctl, fileName, &closing)
 	if err != nil {
 		return err
 	}
@@ -167,10 +161,10 @@ func start(file string, config *c.Config) error {
 	err = loader.Load()
 	if err != nil {
 		ui.Clear()
-		return fmt.Errorf("unable to load file %s: %w", file, err)
+		return fmt.Errorf("unable to load file %s: %w", fileName, err)
 	}
 
-	ctl.FadeIn(config.FadeIn)
+	ctl.FadeIn(cfg.FadeIn)
 	var fadingOut bool
 
 Loop:
@@ -182,9 +176,10 @@ Loop:
 				continue
 			}
 			fadingOut = true
-			logger.Info(fmt.Sprintf("fading out in %fs", config.FadeOut))
-			ctl.Stop(config.FadeOut)
+			logger.Info(fmt.Sprintf("fading out in %fs", cfg.FadeOut))
+			ctl.Stop(cfg.FadeOut)
 		case <-interrupt:
+			logger.Info("interrupt received")
 			ctl.Stop(0.05)
 		case <-ctl.SynthDone:
 			break Loop

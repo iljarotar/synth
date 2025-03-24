@@ -43,7 +43,7 @@ func NewUI(logger *log.Logger, file string, quit chan bool, autoStop chan bool, 
 func Clear() {
 	cmd := exec.Command("clear")
 	cmd.Stdout = os.Stdout
-	cmd.Run()
+	// cmd.Run()
 }
 
 func LineBreaks(number int) {

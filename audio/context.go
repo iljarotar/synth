@@ -1,42 +1,80 @@
 package audio
 
 import (
-	"github.com/gordonklaus/portaudio"
+	"io"
+	"math"
+
+	"github.com/ebitengine/oto/v3"
 )
 
 type AudioOutput struct {
 	Left, Right float64
 }
 
-type Context struct {
-	*portaudio.Stream
-	Input chan AudioOutput
+type Audio struct {
+	ctx    *oto.Context
+	player *oto.Player
 }
 
-func NewContext(input chan AudioOutput, sampleRate float64) (*Context, error) {
-	ctx := &Context{Input: input}
+type reader struct {
+	output chan AudioOutput
+}
 
-	var err error
-	ctx.Stream, err = portaudio.OpenDefaultStream(0, 2, sampleRate, 0, ctx.Process)
+func NewAudio(output chan AudioOutput, sampleRate int) (*Audio, error) {
+	op := &oto.NewContextOptions{
+		SampleRate:   sampleRate,
+		ChannelCount: 2,
+		Format:       oto.FormatFloat32LE,
+		BufferSize:   0,
+	}
+
+	ctx, ready, err := oto.NewContext(op)
 	if err != nil {
 		return nil, err
 	}
+	<-ready
 
-	return ctx, nil
-}
-
-func (c *Context) Process(out [][]float32) {
-	for i := range out[0] {
-		y := <-c.Input
-		out[0][i] = float32(y.Left)
-		out[1][i] = float32(y.Right)
+	r := &reader{
+		output: output,
 	}
+	player := ctx.NewPlayer(r)
+	player.Play()
+
+	audio := &Audio{
+		ctx:    ctx,
+		player: player,
+	}
+
+	return audio, nil
 }
 
-func Init() error {
-	return portaudio.Initialize()
+func (a *Audio) Close() error {
+	return a.player.Close()
 }
 
-func Terminate() error {
-	return portaudio.Terminate()
+func (r *reader) Read(buf []byte) (int, error) {
+	var n int
+	for i := 0; i < len(buf)/8; i++ {
+		select {
+		case y := <-r.output:
+			leftBytes := math.Float32bits(float32(y.Left))
+			rightBytes := math.Float32bits(float32(y.Right))
+			sampleIdx := 8 * i
+
+			buf[sampleIdx] = byte(leftBytes)
+			buf[sampleIdx+1] = byte(leftBytes >> 4)
+			buf[sampleIdx+2] = byte(leftBytes >> 8)
+			buf[sampleIdx+3] = byte(leftBytes >> 12)
+
+			buf[sampleIdx+4] = byte(rightBytes)
+			buf[sampleIdx+5] = byte(rightBytes >> 4)
+			buf[sampleIdx+6] = byte(rightBytes >> 8)
+			buf[sampleIdx+7] = byte(rightBytes >> 12)
+
+			n += 8
+		default:
+		}
+	}
+
+	return n, io.EOF
 }

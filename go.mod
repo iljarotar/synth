@@ -2,13 +2,14 @@ module github.com/iljarotar/synth
 
 go 1.19
 
-require github.com/gordonklaus/portaudio v0.0.0-20221027163845-7c3b689db3cc
-
 require (
+	github.com/ebitengine/oto/v3 v3.3.2
 	github.com/google/go-cmp v0.5.8
 	golang.org/x/exp v0.0.0-20230307190834-24139beb5833
 	golang.org/x/term v0.28.0
 )
+
+require github.com/ebitengine/purego v0.8.0 // indirect
 
 require (
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
