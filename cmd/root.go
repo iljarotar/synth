@@ -6,13 +6,8 @@ import (
 	"time"
 
 	"github.com/iljarotar/synth/audio"
-	"github.com/iljarotar/synth/log"
-	"golang.org/x/term"
-
 	"github.com/iljarotar/synth/config"
-	"github.com/iljarotar/synth/control"
-	"github.com/iljarotar/synth/file"
-	"github.com/iljarotar/synth/ui"
+	"github.com/iljarotar/synth/player"
 	"github.com/spf13/cobra"
 )
 
@@ -25,56 +20,70 @@ var rootCmd = &cobra.Command{
 	Long: `command line synthesizer
 	
 documentation and usage: https://github.com/iljarotar/synth`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg, _ := cmd.Flags().GetString("config")
 
 		if len(args) == 0 {
 			cmd.Help()
-			return
+			return nil
 		}
 
 		if err := cobra.MaximumNArgs(1)(cmd, args); err != nil {
-			fmt.Println("too many arguments passed - at most one argument expected")
+			return fmt.Errorf("too many arguments passed - at most one argument expected")
 		}
-		file := args[0]
+		filename := args[0]
 
 		err := config.EnsureDefaultConfig()
 		if err != nil {
-			fmt.Println(err)
-			return
+			return err
 		}
 
 		defaultConfigPath, err := config.GetDefaultConfigPath()
 		if err != nil {
-			fmt.Println(err)
-			return
+			return err
 		}
 
 		if cfg == "" {
 			cfg = defaultConfigPath
 		}
+
 		config, err := config.LoadConfig(cfg)
 		if err != nil {
-			fmt.Printf("could not load config file: %v\n", err)
-			return
+			return fmt.Errorf("could not load config file: %v\n", err)
 		}
 
 		err = parseFlags(cmd, config)
 		if err != nil {
-			fmt.Println(err)
-			return
+			return err
 		}
 
-		err = start(file, config)
+		p, err := player.NewPlayer(filename, int(config.SampleRate))
 		if err != nil {
-			fmt.Println(err)
+			return err
 		}
+
+		audioCtx, err := audio.NewContext(int(config.SampleRate), p.ReadSample)
+		if err != nil {
+			return err
+		}
+		defer func() {
+			err := audioCtx.Close()
+			if err != nil {
+				fmt.Printf("failed to close audio context:%v", err)
+			}
+		}()
+
+		// TODO: wait for quit signal
+		time.Sleep(10 * time.Second)
+
+		return nil
 	},
 }
 
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
 }
@@ -111,82 +120,4 @@ func parseFlags(cmd *cobra.Command, config *config.Config) error {
 	}
 
 	return config.Validate()
-}
-
-func start(fileName string, cfg *config.Config) error {
-	logger := log.NewLogger(10)
-	quit := make(chan bool)
-	autoStop := make(chan bool)
-	var closing bool
-	interrupt := make(chan bool)
-
-	state, err := term.MakeRaw(int(os.Stdin.Fd()))
-	if err != nil {
-		logger.Error(fmt.Sprintf("failed to read input %v", err))
-	}
-	defer func() {
-		if err := term.Restore(int(os.Stdin.Fd()), state); err != nil {
-			logger.Error(fmt.Sprintf("failed to restore terminal %v", err))
-		}
-	}()
-
-	output := make(chan audio.AudioOutput)
-	a, err := audio.NewAudio(output, int(cfg.SampleRate))
-	if err != nil {
-		return err
-	}
-	defer func() {
-		err := a.Close()
-		if err != nil {
-			fmt.Printf("%v\n", err)
-		}
-	}()
-
-	ctl, err := control.NewControl(logger, *cfg, output, autoStop, &closing)
-	if err != nil {
-		return err
-	}
-	ctl.Start()
-	defer ctl.StopSynth()
-
-	u := ui.NewUI(logger, fileName, quit, autoStop, cfg.Duration, &closing, interrupt, ctl)
-	go u.Enter()
-
-	loader, err := file.NewLoader(logger, ctl, fileName, &closing)
-	if err != nil {
-		return err
-	}
-	defer loader.Close()
-
-	err = loader.Load()
-	if err != nil {
-		ui.Clear()
-		return fmt.Errorf("unable to load file %s: %w", fileName, err)
-	}
-
-	ctl.FadeIn(cfg.FadeIn)
-	var fadingOut bool
-
-Loop:
-	for {
-		select {
-		case <-quit:
-			if fadingOut {
-				logger.Info("already received quit signal")
-				continue
-			}
-			fadingOut = true
-			logger.Info(fmt.Sprintf("fading out in %fs", cfg.FadeOut))
-			ctl.Stop(cfg.FadeOut)
-		case <-interrupt:
-			logger.Info("interrupt received")
-			ctl.Stop(0.05)
-		case <-ctl.SynthDone:
-			break Loop
-		}
-	}
-
-	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
-	ui.LineBreaks(2)
-	return err
 }

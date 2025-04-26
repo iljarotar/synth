@@ -1,10 +1,11 @@
+// FIX: removed output -> this component needs to be refactored completely
+
 package control
 
 import (
 	"fmt"
 	"math"
 
-	"github.com/iljarotar/synth/audio"
 	cfg "github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/log"
 	"github.com/iljarotar/synth/synth"
@@ -15,7 +16,6 @@ type Control struct {
 	logger                        *log.Logger
 	config                        cfg.Config
 	synth                         *s.Synth
-	output                        chan audio.AudioOutput
 	SynthDone                     chan bool
 	autoStop                      chan bool
 	maxOutput, lastNotifiedOutput float64
@@ -23,7 +23,7 @@ type Control struct {
 	closing                       *bool
 }
 
-func NewControl(logger *log.Logger, config cfg.Config, output chan audio.AudioOutput, autoStop chan bool, closing *bool) (*Control, error) {
+func NewControl(logger *log.Logger, config cfg.Config, autoStop chan bool, closing *bool) (*Control, error) {
 	var synth s.Synth
 	err := synth.Initialize(config.SampleRate)
 	if err != nil {
@@ -34,7 +34,6 @@ func NewControl(logger *log.Logger, config cfg.Config, output chan audio.AudioOu
 		logger:    logger,
 		config:    config,
 		synth:     &synth,
-		output:    output,
 		SynthDone: make(chan bool),
 		autoStop:  autoStop,
 		closing:   closing,
@@ -97,17 +96,10 @@ func (c *Control) GetVolume() float64 {
 }
 
 func (c *Control) receiveOutput(outputChan <-chan synth.Output) {
-	defer close(c.output)
-
 	for out := range outputChan {
 		c.logger.SendTime(out.Time)
 		c.checkDuration(out.Time)
 		c.checkOverdrive(out.Mono, out.Time)
-
-		c.output <- audio.AudioOutput{
-			Left:  out.Left,
-			Right: out.Right,
-		}
 	}
 }
 

@@ -6,13 +6,15 @@ import (
 )
 
 const (
-	maxInitTime                    = 7200
-	maxVolume                      = 2
 	FadeDirectionIn  FadeDirection = "in"
 	FadeDirectionOut FadeDirection = "out"
+
+	maxInitTime = 7200
+	maxVolume   = 2
 )
 
 type FadeDirection string
+
 type Output struct {
 	Left, Right, Mono, Time float64
 }
@@ -43,7 +45,7 @@ func (s *Synth) Initialize(sampleRate float64) error {
 	s.Volume = utils.Limit(s.Volume, 0, maxVolume)
 	s.Time = utils.Limit(s.Time, 0, maxInitTime)
 	s.VolumeMemory = s.Volume
-	s.Volume = 0 // start muted
+	// s.Volume = 0 // start muted
 	s.active = true
 
 	for _, osc := range s.Oscillators {
@@ -97,6 +99,21 @@ func (s *Synth) Play(outputChan chan<- Output) {
 			Mono:  mono,
 			Time:  s.Time,
 		}
+	}
+}
+
+func (s *Synth) Next() Output {
+	left, right, mono := s.getCurrentValue()
+	// s.adjustVolume()
+	left *= s.Volume
+	right *= s.Volume
+	mono *= s.Volume
+
+	return Output{
+		Left:  left,
+		Right: right,
+		Mono:  mono,
+		Time:  s.Time,
 	}
 }
 
