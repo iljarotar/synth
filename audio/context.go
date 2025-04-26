@@ -4,6 +4,11 @@ import (
 	"github.com/ebitengine/oto/v3"
 )
 
+const (
+	format         = oto.FormatSignedInt16LE
+	bytesPerSample = 2 * format
+)
+
 type Context struct {
 	ctx    *oto.Context
 	player *oto.Player
@@ -13,7 +18,7 @@ func NewContext(sampleRate int, readSample func() [2]float64) (*Context, error) 
 	ctx, ready, err := oto.NewContext(&oto.NewContextOptions{
 		SampleRate:   sampleRate,
 		ChannelCount: 2,
-		Format:       oto.FormatSignedInt16LE,
+		Format:       format,
 		BufferSize:   0,
 	})
 
@@ -25,9 +30,7 @@ func NewContext(sampleRate int, readSample func() [2]float64) (*Context, error) 
 	sampleReader := &reader{
 		readSample: readSample,
 	}
-
 	player := ctx.NewPlayer(sampleReader)
-	// TODO: set buffer size?
 	player.Play()
 
 	context := &Context{

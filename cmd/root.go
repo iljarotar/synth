@@ -7,6 +7,8 @@ import (
 
 	"github.com/iljarotar/synth/audio"
 	"github.com/iljarotar/synth/config"
+	"github.com/iljarotar/synth/file"
+	"github.com/iljarotar/synth/log"
 	"github.com/iljarotar/synth/player"
 	"github.com/spf13/cobra"
 )
@@ -57,7 +59,25 @@ documentation and usage: https://github.com/iljarotar/synth`,
 			return err
 		}
 
-		p, err := player.NewPlayer(filename, int(config.SampleRate))
+		logger := log.NewLogger(10)
+		p, err := player.NewPlayer(logger, filename, int(config.SampleRate))
+		if err != nil {
+			return err
+		}
+
+		loader, err := file.NewLoader(logger, filename, p.UpdateSynth)
+		if err != nil {
+			return err
+		}
+
+		defer func() {
+			err := loader.Close()
+			if err != nil {
+				fmt.Printf("failed to close loader:%v", err)
+			}
+		}()
+
+		err = loader.LoadAndWatch()
 		if err != nil {
 			return err
 		}
@@ -66,6 +86,7 @@ documentation and usage: https://github.com/iljarotar/synth`,
 		if err != nil {
 			return err
 		}
+
 		defer func() {
 			err := audioCtx.Close()
 			if err != nil {
@@ -93,7 +114,7 @@ func init() {
 	if err != nil {
 		os.Exit(1)
 	}
-	rootCmd.Flags().Float64P("sample-rate", "s", config.DefaultSampleRate, "sample rate")
+	rootCmd.Flags().IntP("sample-rate", "s", config.DefaultSampleRate, "sample rate")
 	rootCmd.Flags().Float64P("fade-in", "i", config.DefaultFadeIn, "fade-in in seconds")
 	rootCmd.Flags().Float64P("fade-out", "o", config.DefaultFadeOut, "fade-out in seconds")
 	rootCmd.Flags().StringP("config", "c", defaultConfigPath, "path to your config file")
@@ -101,7 +122,7 @@ func init() {
 }
 
 func parseFlags(cmd *cobra.Command, config *config.Config) error {
-	s, _ := cmd.Flags().GetFloat64("sample-rate")
+	s, _ := cmd.Flags().GetInt("sample-rate")
 	in, _ := cmd.Flags().GetFloat64("fade-in")
 	out, _ := cmd.Flags().GetFloat64("fade-out")
 	duration, _ := cmd.Flags().GetFloat64("duration")

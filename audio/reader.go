@@ -8,14 +8,14 @@ type reader struct {
 	readSample func() [2]float64
 }
 
-// Read func inspired by https://github.com/gopxl/beep
+// Read func as implemented by https://github.com/gopxl/beep
 func (r *reader) Read(buf []byte) (int, error) {
-	// TODO: make 4 a constant
-	if len(buf)%4 != 0 {
-		return 0, fmt.Errorf("buffer lenght must be divisible by 4")
+	if len(buf)%int(bytesPerSample) != 0 {
+		return 0, fmt.Errorf("buffer lenght must be divisible by %d", bytesPerSample)
 	}
+	numSamples := len(buf) / 4
 
-	for i := range buf[:len(buf)/4] {
+	for i := range buf[:numSamples] {
 		s := r.readSample()
 
 		left := s[0]

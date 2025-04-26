@@ -25,7 +25,7 @@ type Control struct {
 
 func NewControl(logger *log.Logger, config cfg.Config, autoStop chan bool, closing *bool) (*Control, error) {
 	var synth s.Synth
-	err := synth.Initialize(config.SampleRate)
+	err := synth.Initialize(float64(config.SampleRate))
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (c *Control) LoadSynth(synth s.Synth) error {
 	c.maxOutput = 0
 	c.lastNotifiedOutput = 0
 
-	err := synth.Initialize(c.config.SampleRate)
+	err := synth.Initialize(float64(c.config.SampleRate))
 	if err != nil {
 		return err
 	}
