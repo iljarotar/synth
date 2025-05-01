@@ -81,9 +81,14 @@ func (ui *UI) Enter() {
 			ui.resetScreen()
 
 		case state := <-stateChan:
-			ui.showVolumeWarning = state.VolumeWarning
-			ui.time = state.Time
-			ui.resetScreen()
+			if state.VolumeWarning != ui.showVolumeWarning {
+				ui.showVolumeWarning = state.VolumeWarning
+				ui.resetScreen()
+			}
+			if state.Time != ui.time {
+				ui.time = state.Time
+				ui.updateTime()
+			}
 		}
 	}
 }
