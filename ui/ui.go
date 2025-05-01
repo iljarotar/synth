@@ -46,7 +46,7 @@ func Clear() {
 }
 
 func lineBreaks(number int) {
-	for i := 0; i < number; i++ {
+	for range number {
 		fmt.Print("\r\n")
 	}
 }
@@ -57,9 +57,6 @@ func (ui *UI) Enter() {
 
 	logChan := make(chan string)
 	ui.logger.SubscribeToLogs(logChan)
-
-	timeChan := make(chan string)
-	ui.logger.SubscribeToTime(timeChan)
 
 	stateChan := make(chan log.State)
 	ui.logger.SubscribeToState(stateChan)
@@ -78,16 +75,15 @@ func (ui *UI) Enter() {
 				// TODO: decrease volume
 				ui.resetScreen()
 			}
+
 		case log := <-logChan:
 			ui.appendLog(log)
 			ui.resetScreen()
 
-			// case time := <-timeChan:
-			// 	ui.time = time
-			// 	ui.updateTime()
-			// case state := <-stateChan:
-			// 	ui.showVolumeWarning = state.VolumeWarning
-			// 	ui.resetScreen()
+		case state := <-stateChan:
+			ui.showVolumeWarning = state.VolumeWarning
+			ui.time = state.Time
+			ui.resetScreen()
 		}
 	}
 }

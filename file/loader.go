@@ -107,7 +107,7 @@ func (l *Loader) StartWatching() {
 					l.logger.Error("could not load file. error: " + err.Error())
 				} else {
 					l.logger.Info("reloaded patch file")
-					l.logger.ShowOverdriveWarning(false)
+					l.logger.ShowVolumeWarning(false)
 				}
 
 				// l.ctl.FadeIn(0.01)
