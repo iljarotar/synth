@@ -12,7 +12,8 @@ const (
 )
 
 type State struct {
-	OverdriveWarning bool
+	VolumeWarning bool
+	// TODO: add time to state
 }
 
 type Logger struct {
@@ -66,7 +67,7 @@ func (l *Logger) Error(log string) {
 
 func (l *Logger) ShowOverdriveWarning(limitExceeded bool) {
 	newState := l.State
-	newState.OverdriveWarning = limitExceeded
+	newState.VolumeWarning = limitExceeded
 	l.State = newState
 
 	for _, s := range l.stateSubscribers {

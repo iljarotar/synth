@@ -116,7 +116,7 @@ func (c *Control) checkOverdrive(output, time float64) {
 		c.logger.Warning(fmt.Sprintf("Output value %f", c.maxOutput))
 		c.overdriveWarningTriggeredAt = time
 	}
-	if c.logger.OverdriveWarning && c.maxOutput <= 1 {
+	if c.logger.VolumeWarning && c.maxOutput <= 1 {
 		c.logger.ShowOverdriveWarning(false)
 	}
 }

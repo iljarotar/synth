@@ -6,47 +6,46 @@ import (
 	"os"
 	"os/exec"
 
-	c "github.com/iljarotar/synth/control"
 	"github.com/iljarotar/synth/log"
 )
 
 type UI struct {
-	ctl                  *c.Control
-	logger               *log.Logger
-	quit                 chan bool
-	input                chan string
-	autoStop             chan bool
-	file                 string
-	logs                 []string
-	time                 string
-	duration             float64
-	showOverdriveWarning bool
-	closing              *bool
-	interrupt            chan bool
+	logger   *log.Logger
+	file     string
+	duration float64
+	quitChan chan<- bool
+
+	input             chan string
+	logs              []string
+	time              string
+	showVolumeWarning bool
 }
 
-func NewUI(logger *log.Logger, file string, quit chan bool, autoStop chan bool, duration float64, closing *bool, interrupt chan bool, ctl *c.Control) *UI {
+type Config struct {
+	Logger   *log.Logger
+	File     string
+	Duration float64
+	QuitChan chan<- bool
+}
+
+func NewUI(c Config) *UI {
 	return &UI{
-		ctl:       ctl,
-		logger:    logger,
-		quit:      quit,
-		autoStop:  autoStop,
-		input:     make(chan string),
-		file:      file,
-		time:      "00:00:00",
-		duration:  duration,
-		closing:   closing,
-		interrupt: interrupt,
+		logger:   c.Logger,
+		file:     c.File,
+		duration: c.Duration,
+		quitChan: c.QuitChan,
+		input:    make(chan string),
+		time:     "00:00:00",
 	}
 }
 
 func Clear() {
 	cmd := exec.Command("clear")
 	cmd.Stdout = os.Stdout
-	// cmd.Run()
+	cmd.Run()
 }
 
-func LineBreaks(number int) {
+func lineBreaks(number int) {
 	for i := 0; i < number; i++ {
 		fmt.Print("\r\n")
 	}
@@ -70,28 +69,25 @@ func (ui *UI) Enter() {
 		case input := <-ui.input:
 			switch input {
 			case "q":
-				*ui.closing = true
 				ui.resetScreen()
-				ui.quit <- true
+				ui.quitChan <- true
 			case "d":
-				ui.ctl.IncreaseVolume()
+				// TODO: increase volume
 				ui.resetScreen()
 			case "s":
-				ui.ctl.DecreaseVolume()
+				// TODO: decrease volume
 				ui.resetScreen()
 			}
-		case time := <-timeChan:
-			ui.time = time
-			ui.updateTime()
 		case log := <-logChan:
 			ui.appendLog(log)
 			ui.resetScreen()
-		case state := <-stateChan:
-			ui.showOverdriveWarning = state.OverdriveWarning
-			ui.resetScreen()
-		case <-ui.autoStop:
-			*ui.closing = true
-			ui.quit <- true
+
+			// case time := <-timeChan:
+			// 	ui.time = time
+			// 	ui.updateTime()
+			// case state := <-stateChan:
+			// 	ui.showVolumeWarning = state.VolumeWarning
+			// 	ui.resetScreen()
 		}
 	}
 }
@@ -105,7 +101,7 @@ func (ui *UI) read() {
 			ui.logger.Error(fmt.Sprintf("failed to read input %v", err))
 		}
 		if r == rune(3) {
-			ui.interrupt <- true
+			// TODO: interrupt?
 		}
 		ui.input <- string(r)
 	}
@@ -114,31 +110,31 @@ func (ui *UI) read() {
 func (ui *UI) resetScreen() {
 	Clear()
 	fmt.Printf("%s %s", log.Colored("Synth playing", log.ColorBlueStrong), ui.file)
-	LineBreaks(1)
-	fmt.Printf("%s %s", log.Colored("Volume", log.ColorBlueStrong), fmt.Sprintf("%v", ui.ctl.GetVolume()))
-	LineBreaks(2)
+	lineBreaks(1)
+	fmt.Printf("%s %s", log.Colored("Volume", log.ColorBlueStrong), fmt.Sprintf("%v", 1)) // TODO: get volume
+	lineBreaks(2)
 
 	for _, log := range ui.logs {
 		fmt.Print(log + "\r\n")
 	}
 	if len(ui.logs) > 0 {
-		LineBreaks(1)
+		lineBreaks(1)
 	}
-	if ui.showOverdriveWarning {
+	if ui.showVolumeWarning {
 		fmt.Printf("%s", log.Colored("[WARNING] Volume exceeded 100%%", log.ColorOrangeStorng))
-		LineBreaks(2)
+		lineBreaks(2)
 	}
 	fmt.Printf("%s", ui.time)
 	if ui.duration >= 0 {
 		fmt.Printf(" - automatically stopping after %fs", ui.duration)
 	}
-	LineBreaks(2)
+	lineBreaks(2)
 	fmt.Printf("%s ", log.Colored("Keybindings", log.ColorBlueStrong))
-	LineBreaks(1)
+	lineBreaks(1)
 	fmt.Print("q: quit")
-	LineBreaks(1)
+	lineBreaks(1)
 	fmt.Print("d: raise volume")
-	LineBreaks(1)
+	lineBreaks(1)
 	fmt.Print("s: reduce volume")
 }
 
