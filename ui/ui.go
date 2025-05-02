@@ -9,33 +9,38 @@ import (
 	"github.com/iljarotar/synth/log"
 )
 
-type UI struct {
-	logger   *log.Logger
-	file     string
-	duration float64
-	quitChan chan<- bool
+type Signal string
 
-	input             chan string
+const (
+	SignalQuit      Signal = "quit"
+	SignalInterrupt Signal = "interrupt"
+)
+
+type UI struct {
+	logger     *log.Logger
+	file       string
+	duration   float64
+	signalChan chan<- Signal
+
 	logs              []string
 	time              string
 	showVolumeWarning bool
 }
 
 type Config struct {
-	Logger   *log.Logger
-	File     string
-	Duration float64
-	QuitChan chan<- bool
+	Logger     *log.Logger
+	File       string
+	Duration   float64
+	SignalChan chan<- Signal
 }
 
 func NewUI(c Config) *UI {
 	return &UI{
-		logger:   c.Logger,
-		file:     c.File,
-		duration: c.Duration,
-		quitChan: c.QuitChan,
-		input:    make(chan string),
-		time:     "00:00:00",
+		logger:     c.Logger,
+		file:       c.File,
+		duration:   c.Duration,
+		signalChan: c.SignalChan,
+		time:       "00:00:00",
 	}
 }
 
@@ -45,7 +50,7 @@ func Clear() {
 	cmd.Run()
 }
 
-func lineBreaks(number int) {
+func LineBreaks(number int) {
 	for range number {
 		fmt.Print("\r\n")
 	}
@@ -63,19 +68,6 @@ func (ui *UI) Enter() {
 
 	for {
 		select {
-		case input := <-ui.input:
-			switch input {
-			case "q":
-				ui.resetScreen()
-				ui.quitChan <- true
-			case "d":
-				// TODO: increase volume
-				ui.resetScreen()
-			case "s":
-				// TODO: decrease volume
-				ui.resetScreen()
-			}
-
 		case log := <-logChan:
 			ui.appendLog(log)
 			ui.resetScreen()
@@ -101,41 +93,57 @@ func (ui *UI) read() {
 		if err != nil {
 			ui.logger.Error(fmt.Sprintf("failed to read input %v", err))
 		}
-		if r == rune(3) {
-			// TODO: interrupt?
-		}
-		ui.input <- string(r)
+		ui.handleInput(r)
+	}
+}
+
+func (ui *UI) handleInput(r rune) {
+	if r == rune(3) {
+		ui.signalChan <- SignalInterrupt
+		return
+	}
+
+	switch string(r) {
+	case "q":
+		ui.resetScreen()
+		ui.signalChan <- SignalQuit
+	case "d":
+		// TODO: increase volume
+		ui.resetScreen()
+	case "s":
+		// TODO: decrease volume
+		ui.resetScreen()
 	}
 }
 
 func (ui *UI) resetScreen() {
 	Clear()
 	fmt.Printf("%s %s", log.Colored("Synth playing", log.ColorBlueStrong), ui.file)
-	lineBreaks(1)
+	LineBreaks(1)
 	fmt.Printf("%s %s", log.Colored("Volume", log.ColorBlueStrong), fmt.Sprintf("%v", 1)) // TODO: get volume
-	lineBreaks(2)
+	LineBreaks(2)
 
 	for _, log := range ui.logs {
 		fmt.Print(log + "\r\n")
 	}
 	if len(ui.logs) > 0 {
-		lineBreaks(1)
+		LineBreaks(1)
 	}
 	if ui.showVolumeWarning {
 		fmt.Printf("%s", log.Colored("[WARNING] Volume exceeded 100%%", log.ColorOrangeStorng))
-		lineBreaks(2)
+		LineBreaks(2)
 	}
 	fmt.Printf("%s", ui.time)
 	if ui.duration >= 0 {
 		fmt.Printf(" - automatically stopping after %fs", ui.duration)
 	}
-	lineBreaks(2)
+	LineBreaks(2)
 	fmt.Printf("%s ", log.Colored("Keybindings", log.ColorBlueStrong))
-	lineBreaks(1)
+	LineBreaks(1)
 	fmt.Print("q: quit")
-	lineBreaks(1)
+	LineBreaks(1)
 	fmt.Print("d: raise volume")
-	lineBreaks(1)
+	LineBreaks(1)
 	fmt.Print("s: reduce volume")
 }
 

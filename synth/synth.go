@@ -29,6 +29,7 @@ type Synth struct {
 	modMap                             module.ModulesMap
 	filtersMap                         module.FiltersMap
 	timeStep, volumeStep, volumeMemory float64
+	notifyFadeoutChan                  chan<- bool
 }
 
 func (s *Synth) Initialize(sampleRate float64) error {
@@ -109,12 +110,20 @@ func (s *Synth) FadeIn(duration float64) {
 }
 
 func (s *Synth) FadeOut(duration float64) {
-	// TODO: how to notify?
 	s.volumeStep = secondsToStep(duration, -s.Volume, s.sampleRate)
+}
+
+func (s *Synth) NotifyFadeout(done chan<- bool) {
+	s.notifyFadeoutChan = done
 }
 
 func (s *Synth) adjustVolume() {
 	if s.volumeStep == 0 {
+		if s.notifyFadeoutChan != nil {
+			s.notifyFadeoutChan <- true
+			close(s.notifyFadeoutChan)
+			s.notifyFadeoutChan = nil
+		}
 		return
 	}
 	s.Volume += s.volumeStep

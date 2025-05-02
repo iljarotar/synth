@@ -95,13 +95,6 @@ func (l *Loader) StartWatching() {
 
 			// check last loaded time to prevent occasional double loading
 			if !event.Has(fsnotify.Rename) && time.Now().Sub(l.lastLoaded) > 500*time.Millisecond {
-				// waitForFadeOut := make(chan bool)
-
-				// l.ctl.FadeOut(0.01, waitForFadeOut)
-				// <-waitForFadeOut
-
-				// TODO: fade out and in
-
 				err := l.LoadAndWatch()
 				if err != nil {
 					l.logger.Error("could not load file. error: " + err.Error())
@@ -109,8 +102,6 @@ func (l *Loader) StartWatching() {
 					l.logger.Info("reloaded patch file")
 					l.logger.ShowVolumeWarning(false)
 				}
-
-				// l.ctl.FadeIn(0.01)
 			}
 		case err, ok := <-l.watcher.Errors:
 			if !ok {

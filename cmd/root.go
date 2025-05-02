@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/iljarotar/synth/audio"
 	"github.com/iljarotar/synth/config"
@@ -108,12 +109,12 @@ func parseFlags(cmd *cobra.Command, config *config.Config) error {
 
 func start(filename string, c *config.Config) error {
 	logger := log.NewLogger(10)
-	p, err := player.NewPlayer(logger, filename, int(c.SampleRate))
+	p, err := player.NewPlayer(logger, filename, c)
 	if err != nil {
 		return err
 	}
 
-	loader, err := file.NewLoader(logger, filename, p.UpdateSynth)
+	loader, err := file.NewLoader(logger, filename, p.LoadSynth)
 	if err != nil {
 		return err
 	}
@@ -150,18 +151,36 @@ func start(filename string, c *config.Config) error {
 		}
 	}()
 
-	quitChan := make(chan bool)
+	signalChan := make(chan ui.Signal)
 	uiConfig := ui.Config{
-		Logger:   logger,
-		File:     filename,
-		Duration: c.Duration,
-		QuitChan: quitChan,
+		Logger:     logger,
+		File:       filename,
+		Duration:   c.Duration,
+		SignalChan: signalChan,
 	}
 
 	u := ui.NewUI(uiConfig)
 	go u.Enter()
 
-	<-quitChan
+	done := make(chan bool)
 
+Loop:
+	for {
+		select {
+		case signal := <-signalChan:
+			if signal == ui.SignalQuit {
+				go p.Stop(done, false)
+			}
+			if signal == ui.SignalInterrupt {
+				go p.Stop(done, true)
+			}
+
+		case <-done:
+			break Loop
+		}
+	}
+
+	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
+	ui.LineBreaks(2)
 	return nil
 }
