@@ -169,9 +169,11 @@ Loop:
 		select {
 		case signal := <-signalChan:
 			if signal == ui.SignalQuit {
+				loader.Stop()
 				go p.Stop(done, false)
 			}
 			if signal == ui.SignalInterrupt {
+				loader.Stop()
 				go p.Stop(done, true)
 			}
 

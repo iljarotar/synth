@@ -15,11 +15,13 @@ import (
 type callbackFunc func(*s.Synth) error
 
 type Loader struct {
-	logger     *log.Logger
+	logger   *log.Logger
+	file     string
+	callback callbackFunc
+
 	watcher    *fsnotify.Watcher
 	lastLoaded time.Time
-	file       string
-	callback   callbackFunc
+	active     bool
 }
 
 func NewLoader(logger *log.Logger, filename string, callback callbackFunc) (*Loader, error) {
@@ -30,9 +32,10 @@ func NewLoader(logger *log.Logger, filename string, callback callbackFunc) (*Loa
 
 	l := &Loader{
 		logger:   logger,
-		watcher:  watcher,
 		file:     filename,
 		callback: callback,
+		watcher:  watcher,
+		active:   true,
 	}
 	go l.StartWatching()
 
@@ -41,6 +44,10 @@ func NewLoader(logger *log.Logger, filename string, callback callbackFunc) (*Loa
 
 func (l *Loader) Close() error {
 	return l.watcher.Close()
+}
+
+func (l *Loader) Stop() {
+	l.active = false
 }
 
 func (l *Loader) LoadAndWatch() error {
@@ -82,9 +89,8 @@ func (l *Loader) Watch(file string) error {
 	return l.watcher.Add(filePath)
 }
 
-// TODO: notify quit signal
 func (l *Loader) StartWatching() {
-	for {
+	for l.active {
 		select {
 		case event, ok := <-l.watcher.Events:
 			if !ok {
