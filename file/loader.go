@@ -106,7 +106,6 @@ func (l *Loader) StartWatching() {
 					l.logger.Error("could not load file. error: " + err.Error())
 				} else {
 					l.logger.Info("reloaded patch file")
-					l.logger.ShowVolumeWarning(false)
 				}
 			}
 		case err, ok := <-l.watcher.Errors:

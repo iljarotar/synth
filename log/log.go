@@ -18,7 +18,7 @@ type State struct {
 
 type Logger struct {
 	logs             []string
-	state            State
+	State            State
 	currentTime      int
 	maxLogs          uint
 	logSubscribers   []chan<- string
@@ -53,19 +53,19 @@ func (l *Logger) SendTime(time float64) {
 	if l.isNextSecond(time) {
 		seconds := int(time)
 		l.currentTime = seconds
-		l.state.Time = formatTime(seconds)
+		l.State.Time = formatTime(seconds)
 		l.sendState()
 	}
 }
 
 func (l *Logger) ShowVolumeWarning(limitExceeded bool) {
-	l.state.VolumeWarning = limitExceeded
+	l.State.VolumeWarning = limitExceeded
 	l.sendState()
 }
 
 func (l *Logger) sendState() {
 	for _, s := range l.stateSubscribers {
-		s <- l.state
+		s <- l.State
 	}
 }
 
