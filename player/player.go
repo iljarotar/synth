@@ -7,12 +7,14 @@ import (
 )
 
 type player struct {
-	synth  *synth.Synth
+	logger *log.Logger
 	config *config.Config
+	synth  *synth.Synth
 }
 
-func NewPlayer(logger *log.Logger, filename string, c *config.Config) (*player, error) {
+func NewPlayer(logger *log.Logger, c *config.Config) (*player, error) {
 	p := &player{
+		logger: logger,
 		config: c,
 	}
 
@@ -21,9 +23,13 @@ func NewPlayer(logger *log.Logger, filename string, c *config.Config) (*player, 
 
 func (p *player) ReadSample() [2]float64 {
 	sample := [2]float64{}
+
 	o := p.synth.Next()
 	sample[0] = o.Left
 	sample[1] = o.Right
+
+	p.logger.SendTime(o.Time)
+
 	return sample
 }
 

@@ -109,7 +109,7 @@ func parseFlags(cmd *cobra.Command, config *config.Config) error {
 
 func start(filename string, c *config.Config) error {
 	logger := log.NewLogger(10)
-	p, err := player.NewPlayer(logger, filename, c)
+	p, err := player.NewPlayer(logger, c)
 	if err != nil {
 		return err
 	}
