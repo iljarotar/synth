@@ -16,6 +16,12 @@ const (
 	SignalInterrupt Signal = "interrupt"
 )
 
+type control interface {
+	DecreaseVolume()
+	IncreaseVolume()
+	Volume() float64
+}
+
 type UI struct {
 	logger     *log.Logger
 	file       string
