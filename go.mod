@@ -7,7 +7,6 @@ toolchain go1.24.2
 require (
 	github.com/ebitengine/oto/v3 v3.3.2
 	github.com/google/go-cmp v0.5.8
-	golang.org/x/exp v0.0.0-20230307190834-24139beb5833
 	golang.org/x/term v0.31.0
 )
 
