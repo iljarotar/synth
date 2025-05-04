@@ -2,35 +2,34 @@ package audio
 
 import (
 	"fmt"
+	"math"
 )
 
 type reader struct {
 	readSample func() [2]float64
 }
 
-// Read func as implemented by https://github.com/gopxl/beep
 func (r *reader) Read(buf []byte) (int, error) {
 	if len(buf)%int(bytesPerSample) != 0 {
 		return 0, fmt.Errorf("buffer lenght must be divisible by %d", bytesPerSample)
 	}
-	numSamples := len(buf) / 4
+	numSamples := len(buf) / int(bytesPerSample)
 
 	for i := range buf[:numSamples] {
 		s := r.readSample()
 
-		left := s[0]
-		leftInt16 := int16(left * (1<<15 - 1))
-		leftLow := byte(leftInt16)
-		leftHigh := byte(leftInt16 >> 8)
-		buf[i*4] = leftLow
-		buf[i*4+1] = leftHigh
+		left := math.Float32bits(float32(s[0]))
+		right := math.Float32bits(float32(s[1]))
 
-		right := s[1]
-		rightInt16 := int16(right * (1<<15 - 1))
-		rightLow := byte(rightInt16)
-		rightHigh := byte(rightInt16 >> 8)
-		buf[i*4+2] = rightLow
-		buf[i*4+3] = rightHigh
+		buf[i*bytesPerSample] = byte(left)
+		buf[i*bytesPerSample+1] = byte(left >> 8)
+		buf[i*bytesPerSample+2] = byte(left >> 16)
+		buf[i*bytesPerSample+3] = byte(left >> 24)
+
+		buf[i*bytesPerSample+4] = byte(right)
+		buf[i*bytesPerSample+5] = byte(right >> 8)
+		buf[i*bytesPerSample+6] = byte(right >> 16)
+		buf[i*bytesPerSample+7] = byte(right >> 24)
 	}
 
 	return len(buf), nil

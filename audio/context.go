@@ -1,12 +1,14 @@
 package audio
 
 import (
+	"time"
+
 	"github.com/ebitengine/oto/v3"
 )
 
 const (
-	format         = oto.FormatSignedInt16LE
-	bytesPerSample = 2 * format
+	format         = oto.FormatFloat32LE
+	bytesPerSample = 8
 )
 
 type Context struct {
@@ -19,7 +21,7 @@ func NewContext(sampleRate int, readSample func() [2]float64) (*Context, error) 
 		SampleRate:   sampleRate,
 		ChannelCount: 2,
 		Format:       format,
-		BufferSize:   0,
+		BufferSize:   10 * time.Millisecond,
 	})
 
 	if err != nil {
