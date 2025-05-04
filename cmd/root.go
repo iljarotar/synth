@@ -7,9 +7,9 @@ import (
 
 	"github.com/iljarotar/synth/audio"
 	"github.com/iljarotar/synth/config"
+	"github.com/iljarotar/synth/control"
 	"github.com/iljarotar/synth/file"
 	"github.com/iljarotar/synth/log"
-	"github.com/iljarotar/synth/player"
 	"github.com/iljarotar/synth/ui"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
@@ -109,7 +109,7 @@ func parseFlags(cmd *cobra.Command, config *config.Config) error {
 
 func start(filename string, c *config.Config) error {
 	logger := log.NewLogger(10)
-	p, err := player.NewPlayer(logger, c)
+	p, err := control.NewControl(logger, c)
 	if err != nil {
 		return err
 	}
