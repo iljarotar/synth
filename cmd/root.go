@@ -157,6 +157,7 @@ func start(filename string, c *config.Config) error {
 		File:       filename,
 		Duration:   c.Duration,
 		SignalChan: signalChan,
+		Control:    p,
 	}
 
 	u := ui.NewUI(uiConfig)
@@ -182,7 +183,6 @@ Loop:
 			}
 
 			if signal == ui.SignalInterrupt {
-				logger.Info("interrupt received")
 				loader.Stop()
 				go p.Stop(done, true)
 			}

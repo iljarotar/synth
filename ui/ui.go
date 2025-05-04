@@ -21,6 +21,7 @@ type UI struct {
 	file       string
 	duration   float64
 	signalChan chan<- Signal
+	control    control
 
 	logs              []string
 	time              string
@@ -32,6 +33,7 @@ type Config struct {
 	File       string
 	Duration   float64
 	SignalChan chan<- Signal
+	Control    control
 }
 
 func NewUI(c Config) *UI {
@@ -40,6 +42,7 @@ func NewUI(c Config) *UI {
 		file:       c.File,
 		duration:   c.Duration,
 		signalChan: c.SignalChan,
+		control:    c.Control,
 		time:       "00:00:00",
 	}
 }
@@ -108,10 +111,10 @@ func (ui *UI) handleInput(r rune) {
 		ui.resetScreen()
 		ui.signalChan <- SignalQuit
 	case "d":
-		// TODO: increase volume
+		ui.control.IncreaseVolume()
 		ui.resetScreen()
 	case "s":
-		// TODO: decrease volume
+		ui.control.DecreaseVolume()
 		ui.resetScreen()
 	}
 }
@@ -120,7 +123,7 @@ func (ui *UI) resetScreen() {
 	Clear()
 	fmt.Printf("%s %s", log.Colored("Synth playing", log.ColorBlueStrong), ui.file)
 	LineBreaks(1)
-	fmt.Printf("%s %s", log.Colored("Volume", log.ColorBlueStrong), fmt.Sprintf("%v", 1)) // TODO: get volume
+	fmt.Printf("%s %s", log.Colored("Volume", log.ColorBlueStrong), fmt.Sprintf("%v", ui.control.Volume()))
 	LineBreaks(2)
 
 	for _, log := range ui.logs {

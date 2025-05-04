@@ -25,11 +25,12 @@ type Synth struct {
 	Filters     []*module.Filter     `yaml:"filters"`
 	Time        float64              `yaml:"time"`
 
-	sampleRate                         float64
-	modMap                             module.ModulesMap
-	filtersMap                         module.FiltersMap
-	timeStep, volumeStep, volumeMemory float64
-	notifyFadeoutChan                  chan<- bool
+	VolumeMemory         float64
+	sampleRate           float64
+	modMap               module.ModulesMap
+	filtersMap           module.FiltersMap
+	timeStep, volumeStep float64
+	notifyFadeoutChan    chan<- bool
 }
 
 func (s *Synth) Initialize(sampleRate float64) error {
@@ -37,7 +38,7 @@ func (s *Synth) Initialize(sampleRate float64) error {
 	s.sampleRate = sampleRate
 	s.Volume = utils.Limit(s.Volume, 0, maxVolume)
 	s.Time = utils.Limit(s.Time, 0, maxInitTime)
-	s.volumeMemory = s.Volume
+	s.VolumeMemory = s.Volume
 	s.Volume = 0 // start muted
 
 	for _, osc := range s.Oscillators {
@@ -91,22 +92,15 @@ func (s *Synth) Next() Output {
 	}
 }
 
-func (s *Synth) IncreaseVolume() {
-	vol := s.Volume + 0.003
-	vol = min(vol, maxVolume)
-	s.volumeMemory = vol
-	s.Volume = vol
-}
-
-func (s *Synth) DecreaseVolume() {
-	vol := s.Volume - 0.003
+func (s *Synth) SetVolume(volume float64) {
+	vol := min(volume, maxVolume)
 	vol = max(vol, 0)
-	s.volumeMemory = vol
+	s.VolumeMemory = vol
 	s.Volume = vol
 }
 
 func (s *Synth) FadeIn(duration float64) {
-	s.volumeStep = secondsToStep(duration, s.volumeMemory-s.Volume, s.sampleRate)
+	s.volumeStep = secondsToStep(duration, s.VolumeMemory-s.Volume, s.sampleRate)
 }
 
 func (s *Synth) FadeOut(duration float64) {
@@ -128,9 +122,9 @@ func (s *Synth) adjustVolume() {
 	}
 	s.Volume += s.volumeStep
 
-	if s.volumeStep > 0 && s.Volume >= s.volumeMemory {
+	if s.volumeStep > 0 && s.Volume >= s.VolumeMemory {
 		s.volumeStep = 0
-		s.Volume = s.volumeMemory
+		s.Volume = s.VolumeMemory
 		return
 	}
 

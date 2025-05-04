@@ -75,6 +75,18 @@ func (p *player) LoadSynth(synth *synth.Synth) error {
 	return nil
 }
 
+func (p *player) IncreaseVolume() {
+	p.synth.SetVolume(p.synth.Volume + 0.003)
+}
+
+func (p *player) DecreaseVolume() {
+	p.synth.SetVolume(p.synth.Volume - 0.003)
+}
+
+func (p *player) Volume() float64 {
+	return p.synth.VolumeMemory
+}
+
 func (p *player) updateSynth(synth *synth.Synth) {
 	fadeoutDone := make(chan bool)
 	p.synth.NotifyFadeout(fadeoutDone)

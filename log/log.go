@@ -12,15 +12,15 @@ const (
 )
 
 type State struct {
-	VolumeWarning bool
 	Time          string
+	VolumeWarning bool
 }
 
 type Logger struct {
+	maxLogs          uint
 	logs             []string
 	State            State
 	currentTime      int
-	maxLogs          uint
 	logSubscribers   []chan<- string
 	stateSubscribers []chan<- State
 }
