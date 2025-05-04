@@ -163,16 +163,26 @@ func start(filename string, c *config.Config) error {
 	go u.Enter()
 
 	done := make(chan bool)
+	var fadingOut bool
 
 Loop:
 	for {
 		select {
 		case signal := <-signalChan:
 			if signal == ui.SignalQuit {
+				if fadingOut {
+					logger.Info("already received quit signal")
+					continue
+				}
+
+				fadingOut = true
+				logger.Info(fmt.Sprintf("fading out in %fs", c.FadeOut))
 				loader.Stop()
 				go p.Stop(done, false)
 			}
+
 			if signal == ui.SignalInterrupt {
+				logger.Info("interrupt received")
 				loader.Stop()
 				go p.Stop(done, true)
 			}

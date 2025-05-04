@@ -137,6 +137,7 @@ func (ui *UI) resetScreen() {
 	if ui.duration >= 0 {
 		fmt.Printf(" - automatically stopping after %fs", ui.duration)
 	}
+
 	LineBreaks(2)
 	fmt.Printf("%s ", log.Colored("Keybindings", log.ColorBlueStrong))
 	LineBreaks(1)
