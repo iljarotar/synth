@@ -82,6 +82,7 @@ func (p *player) updateSynth(synth *synth.Synth) {
 	p.synth.FadeOut(0.01)
 	<-fadeoutDone
 	p.maxOutput = 0
+	synth.Time = p.synth.Time
 	p.synth = synth
 	p.synth.FadeIn(0.01)
 }

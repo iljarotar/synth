@@ -1,6 +1,7 @@
 package file
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -89,14 +90,11 @@ func (l *Loader) Watch(file string) error {
 	return l.watcher.Add(filePath)
 }
 
+// FIX: saving file quickly multiple times breaks watcher (also occurs on main branch)
 func (l *Loader) StartWatching() {
 	for l.active {
 		select {
-		case event, ok := <-l.watcher.Events:
-			if !ok {
-				return
-			}
-
+		case event := <-l.watcher.Events:
 			time.Sleep(time.Millisecond * 50) // to prevent occasional empty file loading
 
 			// check last loaded time to prevent occasional double loading
@@ -108,11 +106,8 @@ func (l *Loader) StartWatching() {
 					l.logger.Info("reloaded patch file")
 				}
 			}
-		case err, ok := <-l.watcher.Errors:
-			if !ok {
-				return
-			}
-			l.logger.Error("an error occurred. please restart synth. error: " + err.Error())
+		case err := <-l.watcher.Errors:
+			l.logger.Error(fmt.Sprintf("failed to watch file:%v", err))
 		}
 	}
 }
