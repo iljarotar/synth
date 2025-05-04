@@ -10,10 +10,9 @@ import (
 )
 
 type player struct {
-	logger *log.Logger
-	config *config.Config
-	synth  *synth.Synth
-
+	logger    *log.Logger
+	config    *config.Config
+	synth     *synth.Synth
 	maxOutput float64
 }
 
