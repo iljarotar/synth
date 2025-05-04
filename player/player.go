@@ -50,7 +50,7 @@ func (p *player) Stop(done chan<- bool, interrupt bool) {
 
 	fadeout := p.config.FadeOut
 	if interrupt {
-		fadeout = 0.5
+		fadeout = 0.1
 	}
 
 	p.synth.FadeOut(fadeout)

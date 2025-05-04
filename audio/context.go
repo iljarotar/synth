@@ -9,6 +9,7 @@ import (
 const (
 	format         = oto.FormatFloat32LE
 	bytesPerSample = 8
+	bufferSize     = 512
 )
 
 type Context struct {
@@ -21,7 +22,7 @@ func NewContext(sampleRate int, readSample func() [2]float64) (*Context, error) 
 		SampleRate:   sampleRate,
 		ChannelCount: 2,
 		Format:       format,
-		BufferSize:   10 * time.Millisecond,
+		BufferSize:   durationFromBufferSize(bufferSize, float64(sampleRate)),
 	})
 
 	if err != nil {
@@ -33,6 +34,7 @@ func NewContext(sampleRate int, readSample func() [2]float64) (*Context, error) 
 		readSample: readSample,
 	}
 	player := ctx.NewPlayer(sampleReader)
+	player.SetBufferSize(bufferSize * bytesPerSample)
 	player.Play()
 
 	context := &Context{
@@ -45,4 +47,8 @@ func NewContext(sampleRate int, readSample func() [2]float64) (*Context, error) 
 
 func (a *Context) Close() error {
 	return a.player.Close()
+}
+
+func durationFromBufferSize(bufferSize, sampleRate float64) time.Duration {
+	return time.Duration(float64(time.Second) * bufferSize / sampleRate)
 }

@@ -192,7 +192,7 @@ Loop:
 		}
 	}
 
-	time.Sleep(500 * time.Millisecond) // avoid clipping at the end
+	time.Sleep(200 * time.Millisecond) // avoid clipping at the end
 	ui.LineBreaks(2)
 	return nil
 }
