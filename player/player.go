@@ -89,9 +89,9 @@ func (p *player) Volume() float64 {
 func (p *player) updateSynth(synth *synth.Synth) {
 	fadeoutDone := make(chan bool)
 	p.synth.NotifyFadeout(fadeoutDone)
-
 	p.synth.FadeOut(0.01)
 	<-fadeoutDone
+
 	p.maxOutput = 0
 	synth.Time = p.synth.Time
 	p.synth = synth
