@@ -22,7 +22,7 @@ func NewContext(sampleRate int, readSample func() [2]float64) (*Context, error) 
 		SampleRate:   sampleRate,
 		ChannelCount: 2,
 		Format:       format,
-		BufferSize:   durationFromBufferSize(bufferSize, float64(sampleRate)),
+		BufferSize:   bufferDuration(bufferSize, float64(sampleRate)),
 	})
 
 	if err != nil {
@@ -50,6 +50,6 @@ func (a *Context) Close() error {
 	return a.player.Close()
 }
 
-func durationFromBufferSize(bufferSize, sampleRate float64) time.Duration {
+func bufferDuration(bufferSize, sampleRate float64) time.Duration {
 	return time.Duration(float64(time.Second) * bufferSize / sampleRate)
 }
