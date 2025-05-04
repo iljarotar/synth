@@ -6,14 +6,13 @@ import (
 	"time"
 
 	"github.com/iljarotar/synth/audio"
-	"github.com/iljarotar/synth/log"
-	"golang.org/x/term"
-
-	c "github.com/iljarotar/synth/config"
+	"github.com/iljarotar/synth/config"
 	"github.com/iljarotar/synth/control"
-	f "github.com/iljarotar/synth/file"
+	"github.com/iljarotar/synth/file"
+	"github.com/iljarotar/synth/log"
 	"github.com/iljarotar/synth/ui"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 var version = "unknown"
@@ -25,74 +24,69 @@ var rootCmd = &cobra.Command{
 	Long: `command line synthesizer
 	
 documentation and usage: https://github.com/iljarotar/synth`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg, _ := cmd.Flags().GetString("config")
 
 		if len(args) == 0 {
 			cmd.Help()
-			return
+			return nil
 		}
 
 		if err := cobra.MaximumNArgs(1)(cmd, args); err != nil {
-			fmt.Println("too many arguments passed - at most one argument expected")
+			return fmt.Errorf("too many arguments passed - at most one argument expected")
 		}
-		file := args[0]
+		filename := args[0]
 
-		err := c.EnsureDefaultConfig()
+		err := config.EnsureDefaultConfig()
 		if err != nil {
-			fmt.Println(err)
-			return
+			return err
 		}
 
-		defaultConfigPath, err := c.GetDefaultConfigPath()
+		defaultConfigPath, err := config.GetDefaultConfigPath()
 		if err != nil {
-			fmt.Println(err)
-			return
+			return err
 		}
 
 		if cfg == "" {
 			cfg = defaultConfigPath
 		}
-		config, err := c.LoadConfig(cfg)
+
+		c, err := config.LoadConfig(cfg)
 		if err != nil {
-			fmt.Printf("could not load config file: %v\n", err)
-			return
+			return fmt.Errorf("could not load config file: %v\n", err)
 		}
 
-		err = parseFlags(cmd, config)
+		err = parseFlags(cmd, c)
 		if err != nil {
-			fmt.Println(err)
-			return
+			return err
 		}
 
-		err = start(file, config)
-		if err != nil {
-			fmt.Println(err)
-		}
+		return start(filename, c)
 	},
 }
 
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
 }
 
 func init() {
-	defaultConfigPath, err := c.GetDefaultConfigPath()
+	defaultConfigPath, err := config.GetDefaultConfigPath()
 	if err != nil {
 		os.Exit(1)
 	}
-	rootCmd.Flags().Float64P("sample-rate", "s", c.DefaultSampleRate, "sample rate")
-	rootCmd.Flags().Float64P("fade-in", "i", c.DefaultFadeIn, "fade-in in seconds")
-	rootCmd.Flags().Float64P("fade-out", "o", c.DefaultFadeOut, "fade-out in seconds")
+	rootCmd.Flags().IntP("sample-rate", "s", config.DefaultSampleRate, "sample rate")
+	rootCmd.Flags().Float64P("fade-in", "i", config.DefaultFadeIn, "fade-in in seconds")
+	rootCmd.Flags().Float64P("fade-out", "o", config.DefaultFadeOut, "fade-out in seconds")
 	rootCmd.Flags().StringP("config", "c", defaultConfigPath, "path to your config file")
-	rootCmd.Flags().Float64P("duration", "d", c.DefaultDuration, "duration in seconds; if positive duration is specified, synth will stop playing after the defined time")
+	rootCmd.Flags().Float64P("duration", "d", config.DefaultDuration, "duration in seconds; if positive duration is specified, synth will stop playing after the defined time")
 }
 
-func parseFlags(cmd *cobra.Command, config *c.Config) error {
-	s, _ := cmd.Flags().GetFloat64("sample-rate")
+func parseFlags(cmd *cobra.Command, config *config.Config) error {
+	s, _ := cmd.Flags().GetInt("sample-rate")
 	in, _ := cmd.Flags().GetFloat64("fade-in")
 	out, _ := cmd.Flags().GetFloat64("fade-out")
 	duration, _ := cmd.Flags().GetFloat64("duration")
@@ -113,85 +107,92 @@ func parseFlags(cmd *cobra.Command, config *c.Config) error {
 	return config.Validate()
 }
 
-func start(file string, config *c.Config) error {
-	err := audio.Init()
+func start(filename string, c *config.Config) error {
+	logger := log.NewLogger(10)
+	p, err := control.NewControl(logger, c)
 	if err != nil {
 		return err
 	}
-	defer audio.Terminate()
 
-	logger := log.NewLogger(10)
-	quit := make(chan bool)
-	autoStop := make(chan bool)
-	var closing bool
-	interrupt := make(chan bool)
-
-	state, err := term.MakeRaw(int(os.Stdin.Fd()))
+	loader, err := file.NewLoader(logger, filename, p.LoadSynth)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to read input %v", err))
+		return err
 	}
 	defer func() {
-		if err := term.Restore(int(os.Stdin.Fd()), state); err != nil {
-			logger.Error(fmt.Sprintf("failed to restore terminal %v", err))
+		err := loader.Close()
+		if err != nil {
+			fmt.Printf("failed to close loader:%v", err)
 		}
 	}()
 
-	output := make(chan audio.AudioOutput)
-	ctx, err := audio.NewContext(output, config.SampleRate)
-	if err != nil {
-		return err
-	}
-	defer ctx.Close()
-
-	err = ctx.Start()
+	err = loader.LoadAndWatch()
 	if err != nil {
 		return err
 	}
 
-	ctl, err := control.NewControl(logger, *config, output, autoStop, &closing)
+	audioCtx, err := audio.NewContext(int(c.SampleRate), p.ReadSample)
 	if err != nil {
 		return err
 	}
-	ctl.Start()
-	defer ctl.StopSynth()
+	defer func() {
+		err := audioCtx.Close()
+		if err != nil {
+			fmt.Printf("failed to close audio context:%v", err)
+		}
+	}()
 
-	u := ui.NewUI(logger, file, quit, autoStop, config.Duration, &closing, interrupt, ctl)
+	state, err := term.MakeRaw(int(os.Stdin.Fd()))
+	if err != nil {
+		return fmt.Errorf("failed to initialize raw terminal:%w", err)
+	}
+	defer func() {
+		if err := term.Restore(int(os.Stdin.Fd()), state); err != nil {
+			fmt.Printf("failed to restore terminal state:%v", err)
+		}
+	}()
+
+	signalChan := make(chan ui.Signal)
+	uiConfig := ui.Config{
+		Logger:     logger,
+		File:       filename,
+		Duration:   c.Duration,
+		SignalChan: signalChan,
+		Control:    p,
+	}
+
+	u := ui.NewUI(uiConfig)
 	go u.Enter()
 
-	loader, err := f.NewLoader(logger, ctl, file, &closing)
-	if err != nil {
-		return err
-	}
-	defer loader.Close()
-
-	err = loader.Load()
-	if err != nil {
-		ui.Clear()
-		return fmt.Errorf("unable to load file %s: %w", file, err)
-	}
-
-	ctl.FadeIn(config.FadeIn)
+	done := make(chan bool)
 	var fadingOut bool
 
 Loop:
 	for {
 		select {
-		case <-quit:
-			if fadingOut {
-				logger.Info("already received quit signal")
-				continue
+		case signal := <-signalChan:
+			if signal == ui.SignalQuit {
+				if fadingOut {
+					logger.Info("already received quit signal")
+					continue
+				}
+
+				fadingOut = true
+				logger.Info(fmt.Sprintf("fading out in %fs", c.FadeOut))
+				loader.Stop()
+				go p.Stop(done, false)
 			}
-			fadingOut = true
-			logger.Info(fmt.Sprintf("fading out in %fs", config.FadeOut))
-			ctl.Stop(config.FadeOut)
-		case <-interrupt:
-			ctl.Stop(0.05)
-		case <-ctl.SynthDone:
+
+			if signal == ui.SignalInterrupt {
+				loader.Stop()
+				go p.Stop(done, true)
+			}
+
+		case <-done:
 			break Loop
 		}
 	}
 
-	time.Sleep(time.Millisecond * 200) // avoid clipping at the end
+	time.Sleep(200 * time.Millisecond) // avoid clipping at the end
 	ui.LineBreaks(2)
-	return err
+	return nil
 }

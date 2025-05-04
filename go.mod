@@ -1,14 +1,16 @@
 module github.com/iljarotar/synth
 
-go 1.19
+go 1.23.0
 
-require github.com/gordonklaus/portaudio v0.0.0-20221027163845-7c3b689db3cc
+toolchain go1.24.2
 
 require (
+	github.com/ebitengine/oto/v3 v3.3.2
 	github.com/google/go-cmp v0.5.8
-	golang.org/x/exp v0.0.0-20230307190834-24139beb5833
-	golang.org/x/term v0.28.0
+	golang.org/x/term v0.31.0
 )
+
+require github.com/ebitengine/purego v0.8.0 // indirect
 
 require (
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
@@ -18,6 +20,6 @@ require (
 
 require (
 	github.com/fsnotify/fsnotify v1.6.0
-	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/sys v0.32.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )

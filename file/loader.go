@@ -1,52 +1,54 @@
 package file
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/iljarotar/synth/control"
 	"github.com/iljarotar/synth/log"
 	s "github.com/iljarotar/synth/synth"
-	"golang.org/x/exp/slices"
 	"gopkg.in/yaml.v2"
 )
 
+type callbackFunc func(*s.Synth) error
+
 type Loader struct {
-	logger     *log.Logger
-	watcher    *fsnotify.Watcher
-	watch      *bool
-	lastLoaded time.Time
-	ctl        *control.Control
-	file       string
+	logger   *log.Logger
+	file     string
+	callback callbackFunc
+
+	watcher *fsnotify.Watcher
+	active  bool
 }
 
-func NewLoader(logger *log.Logger, ctl *control.Control, file string, closing *bool) (*Loader, error) {
+func NewLoader(logger *log.Logger, filename string, callback callbackFunc) (*Loader, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
 	}
 
-	watch := true
 	l := &Loader{
-		logger:  logger,
-		watcher: watcher,
-		watch:   &watch,
-		ctl:     ctl,
-		file:    file,
+		logger:   logger,
+		file:     filename,
+		callback: callback,
+		watcher:  watcher,
+		active:   true,
 	}
-	go l.StartWatching(closing)
+	go l.StartWatching()
 
 	return l, nil
 }
 
 func (l *Loader) Close() error {
-	*l.watch = false
 	return l.watcher.Close()
 }
 
-func (l *Loader) Load() error {
+func (l *Loader) Stop() {
+	l.active = false
+}
+
+func (l *Loader) LoadAndWatch() error {
 	err := l.Watch(l.file)
 	if err != nil {
 		return err
@@ -63,63 +65,39 @@ func (l *Loader) Load() error {
 		return err
 	}
 
-	err = l.ctl.LoadSynth(synth)
+	err = l.callback(&synth)
 	if err != nil {
 		return err
 	}
 
-	l.lastLoaded = time.Now()
 	return nil
 }
 
 func (l *Loader) Watch(file string) error {
-	filePath, err := filepath.Abs(file)
+	absolutePath, err := filepath.Abs(file)
 	if err != nil {
 		return err
 	}
+	parentDir, _ := filepath.Split(absolutePath)
 
-	if slices.Contains(l.watcher.WatchList(), file) {
-		l.watcher.Remove(file)
-	}
-
-	return l.watcher.Add(filePath)
+	return l.watcher.Add(parentDir)
 }
 
-func (l *Loader) StartWatching(closed *bool) {
-	for *l.watch {
+func (l *Loader) StartWatching() {
+	for l.active {
 		select {
-		case event, ok := <-l.watcher.Events:
-			if !ok {
-				return
-			}
-			if *closed {
-				return
-			}
-
-			time.Sleep(time.Millisecond * 50) // to prevent occasional empty file loading
-
-			// check last loaded time to prevent occasional double loading
-			if !event.Has(fsnotify.Rename) && time.Now().Sub(l.lastLoaded) > 500*time.Millisecond {
-				waitForFadeOut := make(chan bool)
-
-				l.ctl.FadeOut(0.01, waitForFadeOut)
-				<-waitForFadeOut
-
-				err := l.Load()
+		case event := <-l.watcher.Events:
+			if event.Op&fsnotify.Write == fsnotify.Write {
+				err := l.LoadAndWatch()
 				if err != nil {
-					l.logger.Error("could not load file. error: " + err.Error())
-				} else {
-					l.logger.Info("reloaded patch file")
-					l.logger.ShowOverdriveWarning(false)
+					l.logger.Error(fmt.Sprintf("failed to load file:%v", err))
+					continue
 				}
 
-				l.ctl.FadeIn(0.01)
+				l.logger.Info("reloaded patch file")
 			}
-		case err, ok := <-l.watcher.Errors:
-			if !ok {
-				return
-			}
-			l.logger.Error("an error occurred. please restart synth. error: " + err.Error())
+		case err := <-l.watcher.Errors:
+			l.logger.Error(fmt.Sprintf("failed to watch file:%v", err))
 		}
 	}
 }

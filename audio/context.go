@@ -1,42 +1,55 @@
 package audio
 
 import (
-	"github.com/gordonklaus/portaudio"
+	"time"
+
+	"github.com/ebitengine/oto/v3"
 )
 
-type AudioOutput struct {
-	Left, Right float64
-}
+const (
+	format         = oto.FormatFloat32LE
+	bytesPerSample = 8
+	bufferSize     = 512
+)
 
 type Context struct {
-	*portaudio.Stream
-	Input chan AudioOutput
+	ctx    *oto.Context
+	player *oto.Player
 }
 
-func NewContext(input chan AudioOutput, sampleRate float64) (*Context, error) {
-	ctx := &Context{Input: input}
+func NewContext(sampleRate int, readSample func() [2]float64) (*Context, error) {
+	ctx, ready, err := oto.NewContext(&oto.NewContextOptions{
+		SampleRate:   sampleRate,
+		ChannelCount: 2,
+		Format:       format,
+		BufferSize:   bufferDuration(bufferSize, float64(sampleRate)),
+	})
 
-	var err error
-	ctx.Stream, err = portaudio.OpenDefaultStream(0, 2, sampleRate, 0, ctx.Process)
 	if err != nil {
 		return nil, err
 	}
+	<-ready
 
-	return ctx, nil
-}
-
-func (c *Context) Process(out [][]float32) {
-	for i := range out[0] {
-		y := <-c.Input
-		out[0][i] = float32(y.Left)
-		out[1][i] = float32(y.Right)
+	sampleReader := &reader{
+		readSample: readSample,
 	}
+
+	player := ctx.NewPlayer(sampleReader)
+	player.SetBufferSize(bufferSize * bytesPerSample)
+	player.Play()
+
+	context := &Context{
+		ctx:    ctx,
+		player: player,
+	}
+
+	return context, nil
 }
 
-func Init() error {
-	return portaudio.Initialize()
+func (a *Context) Close() error {
+	return a.player.Close()
 }
 
-func Terminate() error {
-	return portaudio.Terminate()
+func bufferDuration(bufferSize, sampleRate float64) time.Duration {
+	return time.Duration(float64(time.Second) * bufferSize / sampleRate)
 }

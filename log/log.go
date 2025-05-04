@@ -12,17 +12,17 @@ const (
 )
 
 type State struct {
-	OverdriveWarning bool
+	Time          string
+	VolumeWarning bool
 }
 
 type Logger struct {
-	logs []string
-	State
-	currentTime      int
 	maxLogs          uint
+	logs             []string
+	State            State
+	currentTime      int
 	logSubscribers   []chan<- string
 	stateSubscribers []chan<- State
-	timeSubscribers  []chan<- string
 }
 
 func NewLogger(maxLogs uint) *Logger {
@@ -37,21 +37,6 @@ func (l *Logger) SubscribeToState(subscriber chan<- State) {
 	l.stateSubscribers = append(l.stateSubscribers, subscriber)
 }
 
-func (l *Logger) SubscribeToTime(subscriber chan<- string) {
-	l.timeSubscribers = append(l.timeSubscribers, subscriber)
-}
-
-func (l *Logger) SendTime(time float64) {
-	if l.isNextSecond(time) {
-		seconds := int(time)
-		l.currentTime = seconds
-
-		for _, s := range l.timeSubscribers {
-			s <- formatTime(seconds)
-		}
-	}
-}
-
 func (l *Logger) Info(log string) {
 	l.sendLog(log, labelInfo, ColorGreenStrong)
 }
@@ -64,13 +49,23 @@ func (l *Logger) Error(log string) {
 	l.sendLog(log, labelError, ColorRedStrong)
 }
 
-func (l *Logger) ShowOverdriveWarning(limitExceeded bool) {
-	newState := l.State
-	newState.OverdriveWarning = limitExceeded
-	l.State = newState
+func (l *Logger) SendTime(time float64) {
+	if l.isNextSecond(time) {
+		seconds := int(time)
+		l.currentTime = seconds
+		l.State.Time = formatTime(seconds)
+		l.sendState()
+	}
+}
 
+func (l *Logger) ShowVolumeWarning(limitExceeded bool) {
+	l.State.VolumeWarning = limitExceeded
+	l.sendState()
+}
+
+func (l *Logger) sendState() {
 	for _, s := range l.stateSubscribers {
-		s <- newState
+		s <- l.State
 	}
 }
 

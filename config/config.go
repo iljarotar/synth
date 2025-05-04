@@ -23,7 +23,7 @@ const (
 )
 
 type Config struct {
-	SampleRate float64 `yaml:"sample-rate"`
+	SampleRate int     `yaml:"sample-rate"`
 	FadeIn     float64 `yaml:"fade-in"`
 	FadeOut    float64 `yaml:"fade-out"`
 	Duration   float64 `yaml:"duration"`
@@ -47,7 +47,7 @@ func EnsureDefaultConfig() error {
 	if err == nil {
 		return nil
 	}
-	if err != nil && !os.IsNotExist(err) {
+	if !os.IsNotExist(err) {
 		return fmt.Errorf("unable to open config file: %w", err)
 	}
 
