@@ -33,6 +33,7 @@ func NewContext(sampleRate int, readSample func() [2]float64) (*Context, error) 
 	sampleReader := &reader{
 		readSample: readSample,
 	}
+
 	player := ctx.NewPlayer(sampleReader)
 	player.SetBufferSize(bufferSize * bytesPerSample)
 	player.Play()
