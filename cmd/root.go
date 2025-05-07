@@ -82,7 +82,7 @@ func init() {
 	rootCmd.Flags().Float64P("fade-in", "i", config.DefaultFadeIn, "fade-in in seconds")
 	rootCmd.Flags().Float64P("fade-out", "o", config.DefaultFadeOut, "fade-out in seconds")
 	rootCmd.Flags().StringP("config", "c", defaultConfigPath, "path to your config file")
-	rootCmd.Flags().Float64P("duration", "d", config.DefaultDuration, "duration in seconds; if positive duration is specified, synth will stop playing after the defined time")
+	rootCmd.Flags().Float64P("duration", "d", config.DefaultDuration, "duration in seconds; if positive duration is provided, synth will stop playing after the defined time")
 }
 
 func parseFlags(cmd *cobra.Command, config *config.Config) error {
@@ -109,12 +109,12 @@ func parseFlags(cmd *cobra.Command, config *config.Config) error {
 
 func start(filename string, c *config.Config) error {
 	logger := log.NewLogger(10)
-	p, err := control.NewControl(logger, c)
+	ctl, err := control.NewControl(logger, c)
 	if err != nil {
 		return err
 	}
 
-	loader, err := file.NewLoader(logger, filename, p.LoadSynth)
+	loader, err := file.NewLoader(logger, filename, ctl.LoadSynth)
 	if err != nil {
 		return err
 	}
@@ -130,7 +130,7 @@ func start(filename string, c *config.Config) error {
 		return err
 	}
 
-	audioCtx, err := audio.NewContext(int(c.SampleRate), p.ReadSample)
+	audioCtx, err := audio.NewContext(int(c.SampleRate), ctl.ReadSample)
 	if err != nil {
 		return err
 	}
@@ -157,13 +157,15 @@ func start(filename string, c *config.Config) error {
 		File:       filename,
 		Duration:   c.Duration,
 		SignalChan: signalChan,
-		Control:    p,
+		Control:    ctl,
 	}
 
 	u := ui.NewUI(uiConfig)
 	go u.Enter()
 
 	done := make(chan bool)
+	durationDone := make(chan bool)
+	ctl.WatchDuration(durationDone)
 	var fadingOut bool
 
 Loop:
@@ -179,13 +181,19 @@ Loop:
 				fadingOut = true
 				logger.Info(fmt.Sprintf("fading out in %fs", c.FadeOut))
 				loader.Stop()
-				go p.Stop(done, false)
+				go ctl.Stop(done, false)
 			}
 
 			if signal == ui.SignalInterrupt {
 				loader.Stop()
-				go p.Stop(done, true)
+				go ctl.Stop(done, true)
 			}
+
+		case <-durationDone:
+			fadingOut = true
+			logger.Info(fmt.Sprintf("duration reached, fading out in %fs", c.FadeOut))
+			loader.Stop()
+			go ctl.Stop(done, false)
 
 		case <-done:
 			break Loop

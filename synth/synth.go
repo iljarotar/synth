@@ -115,7 +115,6 @@ func (s *Synth) adjustVolume() {
 	if s.volumeStep == 0 {
 		if s.notifyFadeoutChan != nil {
 			s.notifyFadeoutChan <- true
-			close(s.notifyFadeoutChan)
 			s.notifyFadeoutChan = nil
 		}
 		return

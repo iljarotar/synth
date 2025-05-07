@@ -14,6 +14,7 @@ type control struct {
 	config    *config.Config
 	synth     *synth.Synth
 	maxOutput float64
+	notifyEnd chan<- bool
 }
 
 func NewControl(logger *log.Logger, c *config.Config) (*control, error) {
@@ -25,92 +26,100 @@ func NewControl(logger *log.Logger, c *config.Config) (*control, error) {
 	return p, nil
 }
 
-func (p *control) ReadSample() [2]float64 {
+func (c *control) ReadSample() [2]float64 {
 	sample := [2]float64{}
 
-	o := p.synth.Next()
+	o := c.synth.Next()
 	sample[0] = o.Left
 	sample[1] = o.Right
 
-	p.logger.SendTime(o.Time)
-	p.checkOutputLevel(o.Mono)
+	c.logger.SendTime(o.Time)
+	c.checkOutputLevel(o.Mono)
+
+	if c.config.Duration > 0 && o.Time >= c.config.Duration && c.notifyEnd != nil {
+		c.notifyEnd <- true
+		c.notifyEnd = nil
+	}
 
 	return sample
 }
 
-func (p *control) Stop(done chan<- bool, interrupt bool) {
-	if p.synth == nil {
+func (c *control) WatchDuration(notifyEnd chan<- bool) {
+	c.notifyEnd = notifyEnd
+}
+
+func (c *control) Stop(done chan<- bool, interrupt bool) {
+	if c.synth == nil {
 		done <- true
 		return
 	}
 
 	fadeoutDone := make(chan bool)
-	p.synth.NotifyFadeout(fadeoutDone)
+	c.synth.NotifyFadeout(fadeoutDone)
 
-	fadeout := p.config.FadeOut
+	fadeout := c.config.FadeOut
 	if interrupt {
 		fadeout = 0.1
 	}
 
-	p.synth.FadeOut(fadeout)
+	c.synth.FadeOut(fadeout)
 	<-fadeoutDone
 	done <- true
-	close(done)
 }
 
-func (p *control) LoadSynth(synth *synth.Synth) error {
-	err := synth.Initialize(float64(p.config.SampleRate))
+func (c *control) LoadSynth(synth *synth.Synth) error {
+	err := synth.Initialize(float64(c.config.SampleRate))
 	if err != nil {
 		return err
 	}
 
-	if p.synth != nil {
-		p.updateSynth(synth)
+	if c.synth != nil {
+		c.updateSynth(synth)
 		return nil
 	}
 
-	p.synth = synth
-	p.synth.FadeIn(p.config.FadeIn)
+	c.synth = synth
+	c.synth.FadeIn(c.config.FadeIn)
 	return nil
 }
 
-func (p *control) IncreaseVolume() {
-	p.synth.SetVolume(p.synth.Volume + 0.003)
+func (c *control) IncreaseVolume() {
+	c.synth.SetVolume(c.synth.Volume + 0.003)
 }
 
-func (p *control) DecreaseVolume() {
-	p.synth.SetVolume(p.synth.Volume - 0.003)
+func (c *control) DecreaseVolume() {
+	c.synth.SetVolume(c.synth.Volume - 0.003)
 }
 
-func (p *control) Volume() float64 {
-	return p.synth.VolumeMemory
+func (c *control) Volume() float64 {
+	return c.synth.VolumeMemory
 }
 
-func (p *control) updateSynth(synth *synth.Synth) {
+func (c *control) updateSynth(synth *synth.Synth) {
 	fadeoutDone := make(chan bool)
-	p.synth.NotifyFadeout(fadeoutDone)
-	p.synth.FadeOut(0.01)
+	c.synth.NotifyFadeout(fadeoutDone)
+	c.synth.FadeOut(0.01)
 	<-fadeoutDone
 
-	p.maxOutput = 0
-	synth.Time = p.synth.Time
-	p.synth = synth
-	p.synth.FadeIn(0.01)
+	c.maxOutput = 0
+	synth.Time = c.synth.Time
+	c.synth = synth
+	c.synth.FadeIn(0.01)
 }
 
-func (p *control) checkOutputLevel(output float64) {
+func (c *control) checkOutputLevel(output float64) {
 	// only consider up to three decimals
 	abs := math.Round(math.Abs(output)*1000) / 1000
-	if abs <= p.maxOutput {
+	if abs <= c.maxOutput {
 		return
 	}
-	p.maxOutput = abs
+	c.maxOutput = abs
 
-	if p.maxOutput > 1.001 {
-		p.logger.ShowVolumeWarning(true)
-		p.logger.Warning(fmt.Sprintf("Output value %f", p.maxOutput))
+	if c.maxOutput > 1.001 {
+		c.logger.ShowVolumeWarning(true)
+		c.logger.Warning(fmt.Sprintf("Output value %f", c.maxOutput))
 	}
-	if p.logger.State.VolumeWarning && p.maxOutput <= 1.001 {
-		p.logger.ShowVolumeWarning(false)
+	if c.logger.State.VolumeWarning && c.maxOutput <= 1.001 {
+		c.logger.ShowVolumeWarning(false)
 	}
 }

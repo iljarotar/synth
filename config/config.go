@@ -19,7 +19,7 @@ const (
 	DefaultSampleRate = 44100
 	DefaultFadeIn     = 1
 	DefaultFadeOut    = 1
-	DefaultDuration   = -1
+	DefaultDuration   = 0
 )
 
 type Config struct {

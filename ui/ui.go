@@ -143,7 +143,7 @@ func (ui *UI) resetScreen() {
 		LineBreaks(2)
 	}
 	fmt.Printf("%s", ui.time)
-	if ui.duration >= 0 {
+	if ui.duration > 0 {
 		fmt.Printf(" - automatically stopping after %fs", ui.duration)
 	}
 
