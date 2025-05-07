@@ -89,6 +89,7 @@ func (c *control) IncreaseVolume() {
 
 func (c *control) DecreaseVolume() {
 	c.synth.SetVolume(c.synth.Volume - 0.003)
+	c.maxOutput = 0
 }
 
 func (c *control) Volume() float64 {

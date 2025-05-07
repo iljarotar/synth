@@ -108,7 +108,7 @@ func parseFlags(cmd *cobra.Command, config *config.Config) error {
 }
 
 func start(filename string, c *config.Config) error {
-	logger := log.NewLogger(10)
+	logger := log.NewLogger(5)
 	ctl, err := control.NewControl(logger, c)
 	if err != nil {
 		return err
