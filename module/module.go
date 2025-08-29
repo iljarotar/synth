@@ -40,3 +40,12 @@ var (
 type Output struct {
 	Mono, Left, Right float64
 }
+
+func modulate(x float64, r calc.Range, modulator string, modules ModulesMap) float64 {
+	transposed := calc.Transpose(x, r, outputLimits)
+	if mod, ok := modules[modulator]; ok {
+		transposed += mod.Current().Mono
+	}
+	transposed = calc.Limit(transposed, outputLimits)
+	return calc.Transpose(transposed, outputLimits, r)
+}

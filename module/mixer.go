@@ -39,6 +39,7 @@ func (m *Mixer) initialize(sampleRate float64) error {
 
 func (m *Mixer) Step(modules ModulesMap) {
 	var left, right, mono float64
+	m.Gain = modulate(m.Gain, gainLimits, m.Mod, modules)
 
 	for name, gain := range m.In {
 		if mod, ok := modules[name]; ok {
