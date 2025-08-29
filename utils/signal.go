@@ -7,13 +7,5 @@ func Percentage(x, min, max float64) float64 {
 }
 
 func Limit(x, min, max float64) float64 {
-	y := x
-
-	if y > min {
-		y = math.Min(x, max)
-	} else {
-		y = min
-	}
-
-	return y
+	return math.Max(min, math.Min(max, x))
 }

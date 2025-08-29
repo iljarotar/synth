@@ -1,13 +1,13 @@
 package synth
 
 import (
+	"github.com/iljarotar/synth/log"
 	"github.com/iljarotar/synth/module"
 	"github.com/iljarotar/synth/utils"
 )
 
 const (
-	maxInitTime = 7200
-	maxVolume   = 2
+	maxVolume = 1
 )
 
 type Output struct {
@@ -15,81 +15,52 @@ type Output struct {
 }
 
 type Synth struct {
-	Volume      float64              `yaml:"vol"`
-	Out         []string             `yaml:"out"`
-	Oscillators []*module.Oscillator `yaml:"oscillators"`
-	Noises      []*module.Noise      `yaml:"noises"`
-	Wavetables  []*module.Wavetable  `yaml:"wavetables"`
-	Samplers    []*module.Sampler    `yaml:"samplers"`
-	Sequences   []*module.Sequence   `yaml:"sequences"`
-	Filters     []*module.Filter     `yaml:"filters"`
-	Time        float64              `yaml:"time"`
+	Out    string  `yaml:"out"`
+	Volume float64 `yaml:"vol"`
 
-	VolumeMemory         float64
-	sampleRate           float64
-	modMap               module.ModulesMap
-	filtersMap           module.FiltersMap
-	timeStep, volumeStep float64
-	notifyFadeoutChan    chan<- bool
+	Mixers            module.MixerMap      `yaml:"mixers"`
+	Oscillators       module.OscillatorMap `yaml:"oscillators"`
+	Time              float64
+	VolumeMemory      float64
+	sampleRate        float64
+	volumeStep        float64
+	notifyFadeoutChan chan<- bool
+	logger            *log.Logger
+	modules           module.ModulesMap
 }
 
 func (s *Synth) Initialize(sampleRate float64) error {
-	s.timeStep = 1 / sampleRate
 	s.sampleRate = sampleRate
 	s.Volume = utils.Limit(s.Volume, 0, maxVolume)
-	s.Time = utils.Limit(s.Time, 0, maxInitTime)
 	s.VolumeMemory = s.Volume
-	s.Volume = 0 // start muted
+	s.Volume = 0
+	s.makeModulesMap()
 
-	for _, osc := range s.Oscillators {
-		err := osc.Initialize(sampleRate)
-		if err != nil {
-			return err
-		}
+	err := s.Mixers.Initialize(sampleRate)
+	if err != nil {
+		return err
 	}
 
-	for _, n := range s.Noises {
-		n.Initialize(sampleRate)
+	err = s.Oscillators.Initialize(sampleRate)
+	if err != nil {
+		return err
 	}
-
-	for _, c := range s.Wavetables {
-		c.Initialize(sampleRate)
-	}
-
-	for _, smplr := range s.Samplers {
-		smplr.Initialize(sampleRate)
-	}
-
-	for _, sq := range s.Sequences {
-		err := sq.Initialize(sampleRate)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, f := range s.Filters {
-		f.Initialize(sampleRate)
-	}
-
-	s.makeMaps()
 
 	return nil
 }
 
-func (s *Synth) Next() Output {
-	left, right, mono := s.getCurrentValue()
+func (s *Synth) GetOutput() Output {
+	s.step()
 	s.adjustVolume()
+	out := Output{Time: s.Time}
 
-	left *= s.Volume
-	right *= s.Volume
-	mono *= s.Volume
-
-	return Output{
-		Left:  left,
-		Right: right,
-		Mono:  mono,
-		Time:  s.Time,
+	if mod, ok := s.modules[s.Out]; ok {
+		out.Left = mod.Current().Left * s.Volume
+		out.Right = mod.Current().Right * s.Volume
+		out.Mono = mod.Current().Mono * s.Volume
 	}
+
+	return out
 }
 
 func (s *Synth) SetVolume(volume float64) {
@@ -133,81 +104,16 @@ func (s *Synth) adjustVolume() {
 	}
 }
 
-func (s *Synth) getCurrentValue() (left, right, mono float64) {
-	s.updateCurrentValues()
-	left, right, mono = 0, 0, 0
-
-	for _, o := range s.Out {
-		mod, ok := s.modMap[o]
-		if ok {
-			left += mod.Current().Left
-			right += mod.Current().Right
-			mono += mod.Current().Mono
-		}
+func (s *Synth) step() {
+	for _, m := range s.Mixers {
+		m.Step(s.modules)
 	}
-
-	return left, right, mono
-}
-
-func (s *Synth) updateCurrentValues() {
-	for _, o := range s.Oscillators {
-		osc := o
-		osc.Next(s.Time, s.modMap, s.filtersMap)
-	}
-
-	for _, n := range s.Noises {
-		n.Next(s.Time, s.modMap, s.filtersMap)
-	}
-
-	for _, c := range s.Wavetables {
-		c.Next(s.Time, s.modMap, s.filtersMap)
-	}
-
-	for _, smplr := range s.Samplers {
-		smplr.Next(s.Time, s.modMap, s.filtersMap)
-	}
-
-	for _, sq := range s.Sequences {
-		sq.Next(s.Time, s.modMap, s.filtersMap)
-	}
-
-	for _, f := range s.Filters {
-		f.NextCoeffs(s.modMap)
-	}
-
-	s.Time += s.timeStep
-}
-
-func (s *Synth) makeMaps() {
-	modMap := make(module.ModulesMap)
-	filtersMap := make(module.FiltersMap)
 
 	for _, osc := range s.Oscillators {
-		modMap[osc.Name] = osc
+		osc.Step(s.Time)
 	}
 
-	for _, n := range s.Noises {
-		modMap[n.Name] = n
-	}
-
-	for _, c := range s.Wavetables {
-		modMap[c.Name] = c
-	}
-
-	for _, smplr := range s.Samplers {
-		modMap[smplr.Name] = smplr
-	}
-
-	for _, sq := range s.Sequences {
-		modMap[sq.Name] = sq
-	}
-
-	for _, f := range s.Filters {
-		filtersMap[f.Name] = f
-	}
-
-	s.modMap = modMap
-	s.filtersMap = filtersMap
+	s.Time += 1 / s.sampleRate
 }
 
 func secondsToStep(seconds, delta, sampleRate float64) float64 {
@@ -217,4 +123,15 @@ func secondsToStep(seconds, delta, sampleRate float64) float64 {
 	steps := seconds * sampleRate
 	step := delta / steps
 	return step
+}
+
+func (s *Synth) makeModulesMap() {
+	s.modules = module.ModulesMap{}
+
+	for name, m := range s.Mixers {
+		s.modules[name] = m
+	}
+	for name, osc := range s.Oscillators {
+		s.modules[name] = osc
+	}
 }
