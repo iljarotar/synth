@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/iljarotar/synth/utils"
+	"github.com/iljarotar/synth/calc"
 )
 
 type OscillatorType string
@@ -40,7 +40,7 @@ func (m OscillatorMap) Initialize(sampleRate float64) error {
 
 func (o *Oscillator) initialize(sampleRate float64) error {
 	o.sampleRate = sampleRate
-	o.Freq = utils.Limit(o.Freq, freqLimits[0], freqLimits[1])
+	o.Freq = calc.Limit(o.Freq, freqLimits)
 
 	signal, err := newSignalFunc(o.Type)
 	if err != nil {

@@ -3,7 +3,7 @@ package module
 import (
 	"fmt"
 
-	"github.com/iljarotar/synth/utils"
+	"github.com/iljarotar/synth/calc"
 )
 
 type Mixer struct {
@@ -28,10 +28,10 @@ func (m MixerMap) Initialize(sampleRate float64) error {
 
 func (m *Mixer) initialize(sampleRate float64) error {
 	m.sampleRate = sampleRate
-	m.Gain = utils.Limit(m.Gain, gainLimits[0], gainLimits[1])
+	m.Gain = calc.Limit(m.Gain, gainLimits)
 
 	for mod, gain := range m.In {
-		m.In[mod] = utils.Limit(gain, gainLimits[0], gainLimits[1])
+		m.In[mod] = calc.Limit(gain, gainLimits)
 	}
 
 	return nil
@@ -48,9 +48,9 @@ func (m *Mixer) Step(modules ModulesMap) {
 		}
 	}
 
-	left = utils.Limit(left*m.Gain, outputLimits[0], outputLimits[1])
-	right = utils.Limit(right*m.Gain, outputLimits[0], outputLimits[1])
-	mono = utils.Limit(mono*m.Gain, outputLimits[0], outputLimits[1])
+	left = calc.Limit(left*m.Gain, outputLimits)
+	right = calc.Limit(right*m.Gain, outputLimits)
+	mono = calc.Limit(mono*m.Gain, outputLimits)
 
 	avg := (mono + m.current.Mono) / 2
 	m.integral += avg / m.sampleRate

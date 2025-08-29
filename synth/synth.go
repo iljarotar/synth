@@ -1,9 +1,9 @@
 package synth
 
 import (
+	"github.com/iljarotar/synth/calc"
 	"github.com/iljarotar/synth/log"
 	"github.com/iljarotar/synth/module"
-	"github.com/iljarotar/synth/utils"
 )
 
 const (
@@ -31,7 +31,10 @@ type Synth struct {
 
 func (s *Synth) Initialize(sampleRate float64) error {
 	s.sampleRate = sampleRate
-	s.Volume = utils.Limit(s.Volume, 0, maxVolume)
+	s.Volume = calc.Limit(s.Volume, calc.Range{
+		Min: 0,
+		Max: maxVolume,
+	})
 	s.VolumeMemory = s.Volume
 	s.Volume = 0
 	s.makeModulesMap()

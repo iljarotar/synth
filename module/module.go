@@ -1,5 +1,7 @@
 package module
 
+import "github.com/iljarotar/synth/calc"
+
 type IModule interface {
 	Current() Output
 	Integral() float64
@@ -20,12 +22,19 @@ func (m *Module) Integral() float64 {
 	return m.integral
 }
 
-type limits [2]float64
-
 var (
-	gainLimits   = limits{0, 1}
-	outputLimits = limits{-1, 1}
-	freqLimits   = limits{0, 20000}
+	gainLimits = calc.Range{
+		Min: 0,
+		Max: 1,
+	}
+	outputLimits = calc.Range{
+		Min: -1,
+		Max: 1,
+	}
+	freqLimits = calc.Range{
+		Min: 0,
+		Max: 20000,
+	}
 )
 
 type Output struct {
