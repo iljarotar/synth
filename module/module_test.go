@@ -10,14 +10,14 @@ func Test_modulate(t *testing.T) {
 	tests := []struct {
 		name string
 		x    float64
-		r    calc.Range
+		rng  calc.Range
 		val  float64
 		want float64
 	}{
 		{
 			name: "modulating signal is 0",
 			x:    1,
-			r: calc.Range{
+			rng: calc.Range{
 				Min: 0,
 				Max: 2,
 			},
@@ -27,7 +27,7 @@ func Test_modulate(t *testing.T) {
 		{
 			name: "range is same as output range",
 			x:    0,
-			r: calc.Range{
+			rng: calc.Range{
 				Min: -1,
 				Max: 1,
 			},
@@ -37,7 +37,7 @@ func Test_modulate(t *testing.T) {
 		{
 			name: "range is different than output range",
 			x:    0.5,
-			r: calc.Range{
+			rng: calc.Range{
 				Min: 0,
 				Max: 1,
 			},
@@ -47,7 +47,7 @@ func Test_modulate(t *testing.T) {
 		{
 			name: "modulation exceeds limits of range to lower end",
 			x:    400,
-			r: calc.Range{
+			rng: calc.Range{
 				Min: 0,
 				Max: 20000,
 			},
@@ -57,7 +57,7 @@ func Test_modulate(t *testing.T) {
 		{
 			name: "modulation exceeds limits of range to higher end",
 			x:    0.75,
-			r: calc.Range{
+			rng: calc.Range{
 				Min: 0,
 				Max: 1,
 			},
@@ -67,7 +67,7 @@ func Test_modulate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := modulate(tt.x, tt.r, tt.val); got != tt.want {
+			if got := modulate(tt.x, tt.rng, tt.val); got != tt.want {
 				t.Errorf("modulate() = %v, want %v", got, tt.want)
 			}
 		})

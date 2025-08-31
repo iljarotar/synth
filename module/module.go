@@ -41,11 +41,11 @@ type Output struct {
 	Mono, Left, Right float64
 }
 
-func modulate(x float64, r calc.Range, val float64) float64 {
-	transposed := calc.Transpose(x, r, outputLimits)
+func modulate(x float64, rng calc.Range, val float64) float64 {
+	transposed := calc.Transpose(x, rng, outputLimits)
 	transposed += val
 	transposed = calc.Limit(transposed, outputLimits)
-	return calc.Transpose(transposed, outputLimits, r)
+	return calc.Transpose(transposed, outputLimits, rng)
 }
 
 func getMono(mod IModule) float64 {

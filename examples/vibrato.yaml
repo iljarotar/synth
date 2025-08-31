@@ -1,0 +1,18 @@
+vol: 1
+out: sine
+
+mixers:
+  lfo_mixer:
+    gain: 0.02
+    in:
+      lfo: 1
+
+oscillators:
+  sine:
+    type: Sine
+    freq: 700
+    mod: lfo_mixer
+
+  lfo:
+    type: Sine
+    freq: 6
