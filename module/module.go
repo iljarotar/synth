@@ -48,6 +48,11 @@ func modulate(x float64, rng calc.Range, val float64) float64 {
 	return calc.Transpose(transposed, outputLimits, rng)
 }
 
+func cv(rng calc.Range, val float64) float64 {
+	val = calc.Limit(val, outputLimits)
+	return calc.Transpose(val, outputLimits, rng)
+}
+
 func getMono(mod IModule) float64 {
 	if mod != nil {
 		return mod.Current().Mono
