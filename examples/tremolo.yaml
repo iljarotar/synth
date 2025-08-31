@@ -1,0 +1,23 @@
+vol: 1
+out: main
+
+mixers:
+  main:
+    gain: 0.5
+    mod: mod
+    in:
+      sine: 1
+
+  mod:
+    gain: 0.5
+    in:
+      lfo: 1
+
+oscillators:
+  sine:
+    type: Sine
+    freq: 400
+
+  lfo:
+    type: Sine
+    freq: 5

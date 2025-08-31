@@ -151,16 +151,16 @@ func TestTranspose(t *testing.T) {
 		},
 		{
 			name: "different ranges",
-			x:    6,
+			x:    0.5,
 			from: Range{
-				Min: 1,
-				Max: 11,
+				Min: 0,
+				Max: 1,
 			},
 			to: Range{
-				Min: 2,
-				Max: 22,
+				Min: -1,
+				Max: 1,
 			},
-			want: 12,
+			want: 0,
 		},
 		{
 			name: "negative limits work",

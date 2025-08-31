@@ -59,8 +59,8 @@ func (o *Oscillator) Step(t float64) {
 	o.integral += avg / o.sampleRate
 
 	o.current = Output{
-		Mono:  val / 2,
-		Left:  val,
+		Mono:  val,
+		Left:  val / 2,
 		Right: val / 2,
 	}
 }
