@@ -23,6 +23,7 @@ type Oscillator struct {
 	Freq       float64        `yaml:"freq"`
 	CV         string         `yaml:"cv"`
 	Mod        string         `yaml:"mod"`
+	Phase      float64        `yaml:"phase"`
 	signal     SignalFunc
 	sampleRate float64
 }
@@ -54,7 +55,10 @@ func (o *Oscillator) initialize(sampleRate float64) error {
 func (o *Oscillator) Step(t float64, modules ModulesMap) {
 	// phaseOffset is calculated such that it modulates the frequency by an equal amount for each base frequency
 	phaseOffset := getIntegral(modules[o.Mod]) * o.Freq
-	phi := 2 * math.Pi * (o.Freq*t + phaseOffset)
+
+	// phaseShift is a fraction of one period
+	phaseShift := o.Phase / o.Freq
+	phi := 2 * math.Pi * (o.Freq*(t+phaseShift) + phaseOffset)
 	val := o.signal(phi)
 
 	avg := (val + o.current.Mono) / 2
