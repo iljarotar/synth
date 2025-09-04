@@ -7,12 +7,12 @@ toolchain go1.24.2
 require (
 	github.com/ebitengine/oto/v3 v3.3.3
 	github.com/google/go-cmp v0.7.0
+	github.com/samber/lo v1.51.0
 	golang.org/x/term v0.34.0
 )
 
 require (
 	github.com/ebitengine/purego v0.8.4 // indirect
-	github.com/samber/lo v1.51.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
 )
 
