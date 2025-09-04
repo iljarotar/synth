@@ -4,6 +4,7 @@ import (
 	"github.com/iljarotar/synth/calc"
 	"github.com/iljarotar/synth/log"
 	"github.com/iljarotar/synth/module"
+	"github.com/samber/lo"
 )
 
 const (
@@ -15,18 +16,21 @@ type Output struct {
 }
 
 type Synth struct {
-	Out    string  `yaml:"out"`
-	Volume float64 `yaml:"vol"`
+	Out         string               `yaml:"out"`
+	Volume      float64              `yaml:"vol"`
+	Mixers      module.MixerMap      `yaml:"mixers"`
+	Oscillators module.OscillatorMap `yaml:"oscillators"`
 
-	Mixers            module.MixerMap      `yaml:"mixers"`
-	Oscillators       module.OscillatorMap `yaml:"oscillators"`
-	Time              float64
+	Time              float64 // TODO: allow static time offset
 	VolumeMemory      float64
 	sampleRate        float64
 	volumeStep        float64
 	notifyFadeoutChan chan<- bool
 	logger            *log.Logger
 	modules           module.ModulesMap
+
+	mixers      []*module.Mixer
+	oscillators []*module.Oscillator
 }
 
 func (s *Synth) Initialize(sampleRate float64) error {
@@ -38,6 +42,7 @@ func (s *Synth) Initialize(sampleRate float64) error {
 	s.VolumeMemory = s.Volume
 	s.Volume = 0
 	s.makeModulesMap()
+	s.flattenModules()
 
 	err := s.Mixers.Initialize(sampleRate)
 	if err != nil {
@@ -108,11 +113,11 @@ func (s *Synth) adjustVolume() {
 }
 
 func (s *Synth) step() {
-	for _, m := range s.Mixers {
+	for _, m := range s.mixers {
 		m.Step(s.modules)
 	}
 
-	for _, osc := range s.Oscillators {
+	for _, osc := range s.oscillators {
 		osc.Step(s.Time, s.modules)
 	}
 
@@ -137,4 +142,9 @@ func (s *Synth) makeModulesMap() {
 	for name, osc := range s.Oscillators {
 		s.modules[name] = osc
 	}
+}
+
+func (s *Synth) flattenModules() {
+	s.mixers = lo.Values(s.Mixers)
+	s.oscillators = lo.Values(s.Oscillators)
 }

@@ -5,7 +5,18 @@ mixers:
   main:
     cv: lfo # FIX: change to envelope once implemented
     in:
+      sine_mix: 1
+
+  sine_mix:
+    gain: 0.5
+    mod: tremolo_mix
+    in:
       sine: 1
+
+  tremolo_mix:
+    gain: 0.5
+    in:
+      tremolo: 1
 
 oscillators:
   sine:
@@ -16,3 +27,7 @@ oscillators:
     type: Sine
     freq: 0.1
     phase: -0.25
+
+  tremolo:
+    type: Sine
+    freq: 5
