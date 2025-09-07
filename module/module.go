@@ -4,22 +4,16 @@ import "github.com/iljarotar/synth/calc"
 
 type IModule interface {
 	Current() Output
-	Integral() float64
 }
 
 type ModulesMap map[string]IModule
 
 type Module struct {
-	current  Output
-	integral float64
+	current Output
 }
 
 func (m *Module) Current() Output {
 	return m.current
-}
-
-func (m *Module) Integral() float64 {
-	return m.integral
 }
 
 var (
@@ -56,13 +50,6 @@ func cv(rng calc.Range, val float64) float64 {
 func getMono(mod IModule) float64 {
 	if mod != nil {
 		return mod.Current().Mono
-	}
-	return 0
-}
-
-func getIntegral(mod IModule) float64 {
-	if mod != nil {
-		return mod.Integral()
 	}
 	return 0
 }

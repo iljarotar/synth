@@ -59,9 +59,6 @@ func (m *Mixer) Step(modules ModulesMap) {
 	right = calc.Limit(right*gain, outputLimits)
 	mono = calc.Limit(mono*gain, outputLimits)
 
-	avg := (mono + m.current.Mono) / 2
-	m.integral += avg / m.sampleRate
-
 	m.current = Output{
 		Mono:  mono,
 		Left:  left,

@@ -179,8 +179,5 @@ func TestMixer_Step(t *testing.T) {
 		if diff := cmp.Diff(tt.want, tt.m.Current()); diff != "" {
 			t.Errorf("Mixer.Step() diff = %s", diff)
 		}
-		if tt.wantIntegral != tt.m.Integral() {
-			t.Errorf("Mixer.Step() integral = %v, want %v", tt.m.Integral(), tt.wantIntegral)
-		}
 	}
 }
