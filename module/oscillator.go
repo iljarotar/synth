@@ -26,10 +26,7 @@ type Oscillator struct {
 	Phase      float64        `yaml:"phase"`
 	signal     SignalFunc
 	sampleRate float64
-
-	modPrev float64
-	hPrev   float64
-	yPrev   float64
+	arg        float64
 }
 
 type OscillatorMap map[string]*Oscillator
@@ -58,23 +55,19 @@ func (o *Oscillator) initialize(sampleRate float64) error {
 
 func (o *Oscillator) Step(t float64, modules ModulesMap) {
 	freq := o.Freq
-	c := o.Phase / o.Freq
-	ft := 2*math.Pi*freq*t + c
+	if o.CV != "" {
+		cv := getMono(modules[o.CV])
+		freq = calc.Transpose(cv, outputLimits, freqLimits)
+	}
 
+	c := 2 * math.Pi * o.Phase
 	mod := math.Pow(2, getMono(modules[o.Mod]))
-	ht := ft * (mod - o.modPrev) * o.sampleRate
-	yt := o.yPrev + (o.hPrev+ht)/(2*o.sampleRate)
+	o.arg += 2 * math.Pi * freq * mod / o.sampleRate
 
-	phi := ft*mod - yt
-	val := o.signal(phi)
-
+	val := o.signal(o.arg + c)
 	o.current = Output{
 		Mono:  val,
 		Left:  val / 2,
 		Right: val / 2,
 	}
-
-	o.modPrev = mod
-	o.hPrev = ht
-	o.yPrev = yt
 }

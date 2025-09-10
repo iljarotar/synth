@@ -2,8 +2,13 @@ vol: 1
 out: sine
 
 mixers:
-  lfo_mixer:
+  vibrato_mixer:
     gain: 0.04
+    in:
+      vibrato: 1
+
+  lfo_mixer:
+    gain: 0.3
     in:
       lfo: 1
 
@@ -11,8 +16,14 @@ oscillators:
   sine:
     type: Sine
     freq: 300
+    mod: vibrato_mixer
+
+  vibrato:
+    type: Sine
+    freq: 3
     mod: lfo_mixer
 
   lfo:
     type: Sine
-    freq: 5
+    freq: 0.1
+    mod: lfo
