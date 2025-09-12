@@ -53,16 +53,17 @@ func (o *Oscillator) initialize(sampleRate float64) error {
 	return nil
 }
 
-func (o *Oscillator) Step(t float64, modules ModulesMap) {
+func (o *Oscillator) Step(modules ModulesMap) {
+	twoPi := 2 * math.Pi
 	freq := o.Freq
 	if o.CV != "" {
 		cv := getMono(modules[o.CV])
 		freq = calc.Transpose(cv, outputLimits, freqLimits)
 	}
 
-	c := 2 * math.Pi * o.Phase
+	c := twoPi * o.Phase
 	mod := math.Pow(2, getMono(modules[o.Mod]))
-	o.arg += 2 * math.Pi * freq * mod / o.sampleRate
+	arg := twoPi * freq * mod / o.sampleRate
 
 	val := o.signal(o.arg + c)
 	o.current = Output{
@@ -70,4 +71,6 @@ func (o *Oscillator) Step(t float64, modules ModulesMap) {
 		Left:  val / 2,
 		Right: val / 2,
 	}
+
+	o.arg += arg
 }

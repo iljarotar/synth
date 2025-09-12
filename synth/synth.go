@@ -118,7 +118,7 @@ func (s *Synth) step() {
 	}
 
 	for _, osc := range s.oscillators {
-		osc.Step(s.Time, s.modules)
+		osc.Step(s.modules)
 	}
 
 	s.Time += 1 / s.sampleRate
