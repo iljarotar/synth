@@ -1,0 +1,5 @@
+vol: 1
+out: noise
+
+noises:
+  noise: {}
