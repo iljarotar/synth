@@ -56,11 +56,9 @@ func TestOscillator_Step(t *testing.T) {
 		{
 			name: "modulation",
 			modules: ModulesMap{
-				"mod": &Oscillator{
-					Module: Module{
-						current: Output{
-							Mono: 1,
-						},
+				"mod": &Module{
+					current: Output{
+						Mono: 1,
 					},
 				},
 			},
@@ -78,11 +76,9 @@ func TestOscillator_Step(t *testing.T) {
 		{
 			name: "cv",
 			modules: ModulesMap{
-				"cv": &Oscillator{
-					Module: Module{
-						current: Output{
-							Mono: 1,
-						},
+				"cv": &Module{
+					current: Output{
+						Mono: 1,
 					},
 				},
 			},
@@ -101,13 +97,13 @@ func TestOscillator_Step(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.o.Step(tt.modules)
-		})
 
-		if tt.o.Current().Mono != tt.want {
-			t.Errorf("Oscillator.Step() = %v, want %v", tt.o.Current().Mono, tt.want)
-		}
-		if tt.o.arg != tt.wantArg {
-			t.Errorf("Oscillator.Step() arg = %v, want %v", tt.o.arg, tt.wantArg)
-		}
+			if tt.o.Current().Mono != tt.want {
+				t.Errorf("Oscillator.Step() = %v, want %v", tt.o.Current().Mono, tt.want)
+			}
+			if tt.o.arg != tt.wantArg {
+				t.Errorf("Oscillator.Step() arg = %v, want %v", tt.o.arg, tt.wantArg)
+			}
+		})
 	}
 }

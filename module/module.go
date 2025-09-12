@@ -29,6 +29,10 @@ var (
 		Min: 0,
 		Max: 20000,
 	}
+	panLimits = calc.Range{
+		Min: -1,
+		Max: 1,
+	}
 )
 
 type Output struct {

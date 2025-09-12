@@ -22,9 +22,7 @@ func TestMixer_Step(t *testing.T) {
 				sampleRate: 1,
 			},
 			modules: ModulesMap{
-				"sine": &Oscillator{
-					Module: Module{},
-				},
+				"in": &Module{},
 			},
 			want:         Output{},
 			wantIntegral: 0,
@@ -34,12 +32,12 @@ func TestMixer_Step(t *testing.T) {
 			m: &Mixer{
 				Gain: 1,
 				In: map[string]float64{
-					"square": 1,
+					"sine": 1,
 				},
 				sampleRate: 1,
 			},
 			modules: ModulesMap{
-				"sine": &Oscillator{
+				"in": &Oscillator{
 					Module: Module{},
 				},
 			},
@@ -51,18 +49,16 @@ func TestMixer_Step(t *testing.T) {
 			m: &Mixer{
 				Gain: 1,
 				In: map[string]float64{
-					"sine": 0,
+					"in": 0,
 				},
 				sampleRate: 1,
 			},
 			modules: ModulesMap{
-				"sine": &Oscillator{
-					Module: Module{
-						current: Output{
-							Mono:  1,
-							Left:  0.5,
-							Right: 0.5,
-						},
+				"in": &Module{
+					current: Output{
+						Mono:  1,
+						Left:  0.5,
+						Right: 0.5,
 					},
 				},
 			},
@@ -70,22 +66,20 @@ func TestMixer_Step(t *testing.T) {
 			wantIntegral: 0,
 		},
 		{
-			name: "oscillator input",
+			name: "input",
 			m: &Mixer{
 				Gain: 1,
 				In: map[string]float64{
-					"sine": 1,
+					"in": 1,
 				},
 				sampleRate: 1,
 			},
 			modules: ModulesMap{
-				"sine": &Oscillator{
-					Module: Module{
-						current: Output{
-							Mono:  1,
-							Left:  0.5,
-							Right: 0.5,
-						},
+				"in": &Module{
+					current: Output{
+						Mono:  1,
+						Left:  0.5,
+						Right: 0.5,
 					},
 				},
 			},
@@ -102,27 +96,23 @@ func TestMixer_Step(t *testing.T) {
 				Gain: 0.5,
 				Mod:  "lfo",
 				In: map[string]float64{
-					"sine": 1,
+					"in": 1,
 				},
 				sampleRate: 1,
 			},
 			modules: ModulesMap{
-				"sine": &Oscillator{
-					Module: Module{
-						current: Output{
-							Mono:  1,
-							Left:  0.5,
-							Right: 0.5,
-						},
+				"in": &Module{
+					current: Output{
+						Mono:  1,
+						Left:  0.5,
+						Right: 0.5,
 					},
 				},
-				"lfo": &Oscillator{
-					Module: Module{
-						current: Output{
-							Mono:  0.5,
-							Left:  0.25,
-							Right: 0.25,
-						},
+				"lfo": &Module{
+					current: Output{
+						Mono:  0.5,
+						Left:  0.25,
+						Right: 0.25,
 					},
 				},
 			},
@@ -137,30 +127,26 @@ func TestMixer_Step(t *testing.T) {
 			name: "cv",
 			m: &Mixer{
 				Gain: 0.5,
-				Mod:  "sine",
+				Mod:  "in",
 				CV:   "lfo",
 				In: map[string]float64{
-					"sine": 1,
+					"in": 1,
 				},
 				sampleRate: 1,
 			},
 			modules: ModulesMap{
-				"sine": &Oscillator{
-					Module: Module{
-						current: Output{
-							Mono:  1,
-							Left:  0.5,
-							Right: 0.5,
-						},
+				"in": &Module{
+					current: Output{
+						Mono:  1,
+						Left:  0.5,
+						Right: 0.5,
 					},
 				},
-				"lfo": &Oscillator{
-					Module: Module{
-						current: Output{
-							Mono:  0.5,
-							Left:  0.25,
-							Right: 0.25,
-						},
+				"lfo": &Module{
+					current: Output{
+						Mono:  0.5,
+						Left:  0.25,
+						Right: 0.25,
 					},
 				},
 			},
@@ -175,9 +161,10 @@ func TestMixer_Step(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.m.Step(tt.modules)
+
+			if diff := cmp.Diff(tt.want, tt.m.Current()); diff != "" {
+				t.Errorf("Mixer.Step() diff = %s", diff)
+			}
 		})
-		if diff := cmp.Diff(tt.want, tt.m.Current()); diff != "" {
-			t.Errorf("Mixer.Step() diff = %s", diff)
-		}
 	}
 }

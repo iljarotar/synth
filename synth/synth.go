@@ -19,8 +19,9 @@ type Synth struct {
 	Out         string               `yaml:"out"`
 	Volume      float64              `yaml:"vol"`
 	Mixers      module.MixerMap      `yaml:"mixers"`
-	Oscillators module.OscillatorMap `yaml:"oscillators"`
 	Noises      module.NoiseMap      `yaml:"noises"`
+	Oscillators module.OscillatorMap `yaml:"oscillators"`
+	Pans        module.PanMap        `yaml:"pans"`
 
 	Time              float64 // TODO: allow static time offset
 	VolumeMemory      float64
@@ -33,6 +34,7 @@ type Synth struct {
 	mixers      []*module.Mixer
 	oscillators []*module.Oscillator
 	noises      []*module.Noise
+	pans        []*module.Pan
 }
 
 func (s *Synth) Initialize(sampleRate float64) error {
@@ -55,6 +57,8 @@ func (s *Synth) Initialize(sampleRate float64) error {
 	if err != nil {
 		return err
 	}
+
+	s.Pans.Initialize()
 
 	return nil
 }
@@ -124,6 +128,9 @@ func (s *Synth) step() {
 	for _, n := range s.noises {
 		n.Step()
 	}
+	for _, p := range s.pans {
+		p.Step(s.modules)
+	}
 
 	s.Time += 1 / s.sampleRate
 }
@@ -149,10 +156,14 @@ func (s *Synth) makeModulesMap() {
 	for name, n := range s.Noises {
 		s.modules[name] = n
 	}
+	for name, p := range s.Pans {
+		s.modules[name] = p
+	}
 }
 
 func (s *Synth) flattenModules() {
 	s.mixers = lo.Values(s.Mixers)
 	s.oscillators = lo.Values(s.Oscillators)
 	s.noises = lo.Values(s.Noises)
+	s.pans = lo.Values(s.Pans)
 }
