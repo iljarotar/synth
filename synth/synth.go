@@ -16,14 +16,16 @@ type Output struct {
 }
 
 type Synth struct {
-	Out         string               `yaml:"out"`
-	Volume      float64              `yaml:"vol"`
+	Out    string  `yaml:"out"`
+	Volume float64 `yaml:"vol"`
+
 	Mixers      module.MixerMap      `yaml:"mixers"`
 	Noises      module.NoiseMap      `yaml:"noises"`
 	Oscillators module.OscillatorMap `yaml:"oscillators"`
 	Pans        module.PanMap        `yaml:"pans"`
+	Samplers    module.SamplerMap    `yaml:"samplers"`
 
-	Time              float64 // TODO: allow static time offset
+	Time              float64
 	VolumeMemory      float64
 	sampleRate        float64
 	volumeStep        float64
@@ -32,9 +34,10 @@ type Synth struct {
 	modules           module.ModulesMap
 
 	mixers      []*module.Mixer
-	oscillators []*module.Oscillator
 	noises      []*module.Noise
+	oscillators []*module.Oscillator
 	pans        []*module.Pan
+	samplers    []*module.Sampler
 }
 
 func (s *Synth) Initialize(sampleRate float64) error {
@@ -122,14 +125,17 @@ func (s *Synth) step() {
 	for _, m := range s.mixers {
 		m.Step(s.modules)
 	}
-	for _, osc := range s.oscillators {
-		osc.Step(s.modules)
-	}
 	for _, n := range s.noises {
 		n.Step()
 	}
+	for _, osc := range s.oscillators {
+		osc.Step(s.modules)
+	}
 	for _, p := range s.pans {
 		p.Step(s.modules)
+	}
+	for _, smplr := range s.samplers {
+		smplr.Step(s.modules)
 	}
 
 	s.Time += 1 / s.sampleRate
@@ -150,20 +156,24 @@ func (s *Synth) makeModulesMap() {
 	for name, m := range s.Mixers {
 		s.modules[name] = m
 	}
-	for name, osc := range s.Oscillators {
-		s.modules[name] = osc
-	}
 	for name, n := range s.Noises {
 		s.modules[name] = n
 	}
+	for name, osc := range s.Oscillators {
+		s.modules[name] = osc
+	}
 	for name, p := range s.Pans {
 		s.modules[name] = p
+	}
+	for name, smplr := range s.Samplers {
+		s.modules[name] = smplr
 	}
 }
 
 func (s *Synth) flattenModules() {
 	s.mixers = lo.Values(s.Mixers)
-	s.oscillators = lo.Values(s.Oscillators)
 	s.noises = lo.Values(s.Noises)
+	s.oscillators = lo.Values(s.Oscillators)
 	s.pans = lo.Values(s.Pans)
+	s.samplers = lo.Values(s.Samplers)
 }

@@ -1,0 +1,24 @@
+vol: 1
+out: sine
+
+noises:
+  noise: {}
+
+oscillators:
+  sine:
+    type: Sine
+    freq: 300
+    mod: sine_mod
+
+  trigger:
+    type: Square
+    freq: 6
+
+samplers:
+  sine_mod:
+    in: noise
+    trigger: random_trigger
+
+  random_trigger:
+    in: noise
+    trigger: trigger
