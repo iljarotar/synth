@@ -24,6 +24,7 @@ type Synth struct {
 	Oscillators module.OscillatorMap `yaml:"oscillators"`
 	Pans        module.PanMap        `yaml:"pans"`
 	Samplers    module.SamplerMap    `yaml:"samplers"`
+	Wavetables  module.WavetableMap  `yaml:"wavetables"`
 
 	Time              float64
 	VolumeMemory      float64
@@ -38,6 +39,7 @@ type Synth struct {
 	oscillators []*module.Oscillator
 	pans        []*module.Pan
 	samplers    []*module.Sampler
+	wavetables  []*module.Wavetable
 }
 
 func (s *Synth) Initialize(sampleRate float64) error {
@@ -62,6 +64,7 @@ func (s *Synth) Initialize(sampleRate float64) error {
 	}
 
 	s.Pans.Initialize()
+	s.Wavetables.Initialize(sampleRate)
 
 	return nil
 }
@@ -137,6 +140,9 @@ func (s *Synth) step() {
 	for _, smplr := range s.samplers {
 		smplr.Step(s.modules)
 	}
+	for _, w := range s.wavetables {
+		w.Step(s.modules)
+	}
 
 	s.Time += 1 / s.sampleRate
 }
@@ -168,6 +174,9 @@ func (s *Synth) makeModulesMap() {
 	for name, smplr := range s.Samplers {
 		s.modules[name] = smplr
 	}
+	for name, w := range s.Wavetables {
+		s.modules[name] = w
+	}
 }
 
 func (s *Synth) flattenModules() {
@@ -176,4 +185,5 @@ func (s *Synth) flattenModules() {
 	s.oscillators = lo.Values(s.Oscillators)
 	s.pans = lo.Values(s.Pans)
 	s.samplers = lo.Values(s.Samplers)
+	s.wavetables = lo.Values(s.Wavetables)
 }

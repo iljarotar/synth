@@ -63,7 +63,6 @@ func (o *Oscillator) Step(modules ModulesMap) {
 
 	c := twoPi * o.Phase
 	mod := math.Pow(2, getMono(modules[o.Mod]))
-	arg := twoPi * freq * mod / o.sampleRate
 
 	val := o.signal(o.arg + c)
 	o.current = Output{
@@ -72,5 +71,5 @@ func (o *Oscillator) Step(modules ModulesMap) {
 		Right: val / 2,
 	}
 
-	o.arg += arg
+	o.arg += twoPi * freq * mod / o.sampleRate
 }
