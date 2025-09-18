@@ -10,7 +10,7 @@ func TestPan_Step(t *testing.T) {
 	tests := []struct {
 		name    string
 		p       *Pan
-		modules ModulesMap
+		modules ModuleMap
 		want    Output
 	}{
 		{
@@ -19,7 +19,7 @@ func TestPan_Step(t *testing.T) {
 				Pan: 0.5,
 				In:  "in",
 			},
-			modules: ModulesMap{
+			modules: ModuleMap{
 				"in": &Module{
 					current: Output{
 						Mono: 1,
@@ -39,7 +39,7 @@ func TestPan_Step(t *testing.T) {
 				Mod: "mod",
 				In:  "in",
 			},
-			modules: ModulesMap{
+			modules: ModuleMap{
 				"in": &Module{
 					current: Output{
 						Mono: 1,

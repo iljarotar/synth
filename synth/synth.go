@@ -19,6 +19,7 @@ type Synth struct {
 	Out    string  `yaml:"out"`
 	Volume float64 `yaml:"vol"`
 
+	Gates       module.GateMap       `yaml:"gates"`
 	Mixers      module.MixerMap      `yaml:"mixers"`
 	Noises      module.NoiseMap      `yaml:"noises"`
 	Oscillators module.OscillatorMap `yaml:"oscillators"`
@@ -32,8 +33,9 @@ type Synth struct {
 	volumeStep        float64
 	notifyFadeoutChan chan<- bool
 	logger            *log.Logger
-	modules           module.ModulesMap
+	modules           module.ModuleMap
 
+	gates       []*module.Gate
 	mixers      []*module.Mixer
 	noises      []*module.Noise
 	oscillators []*module.Oscillator
@@ -52,6 +54,8 @@ func (s *Synth) Initialize(sampleRate float64) error {
 	s.Volume = 0
 	s.makeModulesMap()
 	s.flattenModules()
+
+	s.Gates.Initialze(sampleRate)
 
 	err := s.Mixers.Initialize(sampleRate)
 	if err != nil {
@@ -125,6 +129,9 @@ func (s *Synth) adjustVolume() {
 }
 
 func (s *Synth) step() {
+	for _, g := range s.gates {
+		g.Step(s.modules)
+	}
 	for _, m := range s.mixers {
 		m.Step(s.modules)
 	}
@@ -157,8 +164,11 @@ func secondsToStep(seconds, delta, sampleRate float64) float64 {
 }
 
 func (s *Synth) makeModulesMap() {
-	s.modules = module.ModulesMap{}
+	s.modules = module.ModuleMap{}
 
+	for name, g := range s.Gates {
+		s.modules[name] = g
+	}
 	for name, m := range s.Mixers {
 		s.modules[name] = m
 	}
@@ -180,6 +190,7 @@ func (s *Synth) makeModulesMap() {
 }
 
 func (s *Synth) flattenModules() {
+	s.gates = lo.Values(s.Gates)
 	s.mixers = lo.Values(s.Mixers)
 	s.noises = lo.Values(s.Noises)
 	s.oscillators = lo.Values(s.Oscillators)

@@ -6,7 +6,7 @@ type IModule interface {
 	Current() Output
 }
 
-type ModulesMap map[string]IModule
+type ModuleMap map[string]IModule
 
 type Module struct {
 	current Output
@@ -33,15 +33,23 @@ var (
 		Min: -1,
 		Max: 1,
 	}
+	bpmLimits = calc.Range{
+		Min: 0,
+		Max: 2000,
+	}
 )
 
 type Output struct {
 	Mono, Left, Right float64
 }
 
-func modulate(x float64, rng calc.Range, val float64) float64 {
+func modulate(x float64, rng calc.Range, mod float64) float64 {
+	if mod == 0 {
+		return x
+	}
+
 	transposed := calc.Transpose(x, rng, outputLimits)
-	transposed += val
+	transposed += mod
 	transposed = calc.Limit(transposed, outputLimits)
 	return calc.Transpose(transposed, outputLimits, rng)
 }

@@ -10,7 +10,7 @@ func TestMixer_Step(t *testing.T) {
 	tests := []struct {
 		name         string
 		m            *Mixer
-		modules      ModulesMap
+		modules      ModuleMap
 		want         Output
 		wantIntegral float64
 	}{
@@ -21,7 +21,7 @@ func TestMixer_Step(t *testing.T) {
 				In:         map[string]float64{},
 				sampleRate: 1,
 			},
-			modules: ModulesMap{
+			modules: ModuleMap{
 				"in": &Module{},
 			},
 			want:         Output{},
@@ -36,7 +36,7 @@ func TestMixer_Step(t *testing.T) {
 				},
 				sampleRate: 1,
 			},
-			modules: ModulesMap{
+			modules: ModuleMap{
 				"in": &Oscillator{
 					Module: Module{},
 				},
@@ -53,7 +53,7 @@ func TestMixer_Step(t *testing.T) {
 				},
 				sampleRate: 1,
 			},
-			modules: ModulesMap{
+			modules: ModuleMap{
 				"in": &Module{
 					current: Output{
 						Mono:  1,
@@ -74,7 +74,7 @@ func TestMixer_Step(t *testing.T) {
 				},
 				sampleRate: 1,
 			},
-			modules: ModulesMap{
+			modules: ModuleMap{
 				"in": &Module{
 					current: Output{
 						Mono:  1,
@@ -100,7 +100,7 @@ func TestMixer_Step(t *testing.T) {
 				},
 				sampleRate: 1,
 			},
-			modules: ModulesMap{
+			modules: ModuleMap{
 				"in": &Module{
 					current: Output{
 						Mono:  1,
@@ -134,7 +134,7 @@ func TestMixer_Step(t *testing.T) {
 				},
 				sampleRate: 1,
 			},
-			modules: ModulesMap{
+			modules: ModuleMap{
 				"in": &Module{
 					current: Output{
 						Mono:  1,

@@ -53,7 +53,7 @@ func (o *Oscillator) initialize(sampleRate float64) error {
 	return nil
 }
 
-func (o *Oscillator) Step(modules ModulesMap) {
+func (o *Oscillator) Step(modules ModuleMap) {
 	twoPi := 2 * math.Pi
 	freq := o.Freq
 	if o.CV != "" {

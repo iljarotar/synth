@@ -37,7 +37,7 @@ func (m *Mixer) initialize(sampleRate float64) error {
 	return nil
 }
 
-func (m *Mixer) Step(modules ModulesMap) {
+func (m *Mixer) Step(modules ModuleMap) {
 	var (
 		left, right, mono float64
 	)

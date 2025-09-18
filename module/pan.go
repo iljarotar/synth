@@ -21,7 +21,7 @@ func (p *Pan) initialize() {
 	p.Pan = calc.Limit(p.Pan, panLimits)
 }
 
-func (p *Pan) Step(modules ModulesMap) {
+func (p *Pan) Step(modules ModuleMap) {
 	pan := modulate(p.Pan, panLimits, getMono(modules[p.Mod]))
 	percent := calc.Percentage(pan, panLimits)
 	in := getMono(modules[p.In])

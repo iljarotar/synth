@@ -35,16 +35,8 @@ func (w *Wavetable) initialze(sampleRate float64) {
 	w.Signal = signal
 }
 
-func (w *Wavetable) Step(modules ModulesMap) {
-	freq := w.Freq
-	if w.CV != "" {
-		cv := getMono(modules[w.CV])
-		freq = calc.Transpose(cv, outputLimits, freqLimits)
-	}
-
-	mod := math.Pow(2, getMono(modules[w.Mod]))
+func (w *Wavetable) Step(modules ModuleMap) {
 	length := len(w.Signal)
-
 	val := w.Signal[int(math.Floor(w.idx))%length]
 	w.current = Output{
 		Mono:  val,
@@ -52,5 +44,12 @@ func (w *Wavetable) Step(modules ModulesMap) {
 		Right: val / 2,
 	}
 
+	freq := w.Freq
+	if w.CV != "" {
+		cv := getMono(modules[w.CV])
+		freq = calc.Transpose(cv, outputLimits, freqLimits)
+	}
+
+	mod := math.Pow(2, getMono(modules[w.Mod]))
 	w.idx += freq * mod * float64(length) / w.sampleRate
 }

@@ -6,7 +6,7 @@ func TestSampler_Step(t *testing.T) {
 	tests := []struct {
 		name        string
 		s           *Sampler
-		modules     ModulesMap
+		modules     ModuleMap
 		want        float64
 		wantTrigger float64
 	}{
@@ -22,7 +22,7 @@ func TestSampler_Step(t *testing.T) {
 				Trigger:      "trigger",
 				triggerValue: 1,
 			},
-			modules: ModulesMap{
+			modules: ModuleMap{
 				"in": &Module{
 					current: Output{
 						Mono: 1,
@@ -49,7 +49,7 @@ func TestSampler_Step(t *testing.T) {
 				Trigger:      "trigger",
 				triggerValue: -1,
 			},
-			modules: ModulesMap{
+			modules: ModuleMap{
 				"in": &Module{
 					current: Output{
 						Mono: 1,
@@ -76,7 +76,7 @@ func TestSampler_Step(t *testing.T) {
 				Trigger:      "trigger",
 				triggerValue: 1,
 			},
-			modules: ModulesMap{
+			modules: ModuleMap{
 				"in": &Module{
 					current: Output{
 						Mono: 1,

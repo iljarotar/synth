@@ -9,7 +9,7 @@ type Sampler struct {
 
 type SamplerMap map[string]*Sampler
 
-func (s *Sampler) Step(modules ModulesMap) {
+func (s *Sampler) Step(modules ModuleMap) {
 	triggerValue := getMono(modules[s.Trigger])
 
 	if triggerValue > 0 && s.triggerValue <= 0 {

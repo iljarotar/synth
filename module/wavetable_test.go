@@ -37,7 +37,7 @@ func TestWavetable_Step(t *testing.T) {
 	tests := []struct {
 		name    string
 		w       *Wavetable
-		modules ModulesMap
+		modules ModuleMap
 		want    float64
 		wantIdx float64
 	}{
@@ -49,7 +49,7 @@ func TestWavetable_Step(t *testing.T) {
 				sampleRate: sampleRate,
 				idx:        44100.0 / 8,
 			},
-			modules: ModulesMap{},
+			modules: ModuleMap{},
 			want:    0,
 			wantIdx: 44100.0/8 + 8/44100.0,
 		},
@@ -62,7 +62,7 @@ func TestWavetable_Step(t *testing.T) {
 				sampleRate: sampleRate,
 				idx:        0,
 			},
-			modules: ModulesMap{
+			modules: ModuleMap{
 				"cv": &Module{
 					current: Output{
 						Mono: 0,
@@ -81,7 +81,7 @@ func TestWavetable_Step(t *testing.T) {
 				sampleRate: sampleRate,
 				idx:        2.5,
 			},
-			modules: ModulesMap{
+			modules: ModuleMap{
 				"mod": &Module{
 					current: Output{
 						Mono: 1,
