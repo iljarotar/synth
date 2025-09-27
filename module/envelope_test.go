@@ -1,11 +1,8 @@
 package module
 
 import (
-	"math"
 	"testing"
 )
-
-const tolerance = 0.00001
 
 func TestEnvelope_attack(t *testing.T) {
 	tests := []struct {
@@ -24,6 +21,15 @@ func TestEnvelope_attack(t *testing.T) {
 			want: 0,
 		},
 		{
+			name: "half way",
+			t:    2,
+			e: &Envelope{
+				Attack:      2,
+				triggeredAt: 1,
+			},
+			want: 0.5,
+		},
+		{
 			name: "peak reached",
 			t:    3.5,
 			e: &Envelope{
@@ -36,10 +42,8 @@ func TestEnvelope_attack(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.e.attack(tt.t)
-			diff := math.Abs(got - tt.want)
-
-			if diff > tolerance {
-				t.Errorf("Envelope.attack() = %v, want %v, diff %v", got, tt.want, diff)
+			if got != tt.want {
+				t.Errorf("Envelope.attack() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -57,9 +61,20 @@ func TestEnvelope_decay(t *testing.T) {
 			t:    4,
 			e: &Envelope{
 				Attack:      1,
+				Decay:       1,
 				triggeredAt: 3,
 			},
 			want: 1,
+		},
+		{
+			name: "half way",
+			t:    4.5,
+			e: &Envelope{
+				Attack:      1,
+				Decay:       1,
+				triggeredAt: 3,
+			},
+			want: 0.5,
 		},
 		{
 			name: "end of decay",
@@ -76,10 +91,8 @@ func TestEnvelope_decay(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.e.decay(tt.t)
-			diff := math.Abs(got - tt.want)
-
-			if diff > tolerance {
-				t.Errorf("Envelope.decay() = %v, want %v, diff %v", got, tt.want, diff)
+			if got != tt.want {
+				t.Errorf("Envelope.decay() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -96,27 +109,29 @@ func TestEnvelope_release(t *testing.T) {
 			name: "starting release",
 			t:    4,
 			e: &Envelope{
-				Module: Module{
-					current: Output{
-						Mono: 0.5,
-					},
-				},
 				Release:    2,
 				releasedAt: 4,
+				level:      0.5,
 			},
 			want: 0.5,
+		},
+		{
+			name: "half way",
+			t:    5,
+			e: &Envelope{
+				Release:    2,
+				releasedAt: 4,
+				level:      0.5,
+			},
+			want: 0.25,
 		},
 		{
 			name: "end of release",
 			t:    6,
 			e: &Envelope{
-				Module: Module{
-					current: Output{
-						Mono: 0.5,
-					},
-				},
 				Release:    2,
 				releasedAt: 4,
+				level:      0.5,
 			},
 			want: 0,
 		},
@@ -124,10 +139,8 @@ func TestEnvelope_release(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.e.release(tt.t)
-			diff := math.Abs(got - tt.want)
-
-			if diff > tolerance {
-				t.Errorf("Envelope.release() = %v, want %v, diff %v", got, tt.want, diff)
+			if got != tt.want {
+				t.Errorf("Envelope.release() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -144,61 +157,41 @@ func TestEnvelope_getValue(t *testing.T) {
 			name: "in between beats",
 			t:    5.1,
 			e: &Envelope{
-				Module: Module{
-					current: Output{
-						Mono: 0.5,
-					},
-				},
 				Release:     3,
 				triggeredAt: 1,
 				releasedAt:  2,
+				level:       0.5,
 			},
 			want: 0,
 		},
 		{
-			name: "release",
-			t:    2,
+			name: "release half way",
+			t:    3.5,
 			e: &Envelope{
-				Module: Module{
-					current: Output{
-						Mono: 0.5,
-					},
-				},
 				Release:     3,
 				triggeredAt: 1,
+				releasedAt:  2,
+				level:       0.5,
+			},
+			want: 0.25,
+		},
+		{
+			name: "attack half way",
+			t:    6.5,
+			e: &Envelope{
+				Attack:      1,
+				triggeredAt: 6,
 				releasedAt:  2,
 			},
 			want: 0.5,
 		},
 		{
-			name: "attack",
-			t:    7 - 0.01,
-			e: &Envelope{
-				Attack:      1,
-				triggeredAt: 6,
-				releasedAt:  2,
-			},
-			want: 1,
-		},
-		{
-			name: "decay start",
-			t:    7,
+			name: "decay half way",
+			t:    8,
 			e: &Envelope{
 				Attack:      1,
 				Decay:       2,
-				Level:       0.75,
-				triggeredAt: 6,
-				releasedAt:  2,
-			},
-			want: 1,
-		},
-		{
-			name: "decay end",
-			t:    9 - 0.01,
-			e: &Envelope{
-				Attack:      1,
-				Decay:       2,
-				Level:       0.75,
+				Level:       0.5,
 				triggeredAt: 6,
 				releasedAt:  2,
 			},
@@ -220,10 +213,8 @@ func TestEnvelope_getValue(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.e.getValue(tt.t)
-			diff := math.Abs(got - tt.want)
-
-			if diff > tolerance {
-				t.Errorf("Envelope.getValue() = %v, want %v, diff %v", got, tt.want, diff)
+			if got != tt.want {
+				t.Errorf("Envelope.getValue() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -239,19 +230,16 @@ func TestEnvelope_Step(t *testing.T) {
 		wantTriggeredAt float64
 		wantReleasedAt  float64
 		wantGateValue   float64
+		wantLevel       float64
 	}{
 		{
 			name: "first trigger",
 			e: &Envelope{
-				Module:      Module{},
-				Gate:        "gate",
-				triggeredAt: 0,
-				releasedAt:  0,
-				gateValue:   0,
-				Attack:      1,
-				Decay:       2,
-				Release:     2,
-				Level:       0.5,
+				Gate:    "gate",
+				Attack:  1,
+				Decay:   2,
+				Release: 2,
+				Level:   0.5,
 			},
 			t: 2,
 			modules: ModuleMap{
@@ -274,12 +262,11 @@ func TestEnvelope_Step(t *testing.T) {
 					},
 				},
 				Gate:        "gate",
-				triggeredAt: 2,
-				releasedAt:  0,
-				gateValue:   1,
 				Attack:      1,
 				Decay:       2,
 				Release:     2,
+				triggeredAt: 2,
+				gateValue:   1,
 			},
 			t: 5,
 			modules: ModuleMap{
@@ -293,22 +280,19 @@ func TestEnvelope_Step(t *testing.T) {
 			wantTriggeredAt: 2,
 			wantReleasedAt:  5,
 			wantGateValue:   -1,
+			wantLevel:       0.75,
 		},
 		{
 			name: "noop after release",
 			e: &Envelope{
-				Module: Module{
-					current: Output{
-						Mono: 0.5, // can't be, but ensures zero is returned after release has ended.
-					},
-				},
 				Gate:        "gate",
-				triggeredAt: 2,
-				releasedAt:  5,
-				gateValue:   -1,
 				Attack:      1,
 				Decay:       2,
 				Release:     2,
+				triggeredAt: 2,
+				releasedAt:  5,
+				gateValue:   -1,
+				level:       0.25,
 			},
 			t: 8,
 			modules: ModuleMap{
@@ -322,15 +306,11 @@ func TestEnvelope_Step(t *testing.T) {
 			wantTriggeredAt: 2,
 			wantReleasedAt:  5,
 			wantGateValue:   -1,
+			wantLevel:       0.25,
 		},
 		{
 			name: "noop during sustain",
 			e: &Envelope{
-				Module: Module{
-					current: Output{
-						Mono: 1, // can't be, but ensures level is returned during sustain.
-					},
-				},
 				Gate:        "gate",
 				triggeredAt: 2,
 				releasedAt:  0,
@@ -357,10 +337,8 @@ func TestEnvelope_Step(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.e.Step(tt.t, tt.modules)
-			diff := math.Abs(tt.e.current.Mono - tt.want)
-
-			if diff > tolerance {
-				t.Errorf("Envelope.Step() = %v, want %v, diff %v", tt.e.current.Mono, tt.want, diff)
+			if tt.e.current.Mono != tt.want {
+				t.Errorf("Envelope.Step() = %v, want %v", tt.e.current.Mono, tt.want)
 			}
 			if tt.e.triggeredAt != tt.wantTriggeredAt {
 				t.Errorf("Envelope.Step() triggeredAt = %v, want %v", tt.e.triggeredAt, tt.wantTriggeredAt)
@@ -370,6 +348,65 @@ func TestEnvelope_Step(t *testing.T) {
 			}
 			if tt.e.gateValue != tt.wantGateValue {
 				t.Errorf("Envelope.Step() gateValue = %v, want %v", tt.e.gateValue, tt.wantGateValue)
+			}
+			if tt.e.level != tt.wantLevel {
+				t.Errorf("Envelope.Step() level = %v, want %v", tt.e.level, tt.wantLevel)
+			}
+		})
+	}
+}
+
+func Test_linear(t *testing.T) {
+	tests := []struct {
+		name        string
+		startAt     float64
+		endAt       float64
+		startValue  float64
+		targetValue float64
+		t           float64
+		want        float64
+	}{
+		{
+			name:        "delta zero",
+			startAt:     1,
+			endAt:       1,
+			startValue:  0,
+			targetValue: 1,
+			t:           2,
+			want:        1,
+		},
+		{
+			name:        "at start",
+			startAt:     1,
+			endAt:       2,
+			startValue:  1,
+			targetValue: 0.5,
+			t:           1,
+			want:        1,
+		},
+		{
+			name:        "middle",
+			startAt:     2,
+			endAt:       4,
+			startValue:  0.5,
+			targetValue: 1,
+			t:           3,
+			want:        0.75,
+		},
+		{
+			name:        "end",
+			startAt:     2,
+			endAt:       4,
+			startValue:  0.5,
+			targetValue: 0.2,
+			t:           4,
+			want:        0.2,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := linear(tt.startAt, tt.endAt, tt.startValue, tt.targetValue, tt.t); got != tt.want {
+				t.Errorf("linear() = %v, want %v", got, tt.want)
 			}
 		})
 	}
