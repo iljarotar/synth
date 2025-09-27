@@ -6,17 +6,19 @@ import (
 	"github.com/iljarotar/synth/calc"
 )
 
-type Gate struct {
-	Module
-	BPM        float64   `yaml:"bpm"`
-	CV         string    `yaml:"cv"`
-	Mod        string    `yaml:"mod"`
-	Signal     []float64 `yaml:"signal"`
-	sampleRate float64
-	idx        float64
-}
+type (
+	Gate struct {
+		Module
+		BPM        float64   `yaml:"bpm"`
+		CV         string    `yaml:"cv"`
+		Mod        string    `yaml:"mod"`
+		Signal     []float64 `yaml:"signal"`
+		sampleRate float64
+		idx        float64
+	}
 
-type GateMap map[string]*Gate
+	GateMap map[string]*Gate
+)
 
 func (m GateMap) Initialze(sampleRate float64) {
 	for _, g := range m {

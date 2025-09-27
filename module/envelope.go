@@ -1,4 +1,102 @@
 package module
 
-type Envelope struct {
+import (
+	"github.com/iljarotar/synth/calc"
+)
+
+type (
+	Envelope struct {
+		Module
+		Attack      float64 `yaml:"attack"`
+		Decay       float64 `yaml:"decay"`
+		Release     float64 `yaml:"release"`
+		Level       float64 `yaml:"level"`
+		Gate        string  `yaml:"gate"`
+		triggeredAt float64
+		releasedAt  float64
+		gateValue   float64
+		level       float64
+	}
+
+	EnvelopeMap map[string]*Envelope
+)
+
+func (m EnvelopeMap) Initialize() {
+	for _, e := range m {
+		e.initialize()
+	}
+}
+
+func (e *Envelope) initialize() {
+	e.Attack = calc.Limit(e.Attack, envelopeLimits)
+	e.Decay = calc.Limit(e.Decay, envelopeLimits)
+	e.Release = calc.Limit(e.Release, envelopeLimits)
+	e.Level = calc.Limit(e.Level, gainLimits)
+}
+
+func (e *Envelope) Step(t float64, modules ModuleMap) {
+	gateValue := getMono(modules[e.Gate])
+
+	switch {
+	case e.gateValue <= 0 && gateValue > 0:
+		e.triggeredAt = t
+	case e.gateValue > 0 && gateValue <= 0:
+		e.releasedAt = t
+		e.level = calc.Transpose(e.current.Mono, outputLimits, gainLimits)
+	default:
+		// noop
+	}
+
+	val := calc.Transpose(e.getValue(t), gainLimits, outputLimits)
+	e.current = Output{
+		Mono:  val,
+		Left:  val / 2,
+		Right: val / 2,
+	}
+
+	e.gateValue = gateValue
+}
+
+func (e *Envelope) getValue(t float64) float64 {
+	if e.releasedAt >= e.triggeredAt {
+		if t-e.releasedAt > e.Release {
+			return 0
+		}
+		return e.release(t)
+	}
+
+	switch {
+	case t-e.triggeredAt < e.Attack:
+		return e.attack(t)
+	case t-e.triggeredAt < e.Attack+e.Decay:
+		return e.decay(t)
+	default:
+		return e.Level
+	}
+}
+
+func (e *Envelope) attack(t float64) float64 {
+	start := e.triggeredAt
+	end := start + e.Attack
+	return linear(start, end, 0, 1, t)
+}
+
+func (e *Envelope) decay(t float64) float64 {
+	start := e.triggeredAt + e.Attack
+	end := start + e.Decay
+	return linear(start, end, 1, e.Level, t)
+}
+
+func (e *Envelope) release(t float64) float64 {
+	start := e.releasedAt
+	end := start + e.Release
+	return linear(start, end, e.level, 0, t)
+}
+
+func linear(startAt, endAt, startValue, targetValue, t float64) float64 {
+	delta := endAt - startAt
+	if delta == 0 {
+		return targetValue
+	}
+	return ((targetValue-startValue)*(t-startAt) + startValue*delta) / delta
 }

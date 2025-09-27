@@ -6,17 +6,19 @@ import (
 	"github.com/iljarotar/synth/calc"
 )
 
-type Wavetable struct {
-	Module
-	Freq       float64   `yaml:"freq"`
-	CV         string    `yaml:"cv"`
-	Mod        string    `yaml:"mod"`
-	Signal     []float64 `yaml:"signal"`
-	sampleRate float64
-	idx        float64
-}
+type (
+	Wavetable struct {
+		Module
+		Freq       float64   `yaml:"freq"`
+		CV         string    `yaml:"cv"`
+		Mod        string    `yaml:"mod"`
+		Signal     []float64 `yaml:"signal"`
+		sampleRate float64
+		idx        float64
+	}
 
-type WavetableMap map[string]*Wavetable
+	WavetableMap map[string]*Wavetable
+)
 
 func (m WavetableMap) Initialize(sampleRate float64) {
 	for _, w := range m {

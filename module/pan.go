@@ -2,14 +2,16 @@ package module
 
 import "github.com/iljarotar/synth/calc"
 
-type Pan struct {
-	Module
-	Pan float64 `yaml:"pan"`
-	Mod string  `yaml:"mod"`
-	In  string  `yaml:"in"`
-}
+type (
+	Pan struct {
+		Module
+		Pan float64 `yaml:"pan"`
+		Mod string  `yaml:"mod"`
+		In  string  `yaml:"in"`
+	}
 
-type PanMap map[string]*Pan
+	PanMap map[string]*Pan
+)
 
 func (m PanMap) Initialize() {
 	for _, p := range m {

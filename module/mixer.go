@@ -6,16 +6,18 @@ import (
 	"github.com/iljarotar/synth/calc"
 )
 
-type Mixer struct {
-	Module
-	Gain       float64            `yaml:"gain"`
-	CV         string             `yaml:"cv"`
-	Mod        string             `yaml:"mod"`
-	In         map[string]float64 `yaml:"in"`
-	sampleRate float64
-}
+type (
+	Mixer struct {
+		Module
+		Gain       float64            `yaml:"gain"`
+		CV         string             `yaml:"cv"`
+		Mod        string             `yaml:"mod"`
+		In         map[string]float64 `yaml:"in"`
+		sampleRate float64
+	}
 
-type MixerMap map[string]*Mixer
+	MixerMap map[string]*Mixer
+)
 
 func (m MixerMap) Initialize(sampleRate float64) error {
 	for name, mixer := range m {

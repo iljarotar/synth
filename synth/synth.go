@@ -19,6 +19,7 @@ type Synth struct {
 	Out    string  `yaml:"out"`
 	Volume float64 `yaml:"vol"`
 
+	Envelopes   module.EnvelopeMap   `yaml:"envelopes"`
 	Gates       module.GateMap       `yaml:"gates"`
 	Mixers      module.MixerMap      `yaml:"mixers"`
 	Noises      module.NoiseMap      `yaml:"noises"`
@@ -35,6 +36,7 @@ type Synth struct {
 	logger            *log.Logger
 	modules           module.ModuleMap
 
+	envelopes   []*module.Envelope
 	gates       []*module.Gate
 	mixers      []*module.Mixer
 	noises      []*module.Noise
@@ -55,6 +57,7 @@ func (s *Synth) Initialize(sampleRate float64) error {
 	s.makeModulesMap()
 	s.flattenModules()
 
+	s.Envelopes.Initialize()
 	s.Gates.Initialze(sampleRate)
 
 	err := s.Mixers.Initialize(sampleRate)
@@ -129,6 +132,9 @@ func (s *Synth) adjustVolume() {
 }
 
 func (s *Synth) step() {
+	for _, e := range s.envelopes {
+		e.Step(s.Time, s.modules)
+	}
 	for _, g := range s.gates {
 		g.Step(s.modules)
 	}
@@ -166,6 +172,9 @@ func secondsToStep(seconds, delta, sampleRate float64) float64 {
 func (s *Synth) makeModulesMap() {
 	s.modules = module.ModuleMap{}
 
+	for name, e := range s.Envelopes {
+		s.modules[name] = e
+	}
 	for name, g := range s.Gates {
 		s.modules[name] = g
 	}
@@ -190,6 +199,7 @@ func (s *Synth) makeModulesMap() {
 }
 
 func (s *Synth) flattenModules() {
+	s.envelopes = lo.Values(s.Envelopes)
 	s.gates = lo.Values(s.Gates)
 	s.mixers = lo.Values(s.Mixers)
 	s.noises = lo.Values(s.Noises)

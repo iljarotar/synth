@@ -2,19 +2,21 @@ package module
 
 import "github.com/iljarotar/synth/calc"
 
-type IModule interface {
-	Current() Output
-}
+type (
+	IModule interface {
+		Current() Output
+	}
 
-type ModuleMap map[string]IModule
+	ModuleMap map[string]IModule
 
-type Module struct {
-	current Output
-}
+	Module struct {
+		current Output
+	}
 
-func (m *Module) Current() Output {
-	return m.current
-}
+	Output struct {
+		Mono, Left, Right float64
+	}
+)
 
 var (
 	gainLimits = calc.Range{
@@ -37,10 +39,14 @@ var (
 		Min: 0,
 		Max: 2000,
 	}
+	envelopeLimits = calc.Range{
+		Min: 1e-15,
+		Max: 3600,
+	}
 )
 
-type Output struct {
-	Mono, Left, Right float64
+func (m *Module) Current() Output {
+	return m.current
 }
 
 func modulate(x float64, rng calc.Range, mod float64) float64 {

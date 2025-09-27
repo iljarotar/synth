@@ -9,38 +9,40 @@ import (
 	"github.com/iljarotar/synth/log"
 )
 
-type Signal string
+type (
+	Signal string
+
+	control interface {
+		DecreaseVolume()
+		IncreaseVolume()
+		Volume() float64
+	}
+
+	UI struct {
+		logger     *log.Logger
+		file       string
+		duration   float64
+		signalChan chan<- Signal
+		control    control
+
+		logs              []string
+		time              string
+		showVolumeWarning bool
+	}
+
+	Config struct {
+		Logger     *log.Logger
+		File       string
+		Duration   float64
+		SignalChan chan<- Signal
+		Control    control
+	}
+)
 
 const (
 	SignalQuit      Signal = "quit"
 	SignalInterrupt Signal = "interrupt"
 )
-
-type control interface {
-	DecreaseVolume()
-	IncreaseVolume()
-	Volume() float64
-}
-
-type UI struct {
-	logger     *log.Logger
-	file       string
-	duration   float64
-	signalChan chan<- Signal
-	control    control
-
-	logs              []string
-	time              string
-	showVolumeWarning bool
-}
-
-type Config struct {
-	Logger     *log.Logger
-	File       string
-	Duration   float64
-	SignalChan chan<- Signal
-	Control    control
-}
 
 func NewUI(c Config) *UI {
 	return &UI{

@@ -7,7 +7,22 @@ import (
 	"github.com/iljarotar/synth/calc"
 )
 
-type OscillatorType string
+type (
+	Oscillator struct {
+		Module
+		Type       OscillatorType `yaml:"type"`
+		Freq       float64        `yaml:"freq"`
+		CV         string         `yaml:"cv"`
+		Mod        string         `yaml:"mod"`
+		Phase      float64        `yaml:"phase"`
+		signal     SignalFunc
+		sampleRate float64
+		arg        float64
+	}
+
+	OscillatorMap  map[string]*Oscillator
+	OscillatorType string
+)
 
 const (
 	Sawtooth        OscillatorType = "Sawtooth"
@@ -16,20 +31,6 @@ const (
 	Square          OscillatorType = "Square"
 	Triangle        OscillatorType = "Triangle"
 )
-
-type Oscillator struct {
-	Module
-	Type       OscillatorType `yaml:"type"`
-	Freq       float64        `yaml:"freq"`
-	CV         string         `yaml:"cv"`
-	Mod        string         `yaml:"mod"`
-	Phase      float64        `yaml:"phase"`
-	signal     SignalFunc
-	sampleRate float64
-	arg        float64
-}
-
-type OscillatorMap map[string]*Oscillator
 
 func (m OscillatorMap) Initialize(sampleRate float64) error {
 	for name, osc := range m {

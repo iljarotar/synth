@@ -1,13 +1,15 @@
 package module
 
-type Sampler struct {
-	Module
-	In           string `yaml:"in"`
-	Trigger      string `yaml:"trigger"`
-	triggerValue float64
-}
+type (
+	Sampler struct {
+		Module
+		In           string `yaml:"in"`
+		Trigger      string `yaml:"trigger"`
+		triggerValue float64
+	}
 
-type SamplerMap map[string]*Sampler
+	SamplerMap map[string]*Sampler
+)
 
 func (s *Sampler) Step(modules ModuleMap) {
 	triggerValue := getMono(modules[s.Trigger])
