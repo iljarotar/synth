@@ -25,11 +25,11 @@ type (
 )
 
 const (
-	Sawtooth        OscillatorType = "Sawtooth"
-	ReverseSawtooth OscillatorType = "ReverseSawtooth"
-	Sine            OscillatorType = "Sine"
-	Square          OscillatorType = "Square"
-	Triangle        OscillatorType = "Triangle"
+	OscillatorTypeSawtooth        OscillatorType = "Sawtooth"
+	OscillatorTypeReverseSawtooth OscillatorType = "ReverseSawtooth"
+	OscillatorTypeSine            OscillatorType = "Sine"
+	OscillatorTypeSquare          OscillatorType = "Square"
+	OscillatorTypeTriangle        OscillatorType = "Triangle"
 )
 
 func (m OscillatorMap) Initialize(sampleRate float64) error {
@@ -43,7 +43,7 @@ func (m OscillatorMap) Initialize(sampleRate float64) error {
 
 func (o *Oscillator) initialize(sampleRate float64) error {
 	o.sampleRate = sampleRate
-	o.Freq = calc.Limit(o.Freq, freqLimits)
+	o.Freq = calc.Limit(o.Freq, freqRange)
 
 	signal, err := newSignalFunc(o.Type)
 	if err != nil {
@@ -58,8 +58,7 @@ func (o *Oscillator) Step(modules ModuleMap) {
 	twoPi := 2 * math.Pi
 	freq := o.Freq
 	if o.CV != "" {
-		cv := getMono(modules[o.CV])
-		freq = calc.Transpose(cv, outputLimits, freqLimits)
+		freq = cv(freqRange, getMono(modules[o.CV]))
 	}
 
 	c := twoPi * o.Phase

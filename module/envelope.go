@@ -28,10 +28,10 @@ func (m EnvelopeMap) Initialize() {
 }
 
 func (e *Envelope) initialize() {
-	e.Attack = calc.Limit(e.Attack, envelopeLimits)
-	e.Decay = calc.Limit(e.Decay, envelopeLimits)
-	e.Release = calc.Limit(e.Release, envelopeLimits)
-	e.Level = calc.Limit(e.Level, gainLimits)
+	e.Attack = calc.Limit(e.Attack, envelopeRange)
+	e.Decay = calc.Limit(e.Decay, envelopeRange)
+	e.Release = calc.Limit(e.Release, envelopeRange)
+	e.Level = calc.Limit(e.Level, gainRange)
 }
 
 func (e *Envelope) Step(t float64, modules ModuleMap) {
@@ -42,12 +42,12 @@ func (e *Envelope) Step(t float64, modules ModuleMap) {
 		e.triggeredAt = t
 	case e.gateValue > 0 && gateValue <= 0:
 		e.releasedAt = t
-		e.level = calc.Transpose(e.current.Mono, outputLimits, gainLimits)
+		e.level = calc.Transpose(e.current.Mono, outputRange, gainRange)
 	default:
 		// noop
 	}
 
-	val := calc.Transpose(e.getValue(t), gainLimits, outputLimits)
+	val := calc.Transpose(e.getValue(t), gainRange, outputRange)
 	e.current = Output{
 		Mono:  val,
 		Left:  val / 2,

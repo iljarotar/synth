@@ -8,11 +8,10 @@ import (
 
 func TestMixer_Step(t *testing.T) {
 	tests := []struct {
-		name         string
-		m            *Mixer
-		modules      ModuleMap
-		want         Output
-		wantIntegral float64
+		name    string
+		m       *Mixer
+		modules ModuleMap
+		want    Output
 	}{
 		{
 			name: "no input",
@@ -24,8 +23,7 @@ func TestMixer_Step(t *testing.T) {
 			modules: ModuleMap{
 				"in": &Module{},
 			},
-			want:         Output{},
-			wantIntegral: 0,
+			want: Output{},
 		},
 		{
 			name: "no module found",
@@ -41,8 +39,7 @@ func TestMixer_Step(t *testing.T) {
 					Module: Module{},
 				},
 			},
-			want:         Output{},
-			wantIntegral: 0,
+			want: Output{},
 		},
 		{
 			name: "input gain 0",
@@ -62,8 +59,7 @@ func TestMixer_Step(t *testing.T) {
 					},
 				},
 			},
-			want:         Output{},
-			wantIntegral: 0,
+			want: Output{},
 		},
 		{
 			name: "input",
@@ -88,7 +84,6 @@ func TestMixer_Step(t *testing.T) {
 				Left:  0.5,
 				Right: 0.5,
 			},
-			wantIntegral: 0.5,
 		},
 		{
 			name: "mod",
@@ -121,14 +116,12 @@ func TestMixer_Step(t *testing.T) {
 				Left:  0.5 * 0.75,
 				Right: 0.5 * 0.75,
 			},
-			wantIntegral: 0.5 * 0.75,
 		},
 		{
 			name: "cv",
 			m: &Mixer{
 				Gain: 0.5,
-				Mod:  "in",
-				CV:   "lfo",
+				CV:   "cv",
 				In: map[string]float64{
 					"in": 1,
 				},
@@ -142,7 +135,7 @@ func TestMixer_Step(t *testing.T) {
 						Right: 0.5,
 					},
 				},
-				"lfo": &Module{
+				"cv": &Module{
 					current: Output{
 						Mono:  0.5,
 						Left:  0.25,
@@ -155,7 +148,6 @@ func TestMixer_Step(t *testing.T) {
 				Left:  0.5 * 0.75,
 				Right: 0.5 * 0.75,
 			},
-			wantIntegral: 0.5 * 0.75,
 		},
 	}
 	for _, tt := range tests {

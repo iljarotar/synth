@@ -20,12 +20,12 @@ func (m PanMap) Initialize() {
 }
 
 func (p *Pan) initialize() {
-	p.Pan = calc.Limit(p.Pan, panLimits)
+	p.Pan = calc.Limit(p.Pan, panRange)
 }
 
 func (p *Pan) Step(modules ModuleMap) {
-	pan := modulate(p.Pan, panLimits, getMono(modules[p.Mod]))
-	percent := calc.Percentage(pan, panLimits)
+	pan := modulate(p.Pan, panRange, getMono(modules[p.Mod]))
+	percent := calc.Percentage(pan, panRange)
 	in := getMono(modules[p.In])
 
 	p.current = Output{

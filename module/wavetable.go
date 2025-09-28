@@ -28,11 +28,11 @@ func (m WavetableMap) Initialize(sampleRate float64) {
 
 func (w *Wavetable) initialze(sampleRate float64) {
 	w.sampleRate = sampleRate
-	w.Freq = calc.Limit(w.Freq, freqLimits)
+	w.Freq = calc.Limit(w.Freq, freqRange)
 
 	var signal []float64
 	for _, x := range w.Signal {
-		signal = append(signal, calc.Limit(x, outputLimits))
+		signal = append(signal, calc.Limit(x, outputRange))
 	}
 	w.Signal = signal
 }
@@ -48,8 +48,7 @@ func (w *Wavetable) Step(modules ModuleMap) {
 
 	freq := w.Freq
 	if w.CV != "" {
-		cv := getMono(modules[w.CV])
-		freq = calc.Transpose(cv, outputLimits, freqLimits)
+		freq = cv(freqRange, getMono(modules[w.CV]))
 	}
 
 	mod := math.Pow(2, getMono(modules[w.Mod]))

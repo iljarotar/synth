@@ -19,27 +19,27 @@ type (
 )
 
 var (
-	gainLimits = calc.Range{
+	gainRange = calc.Range{
 		Min: 0,
 		Max: 1,
 	}
-	outputLimits = calc.Range{
+	outputRange = calc.Range{
 		Min: -1,
 		Max: 1,
 	}
-	freqLimits = calc.Range{
+	freqRange = calc.Range{
 		Min: 0,
 		Max: 20000,
 	}
-	panLimits = calc.Range{
+	panRange = calc.Range{
 		Min: -1,
 		Max: 1,
 	}
-	bpmLimits = calc.Range{
+	bpmRange = calc.Range{
 		Min: 0,
 		Max: 2000,
 	}
-	envelopeLimits = calc.Range{
+	envelopeRange = calc.Range{
 		Min: 1e-15,
 		Max: 3600,
 	}
@@ -54,15 +54,15 @@ func modulate(x float64, rng calc.Range, mod float64) float64 {
 		return x
 	}
 
-	transposed := calc.Transpose(x, rng, outputLimits)
+	transposed := calc.Transpose(x, rng, outputRange)
 	transposed += mod
-	transposed = calc.Limit(transposed, outputLimits)
-	return calc.Transpose(transposed, outputLimits, rng)
+	transposed = calc.Limit(transposed, outputRange)
+	return calc.Transpose(transposed, outputRange, rng)
 }
 
 func cv(rng calc.Range, val float64) float64 {
-	val = calc.Limit(val, outputLimits)
-	return calc.Transpose(val, outputLimits, rng)
+	val = calc.Limit(val, outputRange)
+	return calc.Transpose(val, outputRange, rng)
 }
 
 func getMono(mod IModule) float64 {

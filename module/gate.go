@@ -28,7 +28,7 @@ func (m GateMap) Initialze(sampleRate float64) {
 
 func (g *Gate) initialze(sampleRate float64) {
 	g.sampleRate = sampleRate
-	g.BPM = calc.Limit(g.BPM, bpmLimits)
+	g.BPM = calc.Limit(g.BPM, bpmRange)
 
 	for i, val := range g.Signal {
 		if val <= 0 {
@@ -50,11 +50,10 @@ func (g *Gate) Step(modules ModuleMap) {
 
 	bpm := g.BPM
 	if g.CV != "" {
-		cv := getMono(modules[g.CV])
-		bpm = calc.Transpose(cv, outputLimits, bpmLimits)
+		bpm = cv(bpmRange, getMono(modules[g.CV]))
 	}
 
-	bpm = modulate(bpm, bpmLimits, getMono(modules[g.Mod]))
+	bpm = modulate(bpm, bpmRange, getMono(modules[g.Mod]))
 	spb := samplesPerBeat(g.sampleRate, bpm)
 	if spb == 0 {
 		return

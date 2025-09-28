@@ -70,7 +70,7 @@ func TestWavetable_Step(t *testing.T) {
 				},
 			},
 			want:    1,
-			wantIdx: 4 * freqLimits.Max / (2 * sampleRate),
+			wantIdx: 4 * freqRange.Max / (2 * sampleRate),
 		},
 		{
 			name: "mod",

@@ -78,7 +78,7 @@ func TestGate_Step(t *testing.T) {
 			modules: ModuleMap{
 				"cv": &Module{
 					current: Output{
-						Mono: calc.Transpose(120, bpmLimits, outputLimits),
+						Mono: calc.Transpose(120, bpmRange, outputRange),
 					},
 				},
 			},

@@ -30,10 +30,10 @@ func (m MixerMap) Initialize(sampleRate float64) error {
 
 func (m *Mixer) initialize(sampleRate float64) error {
 	m.sampleRate = sampleRate
-	m.Gain = calc.Limit(m.Gain, gainLimits)
+	m.Gain = calc.Limit(m.Gain, gainRange)
 
 	for mod, gain := range m.In {
-		m.In[mod] = calc.Limit(gain, gainLimits)
+		m.In[mod] = calc.Limit(gain, gainRange)
 	}
 
 	return nil
@@ -52,14 +52,15 @@ func (m *Mixer) Step(modules ModuleMap) {
 		}
 	}
 
-	gain := modulate(m.Gain, gainLimits, getMono(modules[m.Mod]))
+	gain := m.Gain
 	if m.CV != "" {
-		gain = cv(gainLimits, getMono(modules[m.CV]))
+		gain = cv(gainRange, getMono(modules[m.CV]))
 	}
+	gain = modulate(gain, gainRange, getMono(modules[m.Mod]))
 
-	left = calc.Limit(left*gain, outputLimits)
-	right = calc.Limit(right*gain, outputLimits)
-	mono = calc.Limit(mono*gain, outputLimits)
+	left = calc.Limit(left*gain, outputRange)
+	right = calc.Limit(right*gain, outputRange)
+	mono = calc.Limit(mono*gain, outputRange)
 
 	m.current = Output{
 		Mono:  mono,

@@ -9,15 +9,15 @@ type SignalFunc func(x float64) float64
 
 func newSignalFunc(oscType OscillatorType) (SignalFunc, error) {
 	switch oscType {
-	case Sine:
+	case OscillatorTypeSine:
 		return SineSignalFunc(), nil
-	case Square:
+	case OscillatorTypeSquare:
 		return SquareSignalFunc(), nil
-	case Sawtooth:
+	case OscillatorTypeSawtooth:
 		return SawtoothSignalFunc(), nil
-	case Triangle:
+	case OscillatorTypeTriangle:
 		return TriangleSignalFunc(), nil
-	case ReverseSawtooth:
+	case OscillatorTypeReverseSawtooth:
 		return ReverseSawtoothSignalFunc(), nil
 	default:
 		return NoSignalFunc(), fmt.Errorf("unknow oscillator type %s", oscType)

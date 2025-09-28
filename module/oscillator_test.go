@@ -91,7 +91,7 @@ func TestOscillator_Step(t *testing.T) {
 				arg:        0,
 			},
 			want:    0,
-			wantArg: twoPi * freqLimits.Max / sampleRate,
+			wantArg: twoPi * freqRange.Max / sampleRate,
 		},
 	}
 	for _, tt := range tests {
