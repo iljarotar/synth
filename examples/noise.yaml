@@ -1,5 +1,11 @@
 vol: 1
-out: noise
+out: lp
+
+filters:
+  lp:
+    type: LowPass
+    freq: 200
+    in: noise
 
 noises:
   noise: {}

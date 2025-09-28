@@ -20,6 +20,7 @@ type Synth struct {
 	Volume float64 `yaml:"vol"`
 
 	Envelopes   module.EnvelopeMap   `yaml:"envelopes"`
+	Filters     module.FilterMap     `yaml:"filters"`
 	Gates       module.GateMap       `yaml:"gates"`
 	Mixers      module.MixerMap      `yaml:"mixers"`
 	Noises      module.NoiseMap      `yaml:"noises"`
@@ -37,6 +38,7 @@ type Synth struct {
 	modules           module.ModuleMap
 
 	envelopes   []*module.Envelope
+	filters     []*module.Filter
 	gates       []*module.Gate
 	mixers      []*module.Mixer
 	noises      []*module.Noise
@@ -57,19 +59,21 @@ func (s *Synth) Initialize(sampleRate float64) error {
 	s.makeModulesMap()
 	s.flattenModules()
 
-	s.Envelopes.Initialize()
-	s.Gates.Initialze(sampleRate)
-
-	err := s.Mixers.Initialize(sampleRate)
+	err := s.Filters.Initialize(sampleRate)
 	if err != nil {
 		return err
 	}
-
+	err = s.Mixers.Initialize(sampleRate)
+	if err != nil {
+		return err
+	}
 	err = s.Oscillators.Initialize(sampleRate)
 	if err != nil {
 		return err
 	}
 
+	s.Envelopes.Initialize()
+	s.Gates.Initialze(sampleRate)
 	s.Pans.Initialize()
 	s.Wavetables.Initialize(sampleRate)
 
@@ -135,6 +139,9 @@ func (s *Synth) step() {
 	for _, e := range s.envelopes {
 		e.Step(s.Time, s.modules)
 	}
+	for _, f := range s.filters {
+		f.Step(s.modules)
+	}
 	for _, g := range s.gates {
 		g.Step(s.modules)
 	}
@@ -175,6 +182,9 @@ func (s *Synth) makeModulesMap() {
 	for name, e := range s.Envelopes {
 		s.modules[name] = e
 	}
+	for name, f := range s.Filters {
+		s.modules[name] = f
+	}
 	for name, g := range s.Gates {
 		s.modules[name] = g
 	}
@@ -200,6 +210,7 @@ func (s *Synth) makeModulesMap() {
 
 func (s *Synth) flattenModules() {
 	s.envelopes = lo.Values(s.Envelopes)
+	s.filters = lo.Values(s.Filters)
 	s.gates = lo.Values(s.Gates)
 	s.mixers = lo.Values(s.Mixers)
 	s.noises = lo.Values(s.Noises)

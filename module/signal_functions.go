@@ -7,17 +7,17 @@ import (
 
 type SignalFunc func(x float64) float64
 
-func newSignalFunc(oscType OscillatorType) (SignalFunc, error) {
+func newSignalFunc(oscType oscillatorType) (SignalFunc, error) {
 	switch oscType {
-	case OscillatorTypeSine:
+	case oscillatorTypeSine:
 		return SineSignalFunc(), nil
-	case OscillatorTypeSquare:
+	case oscillatorTypeSquare:
 		return SquareSignalFunc(), nil
-	case OscillatorTypeSawtooth:
+	case oscillatorTypeSawtooth:
 		return SawtoothSignalFunc(), nil
-	case OscillatorTypeTriangle:
+	case oscillatorTypeTriangle:
 		return TriangleSignalFunc(), nil
-	case OscillatorTypeReverseSawtooth:
+	case oscillatorTypeReverseSawtooth:
 		return ReverseSawtoothSignalFunc(), nil
 	default:
 		return NoSignalFunc(), fmt.Errorf("unknow oscillator type %s", oscType)

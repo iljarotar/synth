@@ -10,7 +10,7 @@ import (
 type (
 	Oscillator struct {
 		Module
-		Type       OscillatorType `yaml:"type"`
+		Type       oscillatorType `yaml:"type"`
 		Freq       float64        `yaml:"freq"`
 		CV         string         `yaml:"cv"`
 		Mod        string         `yaml:"mod"`
@@ -21,15 +21,15 @@ type (
 	}
 
 	OscillatorMap  map[string]*Oscillator
-	OscillatorType string
+	oscillatorType string
 )
 
 const (
-	OscillatorTypeSawtooth        OscillatorType = "Sawtooth"
-	OscillatorTypeReverseSawtooth OscillatorType = "ReverseSawtooth"
-	OscillatorTypeSine            OscillatorType = "Sine"
-	OscillatorTypeSquare          OscillatorType = "Square"
-	OscillatorTypeTriangle        OscillatorType = "Triangle"
+	oscillatorTypeSawtooth        oscillatorType = "Sawtooth"
+	oscillatorTypeReverseSawtooth oscillatorType = "ReverseSawtooth"
+	oscillatorTypeSine            oscillatorType = "Sine"
+	oscillatorTypeSquare          oscillatorType = "Square"
+	oscillatorTypeTriangle        oscillatorType = "Triangle"
 )
 
 func (m OscillatorMap) Initialize(sampleRate float64) error {
