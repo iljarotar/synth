@@ -25,6 +25,7 @@ func TestEnvelope_attack(t *testing.T) {
 			t:    2,
 			e: &Envelope{
 				Attack:      2,
+				Peak:        1,
 				triggeredAt: 1,
 			},
 			want: 0.5,
@@ -34,9 +35,10 @@ func TestEnvelope_attack(t *testing.T) {
 			t:    3.5,
 			e: &Envelope{
 				Attack:      2,
+				Peak:        0.75,
 				triggeredAt: 1.5,
 			},
-			want: 1,
+			want: 0.75,
 		},
 	}
 	for _, tt := range tests {
@@ -62,9 +64,10 @@ func TestEnvelope_decay(t *testing.T) {
 			e: &Envelope{
 				Attack:      1,
 				Decay:       1,
+				Peak:        0.75,
 				triggeredAt: 3,
 			},
-			want: 1,
+			want: 0.75,
 		},
 		{
 			name: "half way",
@@ -72,6 +75,7 @@ func TestEnvelope_decay(t *testing.T) {
 			e: &Envelope{
 				Attack:      1,
 				Decay:       1,
+				Peak:        1,
 				triggeredAt: 3,
 			},
 			want: 0.5,
@@ -180,6 +184,7 @@ func TestEnvelope_getValue(t *testing.T) {
 			t:    6.5,
 			e: &Envelope{
 				Attack:      1,
+				Peak:        1,
 				triggeredAt: 6,
 				releasedAt:  2,
 			},
@@ -191,6 +196,7 @@ func TestEnvelope_getValue(t *testing.T) {
 			e: &Envelope{
 				Attack:      1,
 				Decay:       2,
+				Peak:        1,
 				Level:       0.5,
 				triggeredAt: 6,
 				releasedAt:  2,

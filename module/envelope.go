@@ -10,6 +10,7 @@ type (
 		Attack      float64 `yaml:"attack"`
 		Decay       float64 `yaml:"decay"`
 		Release     float64 `yaml:"release"`
+		Peak        float64 `yaml:"peak"`
 		Level       float64 `yaml:"level"`
 		Gate        string  `yaml:"gate"`
 		triggeredAt float64
@@ -78,13 +79,13 @@ func (e *Envelope) getValue(t float64) float64 {
 func (e *Envelope) attack(t float64) float64 {
 	start := e.triggeredAt
 	end := start + e.Attack
-	return linear(start, end, 0, 1, t)
+	return linear(start, end, 0, e.Peak, t)
 }
 
 func (e *Envelope) decay(t float64) float64 {
 	start := e.triggeredAt + e.Attack
 	end := start + e.Decay
-	return linear(start, end, 1, e.Level, t)
+	return linear(start, end, e.Peak, e.Level, t)
 }
 
 func (e *Envelope) release(t float64) float64 {
