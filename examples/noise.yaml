@@ -3,8 +3,9 @@ out: lp
 
 filters:
   lp:
-    type: LowPass
-    freq: 200
+    type: BandPass
+    freq: 800
+    width: 20
     in: noise
 
 noises:
