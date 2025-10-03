@@ -1,0 +1,33 @@
+vol: 1
+out: main
+
+envelopes:
+  env:
+    peak: 1
+    level: 0.5
+    gate: gate
+    attack: 0.02
+    decay: 0.05
+    release: 0.15
+
+gates:
+  gate:
+    bpm: 1080
+    signal: [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0]
+
+mixers:
+  main:
+    cv: env
+    in:
+      osc: 1
+
+oscillators:
+  osc:
+    type: Sawtooth
+    cv: seq
+
+sequencers:
+  seq:
+    sequence: ["e_2", "f_2", "e_2", "e_1", "g#_3", "a#_3"]
+    trigger: gate
+    pitch: 440

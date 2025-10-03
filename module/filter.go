@@ -44,8 +44,7 @@ var (
 
 func (m FilterMap) Initialize(sampleRate float64) error {
 	for _, f := range m {
-		err := f.initialize(sampleRate)
-		if err != nil {
+		if err := f.initialize(sampleRate); err != nil {
 			return err
 		}
 	}

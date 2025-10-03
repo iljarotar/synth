@@ -32,6 +32,7 @@ func (e *Envelope) initialize() {
 	e.Attack = calc.Limit(e.Attack, envelopeRange)
 	e.Decay = calc.Limit(e.Decay, envelopeRange)
 	e.Release = calc.Limit(e.Release, envelopeRange)
+	e.Peak = calc.Limit(e.Peak, gainRange)
 	e.Level = calc.Limit(e.Level, gainRange)
 }
 

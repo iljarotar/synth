@@ -43,6 +43,14 @@ var (
 		Min: 1e-15,
 		Max: 3600,
 	}
+	pitchRange = calc.Range{
+		Min: 400,
+		Max: 500,
+	}
+	transposeRange = calc.Range{
+		Min: -24,
+		Max: 24,
+	}
 )
 
 func (m *Module) Current() Output {

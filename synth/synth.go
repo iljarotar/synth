@@ -27,6 +27,7 @@ type Synth struct {
 	Oscillators module.OscillatorMap `yaml:"oscillators"`
 	Pans        module.PanMap        `yaml:"pans"`
 	Samplers    module.SamplerMap    `yaml:"samplers"`
+	Sequencers  module.SequencerMap  `yaml:"sequencers"`
 	Wavetables  module.WavetableMap  `yaml:"wavetables"`
 
 	Time              float64
@@ -45,6 +46,7 @@ type Synth struct {
 	oscillators []*module.Oscillator
 	pans        []*module.Pan
 	samplers    []*module.Sampler
+	sequencers  []*module.Sequencer
 	wavetables  []*module.Wavetable
 }
 
@@ -59,16 +61,16 @@ func (s *Synth) Initialize(sampleRate float64) error {
 	s.makeModulesMap()
 	s.flattenModules()
 
-	err := s.Filters.Initialize(sampleRate)
-	if err != nil {
+	if err := s.Filters.Initialize(sampleRate); err != nil {
 		return err
 	}
-	err = s.Mixers.Initialize(sampleRate)
-	if err != nil {
+	if err := s.Mixers.Initialize(sampleRate); err != nil {
 		return err
 	}
-	err = s.Oscillators.Initialize(sampleRate)
-	if err != nil {
+	if err := s.Oscillators.Initialize(sampleRate); err != nil {
+		return err
+	}
+	if err := s.Sequencers.Initialize(); err != nil {
 		return err
 	}
 
@@ -160,6 +162,9 @@ func (s *Synth) step() {
 	for _, smplr := range s.samplers {
 		smplr.Step(s.modules)
 	}
+	for _, seq := range s.sequencers {
+		seq.Step(s.modules)
+	}
 	for _, w := range s.wavetables {
 		w.Step(s.modules)
 	}
@@ -203,6 +208,9 @@ func (s *Synth) makeModulesMap() {
 	for name, smplr := range s.Samplers {
 		s.modules[name] = smplr
 	}
+	for name, seq := range s.Sequencers {
+		s.modules[name] = seq
+	}
 	for name, w := range s.Wavetables {
 		s.modules[name] = w
 	}
@@ -217,5 +225,6 @@ func (s *Synth) flattenModules() {
 	s.oscillators = lo.Values(s.Oscillators)
 	s.pans = lo.Values(s.Pans)
 	s.samplers = lo.Values(s.Samplers)
+	s.sequencers = lo.Values(s.Sequencers)
 	s.wavetables = lo.Values(s.Wavetables)
 }
