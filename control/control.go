@@ -29,7 +29,7 @@ func NewControl(logger *log.Logger, c *config.Config) (*control, error) {
 func (c *control) ReadSample() [2]float64 {
 	sample := [2]float64{}
 
-	o := c.synth.Next()
+	o := c.synth.GetOutput()
 	sample[0] = o.Left
 	sample[1] = o.Right
 

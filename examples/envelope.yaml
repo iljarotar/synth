@@ -1,0 +1,47 @@
+vol: 1
+out: main
+
+envelopes:
+  env:
+    attack: 0.01
+    decay: 0.01
+    release: 0.2
+    peak: 0.5
+    level: 0.2
+    gate: gate
+
+gates:
+  gate:
+    bpm: 520
+    signal: [1, 0, 0, 0]
+
+mixers:
+  main:
+    cv: env
+    in:
+      sine_mix: 1
+
+  sine_mix:
+    gain: 0.5
+    mod: tremolo_mix
+    in:
+      sine: 1
+
+  tremolo_mix:
+    gain: 0.2
+    in:
+      tremolo: 1
+
+oscillators:
+  sine:
+    type: Sawtooth
+    freq: 80
+
+  lfo:
+    type: Sine
+    freq: 0.1
+    phase: -0.25
+
+  tremolo:
+    type: Sine
+    freq: 5

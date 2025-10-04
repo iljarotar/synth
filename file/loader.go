@@ -11,16 +11,18 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type callbackFunc func(*s.Synth) error
+type (
+	Loader struct {
+		logger   *log.Logger
+		file     string
+		callback callbackFunc
 
-type Loader struct {
-	logger   *log.Logger
-	file     string
-	callback callbackFunc
+		watcher *fsnotify.Watcher
+		active  bool
+	}
 
-	watcher *fsnotify.Watcher
-	active  bool
-}
+	callbackFunc func(*s.Synth) error
+)
 
 func NewLoader(logger *log.Logger, filename string, callback callbackFunc) (*Loader, error) {
 	watcher, err := fsnotify.NewWatcher()

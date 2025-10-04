@@ -1,0 +1,7 @@
+vol: 1
+out: sine
+
+oscillators:
+  sine:
+    type: Sine
+    freq: 440

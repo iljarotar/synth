@@ -20,12 +20,17 @@ var version = "unknown"
 var rootCmd = &cobra.Command{
 	Use:     "synth",
 	Version: version,
-	Short:   "command line synthesizer",
-	Long: `command line synthesizer
+	Short:   "A modular synthesizer for the command line",
+	Long: `A modular synthesizer for the command line.
 	
-documentation and usage: https://github.com/iljarotar/synth`,
+Documentation and usage: https://github.com/iljarotar/synth`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg, _ := cmd.Flags().GetString("config")
+
+		err := config.EnsureDefaultConfig()
+		if err != nil {
+			return err
+		}
 
 		if len(args) == 0 {
 			cmd.Help()
@@ -36,11 +41,6 @@ documentation and usage: https://github.com/iljarotar/synth`,
 			return fmt.Errorf("too many arguments passed - at most one argument expected")
 		}
 		filename := args[0]
-
-		err := config.EnsureDefaultConfig()
-		if err != nil {
-			return err
-		}
 
 		defaultConfigPath, err := config.GetDefaultConfigPath()
 		if err != nil {

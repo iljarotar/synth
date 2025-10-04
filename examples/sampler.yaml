@@ -1,23 +1,24 @@
 vol: 1
-out: [o1]
+out: sine
 
 noises:
-  - name: n1
-    amp: { val: 1 }
+  noise: {}
 
 oscillators:
-  - name: o1
+  sine:
     type: Sine
-    amp: { val: 1 }
-    freq: { val: 400, mod: [s1], mod-amp: 100 }
+    freq: 300
+    mod: sine_mod
 
-  - name: o2
-    type: Sine
-    amp: { val: 1 }
-    freq: { val: 0.5 }
+  trigger:
+    type: Square
+    freq: 6
 
 samplers:
-  - name: s1
-    amp: { val: 0.9 }
-    freq: { val: 2, mod: [o2], mod-amp: 1 }
-    inputs: [n1]
+  sine_mod:
+    in: noise
+    trigger: random_trigger
+
+  random_trigger:
+    in: noise
+    trigger: trigger

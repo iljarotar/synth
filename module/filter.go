@@ -1,75 +1,126 @@
 package module
 
 import (
+	"fmt"
 	"math"
 
-	"github.com/iljarotar/synth/utils"
+	"github.com/iljarotar/synth/calc"
 )
 
-type FilterType string
+type (
+	Filter struct {
+		Module
+		Type                   filterType `yaml:"type"`
+		Freq                   float64    `yaml:"freq"`
+		Width                  float64    `yaml:"width"`
+		CV                     string     `yaml:"cv"`
+		Mod                    string     `yaml:"mod"`
+		In                     string     `yaml:"in"`
+		sampleRate             float64
+		a0, a1, a2, b0, b1, b2 float64
+		inputs                 filterInputs
+	}
 
-type FiltersMap map[string]*Filter
+	FilterMap  map[string]*Filter
+	filterType string
 
-type filterInputs struct {
-	x0, x1, x2, y0, y1 float64
-}
-
-type filterConfig struct {
-	filterNames []string
-	inputs      []filterInputs
-	FiltersMap
-}
+	filterInputs struct {
+		x0, x1, x2, y0, y1 float64
+	}
+)
 
 const (
-	dbGain = -50
-	slope  = 0.99
+	filterTypeLowPass  filterType = "LowPass"
+	filterTypeHighPass filterType = "HighPass"
+	filterTypeBandPass filterType = "BandPass"
+
+	gain  = -50
+	slope = 0.99 // how is this related to width?
 )
 
-type Filter struct {
-	Name                   string `yaml:"name"`
-	LowCutoff              Input  `yaml:"low-cutoff"`
-	HighCutoff             Input  `yaml:"high-cutoff"`
-	a0, a1, a2, b0, b1, b2 float64
-	amp                    float64
-	bypass                 bool
-	sampleRate             float64
+var (
+	amp = math.Pow(10, gain/40)
+)
+
+func (m FilterMap) Initialize(sampleRate float64) error {
+	for name, f := range m {
+		if f == nil {
+			continue
+		}
+		if err := f.initialize(sampleRate); err != nil {
+			return fmt.Errorf("failed to initialize filter %s: %w", name, err)
+		}
+	}
+	return nil
 }
 
-func (f *Filter) Initialize(sampleRate float64) {
+func (f *Filter) initialize(sampleRate float64) error {
+	if err := validateFilterType(f.Type); err != nil {
+		return err
+	}
 	f.sampleRate = sampleRate
-	f.limitParams()
-	f.amp = getAmp(dbGain)
-	f.calculateCoeffs(f.LowCutoff.Val, f.HighCutoff.Val)
+	f.Freq = calc.Limit(f.Freq, freqRange)
+	f.calculateCoeffs(f.Freq)
+	return nil
 }
 
-func (f *Filter) Tap(x2, x1, x0, y1, y0 float64) (y2 float64) {
-	if isUnset(f.LowCutoff, cutoffLimits) && isUnset(f.HighCutoff, cutoffLimits) {
-		return x2
+func (f *Filter) Step(modules ModuleMap) {
+	freq := f.Freq
+	if f.CV != "" {
+		freq = cv(freqRange, getMono(modules[f.CV]))
 	}
-	y2 = (f.b0/f.a0)*x2 + (f.b1/f.a0)*x1 + (f.b2/f.a0)*x0 - (f.a1/f.a0)*y1 - (f.a2/f.a0)*y0
-	return y2
+	freq = modulate(freq, freqRange, getMono(modules[f.Mod]))
+
+	f.calculateCoeffs(freq)
+	x := getMono(modules[f.In])
+	y := calc.Limit(f.tap(x, freq), outputRange)
+
+	f.current = Output{
+		Mono:  y,
+		Left:  y / 2,
+		Right: y / 2,
+	}
 }
 
-func (f *Filter) NextCoeffs(modMap ModulesMap) {
-	fl := modulate(f.LowCutoff, cutoffLimits, modMap)
-	fh := modulate(f.HighCutoff, cutoffLimits, modMap)
-	f.calculateCoeffs(fl, fh)
+func (f *Filter) tap(x, freq float64) float64 {
+	y := f.getY(freq, f.inputs)
+
+	inputs := filterInputs{
+		x0: f.inputs.x1,
+		x1: f.inputs.x2,
+		x2: x,
+		y0: f.inputs.y1,
+		y1: y,
+	}
+	f.inputs = inputs
+
+	return y
 }
 
-func (f *Filter) calculateCoeffs(fl, fh float64) {
-	switch {
-	case isUnset(f.LowCutoff, cutoffLimits):
-		f.calculateLowPassCoeffs(fh)
-	case isUnset(f.HighCutoff, cutoffLimits):
-		f.calculateHighPassCoeffs(fl)
+func (f *Filter) getY(freq float64, inputs filterInputs) float64 {
+	if freq == 0 {
+		return 0
+	}
+
+	return (f.b0/f.a0)*inputs.x2 + (f.b1/f.a0)*inputs.x1 + (f.b2/f.a0)*inputs.x0 - (f.a1/f.a0)*inputs.y1 - (f.a2/f.a0)*inputs.y0
+}
+
+func (f *Filter) calculateCoeffs(freq float64) {
+	switch f.Type {
+	case filterTypeLowPass:
+		f.calculateLowPassCoeffs(freq)
+	case filterTypeHighPass:
+		f.calculateHighPassCoeffs(freq)
+	case filterTypeBandPass:
+		f.calculateBandPassCoeffs(freq, f.Width)
 	default:
-		f.calculateBandPassCoeffs(fl, fh)
+		// noop filter type should have been validated before calling this function
 	}
 }
 
-func (f *Filter) calculateLowPassCoeffs(fc float64) {
-	omega := getOmega(fc, f.sampleRate)
-	alpha := getAlphaLPHP(omega, f.amp, slope)
+func (f *Filter) calculateLowPassCoeffs(freq float64) {
+	omega := getOmega(freq, f.sampleRate)
+	alpha := getAlphaLPHP(omega)
 	f.b1 = 1 - math.Cos(omega)
 	f.b0 = f.b1 / 2
 	f.b2 = f.b0
@@ -78,9 +129,9 @@ func (f *Filter) calculateLowPassCoeffs(fc float64) {
 	f.a2 = 1 - alpha
 }
 
-func (f *Filter) calculateHighPassCoeffs(fc float64) {
-	omega := getOmega(fc, f.sampleRate)
-	alpha := getAlphaLPHP(omega, f.amp, slope)
+func (f *Filter) calculateHighPassCoeffs(freq float64) {
+	omega := getOmega(freq, f.sampleRate)
+	alpha := getAlphaLPHP(omega)
 	f.b0 = (1 + math.Cos(omega)) / 2
 	f.b1 = -(1 + math.Cos(omega))
 	f.b2 = f.b0
@@ -89,13 +140,18 @@ func (f *Filter) calculateHighPassCoeffs(fc float64) {
 	f.a2 = 1 - alpha
 }
 
-func (f *Filter) calculateBandPassCoeffs(fl, fh float64) {
-	if fl > fh {
+func (f *Filter) calculateBandPassCoeffs(freq, width float64) {
+	if freq < width/2 {
 		return
 	}
-	bw := math.Log2(fh / fl)
-	fc := fl + (fh-fl)/2
-	omega := getOmega(fc, f.sampleRate)
+
+	var (
+		lowCutoff  = freq - width/2
+		highCutoff = freq + width/2
+	)
+
+	bw := math.Log2(highCutoff / lowCutoff)
+	omega := getOmega(freq, f.sampleRate)
 	alpha := getAlphaBP(omega, bw)
 	f.b0 = alpha
 	f.b1 = 0
@@ -105,15 +161,11 @@ func (f *Filter) calculateBandPassCoeffs(fl, fh float64) {
 	f.a2 = 1 - alpha
 }
 
-func getAmp(dbGain float64) float64 {
-	return math.Pow(10, dbGain/40)
+func getOmega(freq float64, sampleRate float64) float64 {
+	return 2 * math.Pi * (freq / sampleRate)
 }
 
-func getOmega(fc float64, sampleRate float64) float64 {
-	return 2 * math.Pi * (fc / sampleRate)
-}
-
-func getAlphaLPHP(omega, amp, slope float64) float64 {
+func getAlphaLPHP(omega float64) float64 {
 	rootArg := (amp+1/amp)*(1/slope-slope) + 2
 	root := math.Sqrt(rootArg)
 	factor := math.Sin(omega) / 2
@@ -127,52 +179,11 @@ func getAlphaBP(omega, bandwidth float64) float64 {
 	return math.Sin(omega) * sinh
 }
 
-func (c *filterConfig) applyFilters(x float64) (float64, []filterInputs) {
-	var y2, y float64
-	newInputs := c.inputs
-
-	for i, f := range c.filterNames {
-		filter, ok := c.FiltersMap[f]
-		if !ok {
-			continue
-		}
-		if len(c.inputs) != len(c.filterNames) {
-			return 0, c.inputs
-		}
-
-		in := c.inputs[i]
-		y2 = filter.Tap(in.x2, in.x1, in.x0, in.y1, in.y0)
-		y += y2
-
-		in.x0 = in.x1
-		in.x1 = in.x2
-		in.y0 = in.y1
-		in.y1 = y2
-		in.x2 = x
-		newInputs[i] = in
+func validateFilterType(fType filterType) error {
+	switch fType {
+	case filterTypeLowPass, filterTypeHighPass, filterTypeBandPass:
+		return nil
+	default:
+		return fmt.Errorf("unknown filter type %s", fType)
 	}
-
-	if len(c.filterNames) == 0 {
-		y = x
-	} else {
-		y /= float64(len(c.filterNames))
-	}
-
-	return y, newInputs
-}
-
-func (f *Filter) limitParams() {
-	f.HighCutoff.Val = utils.Limit(f.HighCutoff.Val, cutoffLimits.min, cutoffLimits.max)
-	f.HighCutoff.ModAmp = utils.Limit(f.HighCutoff.ModAmp, -cutoffLimits.max, cutoffLimits.max)
-
-	maxLowCutoff := cutoffLimits.max
-	if !isUnset(f.HighCutoff, cutoffLimits) {
-		maxLowCutoff = f.HighCutoff.Val
-	}
-	f.LowCutoff.Val = utils.Limit(f.LowCutoff.Val, cutoffLimits.min, maxLowCutoff)
-	f.LowCutoff.ModAmp = utils.Limit(f.LowCutoff.ModAmp, -cutoffLimits.max, cutoffLimits.max)
-}
-
-func isUnset(p Input, lim limits) bool {
-	return p.Val == lim.min && len(p.Mod) == 0
 }

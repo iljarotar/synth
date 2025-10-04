@@ -1,0 +1,25 @@
+vol: 1
+out: main
+
+mixers:
+  main:
+    gain: 1
+    in:
+      sine1: 0.25
+      sine2: 0.1
+      sine3: 0.15
+      sine4: 0.2
+
+oscillators:
+  sine1:
+    type: Sine
+    freq: 220
+  sine2:
+    type: Sine
+    freq: 275
+  sine3:
+    type: Sine
+    freq: 330
+  sine4:
+    type: Sine
+    freq: 412.5

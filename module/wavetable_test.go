@@ -6,39 +6,95 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func Test_normalizeWavetable(t *testing.T) {
+func TestWavetable_initialze(t *testing.T) {
 	tests := []struct {
-		name   string
-		values []float64
-		want   []float64
+		name string
+		w    *Wavetable
+		want []float64
 	}{
 		{
-			name:   "within range [-1,1] no change",
-			values: []float64{-1, -0.3, 0, 0.2, 1},
-			want:   []float64{-1, -0.3, 0, 0.2, 1},
-		},
-		{
-			name:   "positive values exceeding 1",
-			values: []float64{0, 1, 2, 3, 4},
-			want:   []float64{0, 0.25, 0.5, 0.75, 1},
-		},
-		{
-			name:   "negative values lower than -1",
-			values: []float64{0, -1, -2, -3, -4},
-			want:   []float64{0, -0.25, -0.5, -0.75, -1},
-		},
-		{
-			name:   "asymmetrically spread values",
-			values: []float64{-1, 0, 1, 2, 3, 4},
-			want:   []float64{-0.25, 0, 0.25, 0.5, 0.75, 1},
+			name: "limit exceeding values",
+			w: &Wavetable{
+				Signal: []float64{-0.75, 0, -2, 0.75, 2},
+			},
+			want: []float64{-0.75, 0, -1, 0.75, 1},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := normalizeWavetable(tt.values)
-			if diff := cmp.Diff(tt.want, got); diff != "" {
-				t.Errorf("normalizeWavetable() diff %v", diff)
+			tt.w.initialze(0)
+
+			if diff := cmp.Diff(tt.want, tt.w.Signal); diff != "" {
+				t.Errorf("Wavetable.initialize() diff = %s", diff)
 			}
+		})
+	}
+}
+
+func TestWavetable_Step(t *testing.T) {
+	sampleRate := 44100.0
+
+	tests := []struct {
+		name    string
+		w       *Wavetable
+		modules ModuleMap
+		want    float64
+		wantIdx float64
+	}{
+		{
+			name: "no mod no cv",
+			w: &Wavetable{
+				Freq:       2,
+				Signal:     []float64{1, 0, -1, 0},
+				sampleRate: sampleRate,
+				idx:        44100.0 / 8,
+			},
+			modules: ModuleMap{},
+			want:    0,
+			wantIdx: 44100.0/8 + 8/44100.0,
+		},
+		{
+			name: "cv",
+			w: &Wavetable{
+				Freq:       2,
+				Signal:     []float64{1, 0, -1, 0},
+				CV:         "cv",
+				sampleRate: sampleRate,
+				idx:        0,
+			},
+			modules: ModuleMap{
+				"cv": &Module{
+					current: Output{
+						Mono: 0,
+					},
+				},
+			},
+			want:    1,
+			wantIdx: 4 * freqRange.Max / (2 * sampleRate),
+		},
+		{
+			name: "mod",
+			w: &Wavetable{
+				Freq:       2,
+				Signal:     []float64{1, 0, -1, 0},
+				Mod:        "mod",
+				sampleRate: sampleRate,
+				idx:        2.5,
+			},
+			modules: ModuleMap{
+				"mod": &Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+			},
+			want:    -1,
+			wantIdx: 2.5 + 16/sampleRate,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.w.Step(tt.modules)
 		})
 	}
 }

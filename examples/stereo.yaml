@@ -1,0 +1,38 @@
+vol: 1
+out: mix
+
+mixers:
+  mix:
+    gain: 0.2
+    mod: gain_lfo_mix
+    in:
+      noise_pan: 1
+
+  gain_lfo_mix:
+    gain: 0.35
+    in:
+      gain_lfo: 1
+
+  pan_lfo_mix:
+    gain: 0.6
+    in:
+      pan_lfo: 1
+
+oscillators:
+  gain_lfo:
+    type: Sine
+    freq: 0.1
+    phase: 0.75
+
+  pan_lfo:
+    type: Sine
+    freq: 0.09
+    phase: -0.1
+
+noises:
+  noise: {}
+
+pans:
+  noise_pan:
+    mod: pan_lfo_mix
+    in: noise

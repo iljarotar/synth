@@ -1,157 +1,107 @@
 package module
 
 import (
-	"github.com/iljarotar/synth/utils"
+	"github.com/iljarotar/synth/calc"
 )
 
-type Envelope struct {
-	Attack          Input   `yaml:"attack"`
-	Decay           Input   `yaml:"decay"`
-	Sustain         Input   `yaml:"sustain"`
-	Release         Input   `yaml:"release"`
-	Peak            Input   `yaml:"peak"`
-	SustainLevel    Input   `yaml:"sustain-level"`
-	Delay           float64 `yaml:"delay"`
-	BPM             Input   `yaml:"bpm"`
-	current         float64
-	currentConfig   envelopeConfig
-	lastTriggeredAt *float64
-	triggered       bool
-}
-
-type envelopeConfig struct {
-	attack       float64
-	decay        float64
-	sustain      float64
-	release      float64
-	peak         float64
-	sustainLevel float64
-}
-
-func (e *Envelope) Initialize() {
-	e.limitParams()
-}
-
-func (e *Envelope) Next(t float64, modMap ModulesMap) {
-	bpm := modulate(e.BPM, bpmLimits, modMap)
-	e.trigger(t, bpm, modMap)
-	y := e.getCurrentValue(t)
-	e.current = y
-}
-
-func (e *Envelope) getCurrentConfig(modMap ModulesMap) {
-	attack := modulate(e.Attack, envelopeLimits, modMap)
-	decay := modulate(e.Decay, envelopeLimits, modMap)
-	sustain := modulate(e.Sustain, envelopeLimits, modMap)
-	release := modulate(e.Release, envelopeLimits, modMap)
-
-	peak := modulate(e.Peak, ampLimits, modMap)
-	sustainLevel := modulate(e.SustainLevel, ampLimits, modMap)
-
-	config := envelopeConfig{
-		attack:       attack,
-		decay:        decay,
-		sustain:      sustain,
-		release:      release,
-		peak:         peak,
-		sustainLevel: sustainLevel,
-	}
-	e.currentConfig = config
-}
-
-func (e *Envelope) trigger(t, bpm float64, modMap ModulesMap) {
-	e.triggered = false
-
-	if bpm == 0 {
-		return
+type (
+	Envelope struct {
+		Module
+		Attack      float64 `yaml:"attack"`
+		Decay       float64 `yaml:"decay"`
+		Release     float64 `yaml:"release"`
+		Peak        float64 `yaml:"peak"`
+		Level       float64 `yaml:"level"`
+		Gate        string  `yaml:"gate"`
+		triggeredAt float64
+		releasedAt  float64
+		gateValue   float64
+		level       float64
 	}
 
-	secondsBetweenTwoBeats := 60 / bpm
-	if e.lastTriggeredAt != nil && t-*e.lastTriggeredAt < secondsBetweenTwoBeats {
-		return
-	}
+	EnvelopeMap map[string]*Envelope
+)
 
-	if t-e.Delay >= 0 || (e.lastTriggeredAt != nil && t-*e.lastTriggeredAt >= secondsBetweenTwoBeats) {
-		e.triggered = true
-		e.lastTriggeredAt = &t
-		e.getCurrentConfig(modMap)
+func (m EnvelopeMap) Initialize() {
+	for _, e := range m {
+		if e == nil {
+			continue
+		}
+		e.initialize()
 	}
 }
 
-func (e *Envelope) getCurrentValue(t float64) float64 {
-	if e.lastTriggeredAt == nil {
-		return 0
-	}
-	attackEnd := e.currentConfig.attack
-	decayEnd := attackEnd + e.currentConfig.decay
-	sustainEnd := decayEnd + e.currentConfig.sustain
-	releaseEnd := sustainEnd + e.currentConfig.release
-	timeSinceLastTrigger := t - *e.lastTriggeredAt
+func (e *Envelope) initialize() {
+	e.Attack = calc.Limit(e.Attack, envelopeRange)
+	e.Decay = calc.Limit(e.Decay, envelopeRange)
+	e.Release = calc.Limit(e.Release, envelopeRange)
+	e.Peak = calc.Limit(e.Peak, gainRange)
+	e.Level = calc.Limit(e.Level, gainRange)
+}
+
+func (e *Envelope) Step(t float64, modules ModuleMap) {
+	gateValue := getMono(modules[e.Gate])
 
 	switch {
-	case timeSinceLastTrigger <= attackEnd:
-		return attackFunc(e.currentConfig, *e.lastTriggeredAt)(t)
-	case timeSinceLastTrigger <= decayEnd:
-		return decayFunc(e.currentConfig, *e.lastTriggeredAt)(t)
-	case timeSinceLastTrigger <= sustainEnd:
-		return e.currentConfig.sustainLevel
-	case timeSinceLastTrigger <= releaseEnd:
-		return releaseFunc(e.currentConfig, *e.lastTriggeredAt)(t)
+	case e.gateValue <= 0 && gateValue > 0:
+		e.triggeredAt = t
+	case e.gateValue > 0 && gateValue <= 0:
+		e.releasedAt = t
+		e.level = calc.Transpose(e.current.Mono, outputRange, gainRange)
 	default:
-		return 0
+		// noop
+	}
+
+	val := calc.Transpose(e.getValue(t), gainRange, outputRange)
+	e.current = Output{
+		Mono:  val,
+		Left:  val / 2,
+		Right: val / 2,
+	}
+
+	e.gateValue = gateValue
+}
+
+func (e *Envelope) getValue(t float64) float64 {
+	if e.releasedAt >= e.triggeredAt {
+		if t-e.releasedAt > e.Release {
+			return 0
+		}
+		return e.release(t)
+	}
+
+	switch {
+	case t-e.triggeredAt < e.Attack:
+		return e.attack(t)
+	case t-e.triggeredAt < e.Attack+e.Decay:
+		return e.decay(t)
+	default:
+		return e.Level
 	}
 }
 
-type stageFunc func(t float64) float64
-
-func attackFunc(envelope envelopeConfig, triggeredAt float64) stageFunc {
-	m := envelope.peak / envelope.attack
-	c := -m * triggeredAt
-
-	return func(t float64) float64 {
-		return m*t + c
-	}
+func (e *Envelope) attack(t float64) float64 {
+	start := e.triggeredAt
+	end := start + e.Attack
+	return linear(start, end, 0, e.Peak, t)
 }
 
-func decayFunc(envelope envelopeConfig, triggeredAt float64) stageFunc {
-	m := -(envelope.peak - envelope.sustainLevel) / envelope.decay
-	c := -m*(triggeredAt+envelope.attack) + envelope.peak
-
-	return func(t float64) float64 {
-		return m*t + c
-	}
+func (e *Envelope) decay(t float64) float64 {
+	start := e.triggeredAt + e.Attack
+	end := start + e.Decay
+	return linear(start, end, e.Peak, e.Level, t)
 }
 
-func releaseFunc(envelope envelopeConfig, triggeredAt float64) stageFunc {
-	m := -envelope.sustainLevel / envelope.release
-	c := -m*(triggeredAt+envelope.attack+envelope.decay+envelope.sustain) + envelope.sustainLevel
-
-	return func(t float64) float64 {
-		return m*t + c
-	}
+func (e *Envelope) release(t float64) float64 {
+	start := e.releasedAt
+	end := start + e.Release
+	return linear(start, end, e.level, 0, t)
 }
 
-func (e *Envelope) limitParams() {
-	e.Attack.Val = utils.Limit(e.Attack.Val, envelopeLimits.min, envelopeLimits.max)
-	e.Attack.ModAmp = utils.Limit(e.Attack.ModAmp, -envelopeLimits.max, envelopeLimits.max)
-
-	e.Decay.Val = utils.Limit(e.Decay.Val, envelopeLimits.min, envelopeLimits.max)
-	e.Decay.ModAmp = utils.Limit(e.Decay.ModAmp, -envelopeLimits.max, envelopeLimits.max)
-
-	e.Sustain.Val = utils.Limit(e.Sustain.Val, envelopeLimits.min, envelopeLimits.max)
-	e.Sustain.ModAmp = utils.Limit(e.Sustain.ModAmp, -envelopeLimits.max, envelopeLimits.max)
-
-	e.Release.Val = utils.Limit(e.Release.Val, envelopeLimits.min, envelopeLimits.max)
-	e.Release.ModAmp = utils.Limit(e.Release.ModAmp, -envelopeLimits.max, envelopeLimits.max)
-
-	e.Peak.Val = utils.Limit(e.Peak.Val, ampLimits.min, ampLimits.max)
-	e.Peak.ModAmp = utils.Limit(e.Peak.ModAmp, -ampLimits.max, ampLimits.max)
-
-	e.SustainLevel.Val = utils.Limit(e.SustainLevel.Val, ampLimits.min, ampLimits.max)
-	e.SustainLevel.ModAmp = utils.Limit(e.SustainLevel.ModAmp, -ampLimits.max, ampLimits.max)
-
-	e.BPM.Val = utils.Limit(e.BPM.Val, bpmLimits.min, bpmLimits.max)
-	e.BPM.ModAmp = utils.Limit(e.BPM.ModAmp, -bpmLimits.max, bpmLimits.max)
-
-	e.Delay = utils.Limit(e.Delay, delayLimits.min, delayLimits.max)
+func linear(startAt, endAt, startValue, targetValue, t float64) float64 {
+	delta := endAt - startAt
+	if delta == 0 {
+		return targetValue
+	}
+	return ((targetValue-startValue)*(t-startAt) + startValue*delta) / delta
 }

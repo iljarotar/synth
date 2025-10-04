@@ -11,19 +11,21 @@ const (
 	labelError   = "[ERROR]  "
 )
 
-type State struct {
-	Time          string
-	VolumeWarning bool
-}
+type (
+	State struct {
+		Time          string
+		VolumeWarning bool
+	}
 
-type Logger struct {
-	maxLogs          uint
-	logs             []string
-	State            State
-	currentTime      int
-	logSubscribers   []chan<- string
-	stateSubscribers []chan<- State
-}
+	Logger struct {
+		maxLogs          uint
+		logs             []string
+		State            State
+		currentTime      int
+		logSubscribers   []chan<- string
+		stateSubscribers []chan<- State
+	}
+)
 
 func NewLogger(maxLogs uint) *Logger {
 	return &Logger{maxLogs: maxLogs}

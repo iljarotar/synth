@@ -1,13 +1,14 @@
 package synth
 
 import (
+	"github.com/iljarotar/synth/calc"
+	"github.com/iljarotar/synth/log"
 	"github.com/iljarotar/synth/module"
-	"github.com/iljarotar/synth/utils"
+	"github.com/samber/lo"
 )
 
 const (
-	maxInitTime = 7200
-	maxVolume   = 2
+	maxVolume = 1
 )
 
 type Output struct {
@@ -15,81 +16,84 @@ type Output struct {
 }
 
 type Synth struct {
-	Volume      float64              `yaml:"vol"`
-	Out         []string             `yaml:"out"`
-	Oscillators []*module.Oscillator `yaml:"oscillators"`
-	Noises      []*module.Noise      `yaml:"noises"`
-	Wavetables  []*module.Wavetable  `yaml:"wavetables"`
-	Samplers    []*module.Sampler    `yaml:"samplers"`
-	Sequences   []*module.Sequence   `yaml:"sequences"`
-	Filters     []*module.Filter     `yaml:"filters"`
-	Time        float64              `yaml:"time"`
+	Out    string  `yaml:"out"`
+	Volume float64 `yaml:"vol"`
 
-	VolumeMemory         float64
-	sampleRate           float64
-	modMap               module.ModulesMap
-	filtersMap           module.FiltersMap
-	timeStep, volumeStep float64
-	notifyFadeoutChan    chan<- bool
+	Envelopes   module.EnvelopeMap   `yaml:"envelopes"`
+	Filters     module.FilterMap     `yaml:"filters"`
+	Gates       module.GateMap       `yaml:"gates"`
+	Mixers      module.MixerMap      `yaml:"mixers"`
+	Noises      module.NoiseMap      `yaml:"noises"`
+	Oscillators module.OscillatorMap `yaml:"oscillators"`
+	Pans        module.PanMap        `yaml:"pans"`
+	Samplers    module.SamplerMap    `yaml:"samplers"`
+	Sequencers  module.SequencerMap  `yaml:"sequencers"`
+	Wavetables  module.WavetableMap  `yaml:"wavetables"`
+
+	Time              float64
+	VolumeMemory      float64
+	sampleRate        float64
+	volumeStep        float64
+	notifyFadeoutChan chan<- bool
+	logger            *log.Logger
+	modules           module.ModuleMap
+
+	envelopes   []*module.Envelope
+	filters     []*module.Filter
+	gates       []*module.Gate
+	mixers      []*module.Mixer
+	noises      []*module.Noise
+	oscillators []*module.Oscillator
+	pans        []*module.Pan
+	samplers    []*module.Sampler
+	sequencers  []*module.Sequencer
+	wavetables  []*module.Wavetable
 }
 
 func (s *Synth) Initialize(sampleRate float64) error {
-	s.timeStep = 1 / sampleRate
 	s.sampleRate = sampleRate
-	s.Volume = utils.Limit(s.Volume, 0, maxVolume)
-	s.Time = utils.Limit(s.Time, 0, maxInitTime)
+	s.Volume = calc.Limit(s.Volume, calc.Range{
+		Min: 0,
+		Max: maxVolume,
+	})
 	s.VolumeMemory = s.Volume
-	s.Volume = 0 // start muted
+	s.Volume = 0
+	s.makeModulesMap()
+	s.flattenModules()
 
-	for _, osc := range s.Oscillators {
-		err := osc.Initialize(sampleRate)
-		if err != nil {
-			return err
-		}
+	if err := s.Filters.Initialize(sampleRate); err != nil {
+		return err
+	}
+	if err := s.Mixers.Initialize(sampleRate); err != nil {
+		return err
+	}
+	if err := s.Oscillators.Initialize(sampleRate); err != nil {
+		return err
+	}
+	if err := s.Sequencers.Initialize(); err != nil {
+		return err
 	}
 
-	for _, n := range s.Noises {
-		n.Initialize(sampleRate)
-	}
-
-	for _, c := range s.Wavetables {
-		c.Initialize(sampleRate)
-	}
-
-	for _, smplr := range s.Samplers {
-		smplr.Initialize(sampleRate)
-	}
-
-	for _, sq := range s.Sequences {
-		err := sq.Initialize(sampleRate)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, f := range s.Filters {
-		f.Initialize(sampleRate)
-	}
-
-	s.makeMaps()
+	s.Envelopes.Initialize()
+	s.Gates.Initialze(sampleRate)
+	s.Pans.Initialize()
+	s.Wavetables.Initialize(sampleRate)
 
 	return nil
 }
 
-func (s *Synth) Next() Output {
-	left, right, mono := s.getCurrentValue()
+func (s *Synth) GetOutput() Output {
+	s.step()
 	s.adjustVolume()
+	out := Output{Time: s.Time}
 
-	left *= s.Volume
-	right *= s.Volume
-	mono *= s.Volume
-
-	return Output{
-		Left:  left,
-		Right: right,
-		Mono:  mono,
-		Time:  s.Time,
+	if mod, ok := s.modules[s.Out]; ok {
+		out.Left = mod.Current().Left * s.Volume
+		out.Right = mod.Current().Right * s.Volume
+		out.Mono = mod.Current().Mono * s.Volume
 	}
+
+	return out
 }
 
 func (s *Synth) SetVolume(volume float64) {
@@ -133,81 +137,69 @@ func (s *Synth) adjustVolume() {
 	}
 }
 
-func (s *Synth) getCurrentValue() (left, right, mono float64) {
-	s.updateCurrentValues()
-	left, right, mono = 0, 0, 0
-
-	for _, o := range s.Out {
-		mod, ok := s.modMap[o]
-		if ok {
-			left += mod.Current().Left
-			right += mod.Current().Right
-			mono += mod.Current().Mono
+func (s *Synth) step() {
+	for _, e := range s.envelopes {
+		if e == nil {
+			continue
 		}
+		e.Step(s.Time, s.modules)
+	}
+	for _, f := range s.filters {
+		if f == nil {
+			continue
+		}
+		f.Step(s.modules)
+	}
+	for _, g := range s.gates {
+		if g == nil {
+			continue
+		}
+		g.Step(s.modules)
+	}
+	for _, m := range s.mixers {
+		if m == nil {
+			continue
+		}
+		m.Step(s.modules)
+	}
+	for _, n := range s.noises {
+		if n == nil {
+			continue
+		}
+		n.Step()
+	}
+	for _, osc := range s.oscillators {
+		if osc == nil {
+			continue
+		}
+		osc.Step(s.modules)
+	}
+	for _, p := range s.pans {
+		if p == nil {
+			continue
+		}
+		p.Step(s.modules)
+	}
+	for _, smplr := range s.samplers {
+		if smplr == nil {
+			continue
+		}
+		smplr.Step(s.modules)
+	}
+	for _, seq := range s.sequencers {
+		if seq == nil {
+			continue
+		}
+		seq.Step(s.modules)
+	}
+	for _, w := range s.wavetables {
+		if w == nil {
+			continue
+		}
+		w.Step(s.modules)
 	}
 
-	return left, right, mono
-}
-
-func (s *Synth) updateCurrentValues() {
-	for _, o := range s.Oscillators {
-		osc := o
-		osc.Next(s.Time, s.modMap, s.filtersMap)
-	}
-
-	for _, n := range s.Noises {
-		n.Next(s.Time, s.modMap, s.filtersMap)
-	}
-
-	for _, c := range s.Wavetables {
-		c.Next(s.Time, s.modMap, s.filtersMap)
-	}
-
-	for _, smplr := range s.Samplers {
-		smplr.Next(s.Time, s.modMap, s.filtersMap)
-	}
-
-	for _, sq := range s.Sequences {
-		sq.Next(s.Time, s.modMap, s.filtersMap)
-	}
-
-	for _, f := range s.Filters {
-		f.NextCoeffs(s.modMap)
-	}
-
-	s.Time += s.timeStep
-}
-
-func (s *Synth) makeMaps() {
-	modMap := make(module.ModulesMap)
-	filtersMap := make(module.FiltersMap)
-
-	for _, osc := range s.Oscillators {
-		modMap[osc.Name] = osc
-	}
-
-	for _, n := range s.Noises {
-		modMap[n.Name] = n
-	}
-
-	for _, c := range s.Wavetables {
-		modMap[c.Name] = c
-	}
-
-	for _, smplr := range s.Samplers {
-		modMap[smplr.Name] = smplr
-	}
-
-	for _, sq := range s.Sequences {
-		modMap[sq.Name] = sq
-	}
-
-	for _, f := range s.Filters {
-		filtersMap[f.Name] = f
-	}
-
-	s.modMap = modMap
-	s.filtersMap = filtersMap
+	s.Time += 1 / s.sampleRate
 }
 
 func secondsToStep(seconds, delta, sampleRate float64) float64 {
@@ -217,4 +209,82 @@ func secondsToStep(seconds, delta, sampleRate float64) float64 {
 	steps := seconds * sampleRate
 	step := delta / steps
 	return step
+}
+
+func (s *Synth) makeModulesMap() {
+	s.modules = module.ModuleMap{}
+
+	for name, e := range s.Envelopes {
+		if e == nil {
+			continue
+		}
+		s.modules[name] = e
+	}
+	for name, f := range s.Filters {
+		if f == nil {
+			continue
+		}
+		s.modules[name] = f
+	}
+	for name, g := range s.Gates {
+		if g == nil {
+			continue
+		}
+		s.modules[name] = g
+	}
+	for name, m := range s.Mixers {
+		if m == nil {
+			continue
+		}
+		s.modules[name] = m
+	}
+	for name, n := range s.Noises {
+		if n == nil {
+			continue
+		}
+		s.modules[name] = n
+	}
+	for name, osc := range s.Oscillators {
+		if osc == nil {
+			continue
+		}
+		s.modules[name] = osc
+	}
+	for name, p := range s.Pans {
+		if p == nil {
+			continue
+		}
+		s.modules[name] = p
+	}
+	for name, smplr := range s.Samplers {
+		if smplr == nil {
+			continue
+		}
+		s.modules[name] = smplr
+	}
+	for name, seq := range s.Sequencers {
+		if seq == nil {
+			continue
+		}
+		s.modules[name] = seq
+	}
+	for name, w := range s.Wavetables {
+		if w == nil {
+			continue
+		}
+		s.modules[name] = w
+	}
+}
+
+func (s *Synth) flattenModules() {
+	s.envelopes = lo.Values(s.Envelopes)
+	s.filters = lo.Values(s.Filters)
+	s.gates = lo.Values(s.Gates)
+	s.mixers = lo.Values(s.Mixers)
+	s.noises = lo.Values(s.Noises)
+	s.oscillators = lo.Values(s.Oscillators)
+	s.pans = lo.Values(s.Pans)
+	s.samplers = lo.Values(s.Samplers)
+	s.sequencers = lo.Values(s.Sequencers)
+	s.wavetables = lo.Values(s.Wavetables)
 }

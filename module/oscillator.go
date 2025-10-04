@@ -1,113 +1,78 @@
 package module
 
 import (
+	"fmt"
 	"math"
 
-	"github.com/iljarotar/synth/utils"
+	"github.com/iljarotar/synth/calc"
 )
 
-type OscillatorType string
-
-func (t OscillatorType) String() string {
-	return string(t)
-}
-
-const (
-	Sawtooth        OscillatorType = "Sawtooth"
-	ReverseSawtooth OscillatorType = "ReverseSawtooth"
-	Sine            OscillatorType = "Sine"
-	Square          OscillatorType = "Square"
-	Triangle        OscillatorType = "Triangle"
-)
-
-type Oscillator struct {
-	Module
-	Name       string         `yaml:"name"`
-	Type       OscillatorType `yaml:"type"`
-	Freq       Input          `yaml:"freq"`
-	Amp        Input          `yaml:"amp"`
-	Phase      float64        `yaml:"phase"`
-	Pan        Input          `yaml:"pan"`
-	Filters    []string       `yaml:"filters"`
-	Envelope   *Envelope      `yaml:"envelope"`
-	inputs     []filterInputs
-	signal     SignalFunc
-	sampleRate float64
-}
-
-func (o *Oscillator) Initialize(sampleRate float64) error {
-	if o.Envelope != nil {
-		o.Envelope.Initialize()
+type (
+	Oscillator struct {
+		Module
+		Type       oscillatorType `yaml:"type"`
+		Freq       float64        `yaml:"freq"`
+		CV         string         `yaml:"cv"`
+		Mod        string         `yaml:"mod"`
+		Phase      float64        `yaml:"phase"`
+		signal     SignalFunc
+		sampleRate float64
+		arg        float64
 	}
 
+	OscillatorMap  map[string]*Oscillator
+	oscillatorType string
+)
+
+const (
+	oscillatorTypeSawtooth        oscillatorType = "Sawtooth"
+	oscillatorTypeReverseSawtooth oscillatorType = "ReverseSawtooth"
+	oscillatorTypeSine            oscillatorType = "Sine"
+	oscillatorTypeSquare          oscillatorType = "Square"
+	oscillatorTypeTriangle        oscillatorType = "Triangle"
+)
+
+func (m OscillatorMap) Initialize(sampleRate float64) error {
+	for name, osc := range m {
+		if osc == nil {
+			continue
+		}
+		if err := osc.initialize(sampleRate); err != nil {
+			return fmt.Errorf("failed to initialze oscillator %s: %w", name, err)
+		}
+	}
+	return nil
+}
+
+func (o *Oscillator) initialize(sampleRate float64) error {
 	o.sampleRate = sampleRate
+	o.Freq = calc.Limit(o.Freq, freqRange)
+
 	signal, err := newSignalFunc(o.Type)
 	if err != nil {
 		return err
 	}
 	o.signal = signal
 
-	o.limitParams()
-	o.inputs = make([]filterInputs, len(o.Filters))
-
-	y := o.signalValue(0, o.Amp.Val, 0)
-	o.current = stereo(y, o.Pan.Val)
-
 	return nil
 }
 
-func (o *Oscillator) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
-	if o.Envelope != nil {
-		o.Envelope.Next(t, modMap)
+func (o *Oscillator) Step(modules ModuleMap) {
+	twoPi := 2 * math.Pi
+	freq := o.Freq
+	if o.CV != "" {
+		freq = cv(freqRange, getMono(modules[o.CV]))
 	}
 
-	pan := modulate(o.Pan, panLimits, modMap)
-	amp := modulate(o.Amp, ampLimits, modMap)
-	offset := o.getOffset(modMap)
+	c := twoPi * o.Phase
+	mod := math.Pow(2, getMono(modules[o.Mod]))
 
-	cfg := filterConfig{
-		filterNames: o.Filters,
-		inputs:      o.inputs,
-		FiltersMap:  filtersMap,
+	val := o.signal(o.arg + c)
+	o.current = Output{
+		Mono:  val,
+		Left:  val / 2,
+		Right: val / 2,
 	}
 
-	x := o.signalValue(t, amp, offset)
-	y, newInputs := cfg.applyFilters(x)
-	y = applyEnvelope(y, o.Envelope)
-	avg := (y + o.Current().Mono) / 2
-	o.integral += avg / o.sampleRate
-	o.inputs = newInputs
-	o.current = stereo(y, pan)
-}
-
-func (o *Oscillator) getOffset(modMap ModulesMap) float64 {
-	var y float64
-
-	for _, m := range o.Freq.Mod {
-		mod, ok := modMap[m]
-		if ok {
-			y += mod.Integral()
-		}
-	}
-
-	return y * o.Freq.ModAmp
-}
-
-func (o *Oscillator) signalValue(t, amp, offset float64) float64 {
-	shift := o.Phase / o.Freq.Val // shift is a fraction of one period
-	phi := 2 * math.Pi * (o.Freq.Val*(t+shift) + offset)
-	return o.signal(phi) * amp
-}
-
-func (o *Oscillator) limitParams() {
-	o.Amp.ModAmp = utils.Limit(o.Amp.ModAmp, ampLimits.min, ampLimits.max)
-	o.Amp.Val = utils.Limit(o.Amp.Val, -ampLimits.max, ampLimits.max)
-
-	o.Phase = utils.Limit(o.Phase, phaseLimits.min, phaseLimits.max)
-
-	o.Pan.ModAmp = utils.Limit(o.Pan.ModAmp, panLimits.min, panLimits.max)
-	o.Pan.Val = utils.Limit(o.Pan.Val, panLimits.min, panLimits.max)
-
-	o.Freq.ModAmp = utils.Limit(o.Freq.ModAmp, freqLimits.min, freqLimits.max)
-	o.Freq.Val = utils.Limit(o.Freq.Val, -freqLimits.max, freqLimits.max)
+	o.arg += twoPi * freq * mod / o.sampleRate
 }

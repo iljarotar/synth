@@ -1,20 +1,24 @@
 vol: 1
-out: [w1]
+out: wt
+
+mixers:
+  vibrato_steps_mix:
+    gain: 1
+    in:
+      vibrato: 0.01
+      steps: 0.5
 
 oscillators:
-  - name: lfo1
+  vibrato:
     type: Sine
-    freq: { val: 4 }
-    amp: { val: 1 }
+    freq: 5
 
 wavetables:
-  - name: w1
-    table: [1, 0, 4, 2, 6, 1, 6]
-    freq: { val: 200, mod: [lfo1], mod-amp: 2 }
-    amp: { val: 0.1 }
-    filters: [f1]
+  wt:
+    freq: 200
+    mod: vibrato_steps_mix
+    signal: [1, 0, -1, 0]
 
-filters:
-  - name: f1
-    low-cutoff: { val: 300 }
-    high-cutoff: { val: 400 }
+  steps:
+    freq: 0.2
+    signal: [-1, 1, -1, 0.75, -1, 0.5, -1, 0.25, -1, 0]

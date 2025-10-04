@@ -3,109 +3,57 @@ package module
 import (
 	"math"
 
-	"github.com/iljarotar/synth/utils"
+	"github.com/iljarotar/synth/calc"
 )
 
-type Wavetable struct {
-	Module
-	Name       string    `yaml:"name"`
-	Table      []float64 `yaml:"table"`
-	Freq       Input     `yaml:"freq"`
-	Amp        Input     `yaml:"amp"`
-	Pan        Input     `yaml:"pan"`
-	Filters    []string  `yaml:"filters"`
-	Envelope   *Envelope `yaml:"envelope"`
-	inputs     []filterInputs
-	sampleRate float64
-}
-
-func (w *Wavetable) Initialize(sampleRate float64) {
-	if w.Envelope != nil {
-		w.Envelope.Initialize()
-	}
-	w.sampleRate = sampleRate
-	w.limitParams()
-	w.Table = normalizeWavetable(w.Table)
-	w.inputs = make([]filterInputs, len(w.Filters))
-
-	y := w.signalValue(0, w.Amp.Val, w.Freq.Val)
-	w.current = stereo(y, w.Pan.Val)
-}
-
-func (w *Wavetable) Next(t float64, modMap ModulesMap, filtersMap FiltersMap) {
-	if w.Envelope != nil {
-		w.Envelope.Next(t, modMap)
+type (
+	Wavetable struct {
+		Module
+		Freq       float64   `yaml:"freq"`
+		CV         string    `yaml:"cv"`
+		Mod        string    `yaml:"mod"`
+		Signal     []float64 `yaml:"signal"`
+		sampleRate float64
+		idx        float64
 	}
 
-	pan := modulate(w.Pan, panLimits, modMap)
-	amp := modulate(w.Amp, ampLimits, modMap)
-	offset := w.getOffset(modMap)
+	WavetableMap map[string]*Wavetable
+)
 
-	cfg := filterConfig{
-		filterNames: w.Filters,
-		inputs:      w.inputs,
-		FiltersMap:  filtersMap,
-	}
-
-	x := w.signalValue(t, amp, offset)
-	y, newInputs := cfg.applyFilters(x)
-	y = applyEnvelope(y, w.Envelope)
-	w.integral += y / w.sampleRate
-	w.inputs = newInputs
-	w.current = stereo(y, pan)
-}
-
-func (w *Wavetable) getOffset(modMap ModulesMap) float64 {
-	var y float64
-
-	for _, m := range w.Freq.Mod {
-		mod, ok := modMap[m]
-		if ok {
-			y += mod.Integral()
+func (m WavetableMap) Initialize(sampleRate float64) {
+	for _, w := range m {
+		if w == nil {
+			continue
 		}
+		w.initialze(sampleRate)
 	}
-
-	return y * w.Freq.ModAmp
 }
 
-func (w *Wavetable) signalValue(t, amp, offset float64) float64 {
-	length := len(w.Table)
-	if length == 0 {
-		return 0
+func (w *Wavetable) initialze(sampleRate float64) {
+	w.sampleRate = sampleRate
+	w.Freq = calc.Limit(w.Freq, freqRange)
+
+	var signal []float64
+	for _, x := range w.Signal {
+		signal = append(signal, calc.Limit(x, outputRange))
 	}
-
-	idx := int(math.Floor((t*w.Freq.Val + offset) * float64(length)))
-	var val float64
-
-	val = w.Table[idx%length]
-
-	y := amp * val
-
-	return y
+	w.Signal = signal
 }
 
-func (w *Wavetable) limitParams() {
-	w.Amp.ModAmp = utils.Limit(w.Amp.ModAmp, ampLimits.min, ampLimits.max)
-	w.Amp.Val = utils.Limit(w.Amp.Val, -ampLimits.max, ampLimits.max)
-
-	w.Pan.ModAmp = utils.Limit(w.Pan.ModAmp, panLimits.min, panLimits.max)
-	w.Pan.Val = utils.Limit(w.Pan.Val, panLimits.min, panLimits.max)
-
-	w.Freq.ModAmp = utils.Limit(w.Freq.ModAmp, freqLimits.min, freqLimits.max)
-	w.Freq.Val = utils.Limit(w.Freq.Val, -freqLimits.max, freqLimits.max)
-}
-
-func normalizeWavetable(values []float64) []float64 {
-	normalized := make([]float64, 0)
-	var max float64
-
-	for _, v := range values {
-		max = math.Max(max, math.Abs(v))
+func (w *Wavetable) Step(modules ModuleMap) {
+	length := len(w.Signal)
+	val := w.Signal[int(math.Floor(w.idx))%length]
+	w.current = Output{
+		Mono:  val,
+		Left:  val / 2,
+		Right: val / 2,
 	}
 
-	for _, v := range values {
-		normalized = append(normalized, v/max)
+	freq := w.Freq
+	if w.CV != "" {
+		freq = cv(freqRange, getMono(modules[w.CV]))
 	}
 
-	return normalized
+	mod := math.Pow(2, getMono(modules[w.Mod]))
+	w.idx += freq * mod * float64(length) / w.sampleRate
 }
