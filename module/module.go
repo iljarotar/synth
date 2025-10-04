@@ -74,8 +74,8 @@ func cv(rng calc.Range, val float64) float64 {
 }
 
 func getMono(mod IModule) float64 {
-	if mod != nil {
-		return mod.Current().Mono
+	if mod == nil {
+		return 0
 	}
-	return 0
+	return mod.Current().Mono
 }

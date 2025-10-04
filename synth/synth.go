@@ -139,33 +139,63 @@ func (s *Synth) adjustVolume() {
 
 func (s *Synth) step() {
 	for _, e := range s.envelopes {
+		if e == nil {
+			continue
+		}
 		e.Step(s.Time, s.modules)
 	}
 	for _, f := range s.filters {
+		if f == nil {
+			continue
+		}
 		f.Step(s.modules)
 	}
 	for _, g := range s.gates {
+		if g == nil {
+			continue
+		}
 		g.Step(s.modules)
 	}
 	for _, m := range s.mixers {
+		if m == nil {
+			continue
+		}
 		m.Step(s.modules)
 	}
 	for _, n := range s.noises {
+		if n == nil {
+			continue
+		}
 		n.Step()
 	}
 	for _, osc := range s.oscillators {
+		if osc == nil {
+			continue
+		}
 		osc.Step(s.modules)
 	}
 	for _, p := range s.pans {
+		if p == nil {
+			continue
+		}
 		p.Step(s.modules)
 	}
 	for _, smplr := range s.samplers {
+		if smplr == nil {
+			continue
+		}
 		smplr.Step(s.modules)
 	}
 	for _, seq := range s.sequencers {
+		if seq == nil {
+			continue
+		}
 		seq.Step(s.modules)
 	}
 	for _, w := range s.wavetables {
+		if w == nil {
+			continue
+		}
 		w.Step(s.modules)
 	}
 
@@ -185,33 +215,63 @@ func (s *Synth) makeModulesMap() {
 	s.modules = module.ModuleMap{}
 
 	for name, e := range s.Envelopes {
+		if e == nil {
+			continue
+		}
 		s.modules[name] = e
 	}
 	for name, f := range s.Filters {
+		if f == nil {
+			continue
+		}
 		s.modules[name] = f
 	}
 	for name, g := range s.Gates {
+		if g == nil {
+			continue
+		}
 		s.modules[name] = g
 	}
 	for name, m := range s.Mixers {
+		if m == nil {
+			continue
+		}
 		s.modules[name] = m
 	}
 	for name, n := range s.Noises {
+		if n == nil {
+			continue
+		}
 		s.modules[name] = n
 	}
 	for name, osc := range s.Oscillators {
+		if osc == nil {
+			continue
+		}
 		s.modules[name] = osc
 	}
 	for name, p := range s.Pans {
+		if p == nil {
+			continue
+		}
 		s.modules[name] = p
 	}
 	for name, smplr := range s.Samplers {
+		if smplr == nil {
+			continue
+		}
 		s.modules[name] = smplr
 	}
 	for name, seq := range s.Sequencers {
+		if seq == nil {
+			continue
+		}
 		s.modules[name] = seq
 	}
 	for name, w := range s.Wavetables {
+		if w == nil {
+			continue
+		}
 		s.modules[name] = w
 	}
 }

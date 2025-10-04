@@ -27,9 +27,12 @@ type (
 )
 
 func (m SequencerMap) Initialize() error {
-	for _, s := range m {
+	for name, s := range m {
+		if s == nil {
+			continue
+		}
 		if err := s.initialze(); err != nil {
-			return err
+			return fmt.Errorf("failed to initialize sequencer %s: %w", name, err)
 		}
 	}
 	return nil

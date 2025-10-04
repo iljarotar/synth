@@ -15,6 +15,9 @@ type (
 
 func (m PanMap) Initialize() {
 	for _, p := range m {
+		if p == nil {
+			continue
+		}
 		p.initialize()
 	}
 }

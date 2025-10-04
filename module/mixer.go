@@ -21,8 +21,11 @@ type (
 
 func (m MixerMap) Initialize(sampleRate float64) error {
 	for name, mixer := range m {
+		if mixer == nil {
+			continue
+		}
 		if err := mixer.initialize(sampleRate); err != nil {
-			return fmt.Errorf("failed to initialize mixer %s:%w", name, err)
+			return fmt.Errorf("failed to initialize mixer %s: %w", name, err)
 		}
 	}
 	return nil

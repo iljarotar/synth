@@ -34,8 +34,11 @@ const (
 
 func (m OscillatorMap) Initialize(sampleRate float64) error {
 	for name, osc := range m {
+		if osc == nil {
+			continue
+		}
 		if err := osc.initialize(sampleRate); err != nil {
-			return fmt.Errorf("failed to initialze oscillator %s:%w", name, err)
+			return fmt.Errorf("failed to initialze oscillator %s: %w", name, err)
 		}
 	}
 	return nil

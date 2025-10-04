@@ -22,6 +22,9 @@ type (
 
 func (m GateMap) Initialze(sampleRate float64) {
 	for _, g := range m {
+		if g == nil {
+			continue
+		}
 		g.initialze(sampleRate)
 	}
 }

@@ -9,4 +9,4 @@ filters:
     in: noise
 
 noises:
-  noise: {}
+  noise:

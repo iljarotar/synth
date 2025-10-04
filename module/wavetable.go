@@ -22,6 +22,9 @@ type (
 
 func (m WavetableMap) Initialize(sampleRate float64) {
 	for _, w := range m {
+		if w == nil {
+			continue
+		}
 		w.initialze(sampleRate)
 	}
 }

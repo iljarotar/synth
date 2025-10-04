@@ -24,6 +24,9 @@ type (
 
 func (m EnvelopeMap) Initialize() {
 	for _, e := range m {
+		if e == nil {
+			continue
+		}
 		e.initialize()
 	}
 }
