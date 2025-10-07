@@ -26,28 +26,28 @@ cp bin/synth /usr/local/bin # or somewhere else in your PATH
 Patches for the modular synthesizer are provided in [yaml](https://yaml.org/) format.
 A patch contains configurations for all modules that you want the synthesizer to play.
 Currently, it is not possible to actually _play_ the synthesizer.
-While a TUI is on the roadmap, right now you can only make _generative_ music with the synthesizer.
-However, a hot reload is enabled for convenience, i.e. if you modify a patch while it is being played the synthesizer will reload the file automatically.
+While a TUI is on the roadmap, right now you can only make generative music with the synthesizer.
+However, a hot reload is enabled, i.e. if you modify a patch while it is being played the synthesizer will reload the file.
 
 ### Patch Files
 
 This section explains all available modules and provides example configurations.
-To see some more examples check the [examples](examples/) directory.
+To see some more examples see the [examples](examples/) directory.
 
 Each module must have a unique name across all modules.
 This name is used as a reference in other modules, e.g. when a module is used as a CV or modulator.
 If a module is provided with a CV its static value is ignored.
-For example, if you pass a CV for an oscillator this CV will provide the oscillator's frequency and the statically assigned frequency will be ignored.
+For example, if you pass a CV to an oscillator this CV will provide the oscillator's frequency and the statically assigned frequency will be ignored.
 If a module is provided with a modulator it will modulate a parameter around its static or CV-provided value.
 For example, a mixer with a gain of `0.5` and a sine wave as a modulator will output a tremolo around the gain value of `0.5`.
 
-Each module output values in the range `[-1, 1]`.
+Each module outputs values in the range `[-1, 1]`.
 When using a module as a CV or modulator for some parameter of another module the range `[-1, 1]` is mapped to the range of the respective parameter.
-Example:
 
+Example:
 An oscillator's frequency is in the range `[0, 20000]`.
-A modulator that outputs values in the entire possible range of `[-1, 1]` will modulate the oscillators frequency in the entire range `[0, 20000]`.
-To control the amount of modulation you must pass the modulator through a mixer module and attenuate its gain.
+A modulator that outputs values in the entire possible range of `[-1, 1]` will modulate the oscillator's frequency in the entire range `[0, 20000]`.
+To control the amount of modulation you must pass the modulator through a mixer and attenuate its gain.
 
 ```yaml
 # my-patch.yaml
