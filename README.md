@@ -49,6 +49,8 @@ An oscillator's frequency is in the range `[0, 20000]`.
 A modulator that outputs values in the entire possible range of `[-1, 1]` will modulate the oscillator's frequency in the entire range `[0, 20000]`.
 To control the amount of modulation you must pass the modulator through a mixer and attenuate its gain.
 
+The following yaml file provides examples and explanations for all configuration parameters.
+
 ```yaml
 # my-patch.yaml
 
