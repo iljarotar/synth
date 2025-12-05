@@ -22,7 +22,7 @@ func TestWavetable_initialze(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.w.initialze(0)
+			tt.w.initialze(nil, 0)
 
 			if diff := cmp.Diff(tt.want, tt.w.Signal); diff != "" {
 				t.Errorf("Wavetable.initialize() diff = %s", diff)

@@ -42,25 +42,42 @@ var (
 	amp = math.Pow(10, gain/40)
 )
 
-func (m FilterMap) Initialize(sampleRate float64) error {
+func (m FilterMap) Initialize(filters FilterMap, sampleRate float64) error {
 	for name, f := range m {
 		if f == nil {
 			continue
 		}
-		if err := f.initialize(sampleRate); err != nil {
+
+		var filter *Filter
+		if flt, ok := filters[name]; ok {
+			filter = flt
+		}
+
+		if err := f.initialize(filter, sampleRate); err != nil {
 			return fmt.Errorf("failed to initialize filter %s: %w", name, err)
 		}
 	}
 	return nil
 }
 
-func (f *Filter) initialize(sampleRate float64) error {
+func (f *Filter) initialize(filter *Filter, sampleRate float64) error {
 	if err := validateFilterType(f.Type); err != nil {
 		return err
 	}
 	f.sampleRate = sampleRate
 	f.Freq = calc.Limit(f.Freq, freqRange)
 	f.calculateCoeffs(f.Freq)
+
+	if filter != nil {
+		f.inputs = filter.inputs
+		f.a0 = filter.a0
+		f.a1 = filter.a1
+		f.a2 = filter.a2
+		f.b0 = filter.b0
+		f.b1 = filter.b1
+		f.b2 = filter.b2
+	}
+
 	return nil
 }
 

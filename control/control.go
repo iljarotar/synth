@@ -68,13 +68,16 @@ func (c *control) Stop(done chan<- bool, interrupt bool) {
 }
 
 func (c *control) LoadSynth(synth *synth.Synth) error {
-	err := synth.Initialize(float64(c.config.SampleRate))
+	err := synth.Initialize(c.synth, float64(c.config.SampleRate))
 	if err != nil {
 		return err
 	}
 
 	if c.synth != nil {
-		c.updateSynth(synth)
+		c.maxOutput = 0
+		synth.Time = c.synth.Time
+		c.synth = synth
+		c.synth.FadeIn(0)
 		return nil
 	}
 
@@ -94,18 +97,6 @@ func (c *control) DecreaseVolume() {
 
 func (c *control) Volume() float64 {
 	return c.synth.VolumeMemory
-}
-
-func (c *control) updateSynth(synth *synth.Synth) {
-	fadeoutDone := make(chan bool)
-	c.synth.NotifyFadeout(fadeoutDone)
-	c.synth.FadeOut(0.01)
-	<-fadeoutDone
-
-	c.maxOutput = 0
-	synth.Time = c.synth.Time
-	c.synth = synth
-	c.synth.FadeIn(0.01)
 }
 
 func (c *control) checkOutputLevel(output float64) {

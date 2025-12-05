@@ -32,19 +32,25 @@ const (
 	oscillatorTypeTriangle        oscillatorType = "Triangle"
 )
 
-func (m OscillatorMap) Initialize(sampleRate float64) error {
-	for name, osc := range m {
-		if osc == nil {
+func (m OscillatorMap) Initialize(oscillators OscillatorMap, sampleRate float64) error {
+	for name, o := range m {
+		if o == nil {
 			continue
 		}
-		if err := osc.initialize(sampleRate); err != nil {
+
+		var oscillator *Oscillator
+		if osc, ok := oscillators[name]; ok {
+			oscillator = osc
+		}
+
+		if err := o.initialize(oscillator, sampleRate); err != nil {
 			return fmt.Errorf("failed to initialze oscillator %s: %w", name, err)
 		}
 	}
 	return nil
 }
 
-func (o *Oscillator) initialize(sampleRate float64) error {
+func (o *Oscillator) initialize(oscillator *Oscillator, sampleRate float64) error {
 	o.sampleRate = sampleRate
 	o.Freq = calc.Limit(o.Freq, freqRange)
 
@@ -53,6 +59,10 @@ func (o *Oscillator) initialize(sampleRate float64) error {
 		return err
 	}
 	o.signal = signal
+
+	if oscillator != nil {
+		o.arg = oscillator.arg
+	}
 
 	return nil
 }

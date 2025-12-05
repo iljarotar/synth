@@ -50,7 +50,7 @@ type Synth struct {
 	wavetables  []*module.Wavetable
 }
 
-func (s *Synth) Initialize(sampleRate float64) error {
+func (s *Synth) Initialize(synth *Synth, sampleRate float64) error {
 	s.sampleRate = sampleRate
 	s.Volume = calc.Limit(s.Volume, calc.Range{
 		Min: 0,
@@ -61,23 +61,41 @@ func (s *Synth) Initialize(sampleRate float64) error {
 	s.makeModulesMap()
 	s.flattenModules()
 
-	if err := s.Filters.Initialize(sampleRate); err != nil {
+	var (
+		envelopes   module.EnvelopeMap
+		filters     module.FilterMap
+		gates       module.GateMap
+		oscillators module.OscillatorMap
+		sequencers  module.SequencerMap
+		wavetables  module.WavetableMap
+	)
+
+	if synth != nil {
+		envelopes = synth.Envelopes
+		filters = synth.Filters
+		gates = synth.Gates
+		oscillators = synth.Oscillators
+		sequencers = synth.Sequencers
+		wavetables = synth.Wavetables
+	}
+
+	if err := s.Filters.Initialize(filters, sampleRate); err != nil {
 		return err
 	}
 	if err := s.Mixers.Initialize(sampleRate); err != nil {
 		return err
 	}
-	if err := s.Oscillators.Initialize(sampleRate); err != nil {
+	if err := s.Oscillators.Initialize(oscillators, sampleRate); err != nil {
 		return err
 	}
-	if err := s.Sequencers.Initialize(); err != nil {
+	if err := s.Sequencers.Initialize(sequencers); err != nil {
 		return err
 	}
 
-	s.Envelopes.Initialize()
-	s.Gates.Initialze(sampleRate)
+	s.Envelopes.Initialize(envelopes)
+	s.Gates.Initialze(gates, sampleRate)
 	s.Pans.Initialize()
-	s.Wavetables.Initialize(sampleRate)
+	s.Wavetables.Initialize(wavetables, sampleRate)
 
 	return nil
 }
