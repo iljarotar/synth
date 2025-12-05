@@ -25,9 +25,7 @@ cp bin/synth /usr/local/bin # or somewhere else in your PATH
 
 Patches for the modular synthesizer are provided in [yaml](https://yaml.org/) format.
 A patch contains configurations for all modules that you want the synthesizer to play.
-Currently, it is not possible to actually _play_ the synthesizer.
-While a TUI is on the roadmap, right now you can only make generative music with the synthesizer.
-However, a hot reload is enabled, i.e. if you modify a patch while it is being played the synthesizer will reload the file.
+When you modify and save a patch while it is being played the synthesizer will reload the file.
 
 ### Patch Files
 
