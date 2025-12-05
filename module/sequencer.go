@@ -55,7 +55,9 @@ func (s *Sequencer) initialze(sequencer *Sequencer) error {
 	}
 
 	if sequencer != nil {
-		s.index = sequencer.index
+		if sequencer.index < len(s.sequence) {
+			s.index = sequencer.index
+		}
 		s.triggerValue = sequencer.triggerValue
 	}
 
