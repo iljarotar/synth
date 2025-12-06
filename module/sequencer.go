@@ -51,6 +51,19 @@ func (s *Sequencer) initialze() error {
 	return nil
 }
 
+func (s *Sequencer) Update(new *Sequencer) {
+	if new == nil {
+		return
+	}
+
+	s.Sequence = new.Sequence
+	s.sequence = new.sequence
+	s.Trigger = new.Trigger
+	s.Pitch = new.Pitch
+	s.Transpose = new.Transpose
+	s.Randomize = new.Randomize
+}
+
 func (s *Sequencer) Step(modules ModuleMap) {
 	if len(s.sequence) < 1 {
 		return

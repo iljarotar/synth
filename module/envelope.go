@@ -39,6 +39,19 @@ func (e *Envelope) initialize() {
 	e.Level = calc.Limit(e.Level, gainRange)
 }
 
+func (e *Envelope) Update(new *Envelope) {
+	if new == nil {
+		return
+	}
+
+	e.Attack = new.Attack
+	e.Decay = new.Decay
+	e.Release = new.Release
+	e.Peak = new.Peak
+	e.Level = new.Level
+	e.Gate = new.Gate
+}
+
 func (e *Envelope) Step(t float64, modules ModuleMap) {
 	gateValue := getMono(modules[e.Gate])
 

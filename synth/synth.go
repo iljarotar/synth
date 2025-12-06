@@ -93,11 +93,9 @@ func (s *Synth) Update(from *Synth) error {
 		return err
 	}
 
-	// - if new module just initialize and add
-	// - if existing updated call update func on module
-	// - re-fill module slices and replace old ones
-
 	s.deleteOldModules(from)
+	s.addNewModules(from)
+	s.updateModules(from)
 
 	return nil
 }
@@ -398,6 +396,127 @@ func (s *Synth) deleteOldModules(new *Synth) {
 			s.wavetables = slices.DeleteFunc(s.wavetables, func(w *module.Wavetable) bool {
 				return wt == w
 			})
+		}
+	}
+}
+
+func (s *Synth) addNewModules(new *Synth) {
+	for name, env := range new.Envelopes {
+		if _, ok := s.Envelopes[name]; !ok {
+			s.Envelopes[name] = env
+			s.envelopes = append(s.envelopes, env)
+			s.modules[name] = env
+		}
+	}
+	for name, filter := range new.Filters {
+		if _, ok := s.Filters[name]; !ok {
+			s.Filters[name] = filter
+			s.filters = append(s.filters, filter)
+			s.modules[name] = filter
+		}
+	}
+	for name, gate := range new.Gates {
+		if _, ok := s.Gates[name]; !ok {
+			s.Gates[name] = gate
+			s.gates = append(s.gates, gate)
+			s.modules[name] = gate
+		}
+	}
+	for name, mixer := range new.Mixers {
+		if _, ok := s.Mixers[name]; !ok {
+			s.Mixers[name] = mixer
+			s.mixers = append(s.mixers, mixer)
+			s.modules[name] = mixer
+		}
+	}
+	for name, noise := range new.Noises {
+		if _, ok := s.Noises[name]; !ok {
+			s.Noises[name] = noise
+			s.noises = append(s.noises, noise)
+			s.modules[name] = noise
+		}
+	}
+	for name, osc := range new.Oscillators {
+		if _, ok := s.Oscillators[name]; !ok {
+			s.Oscillators[name] = osc
+			s.oscillators = append(s.oscillators, osc)
+			s.modules[name] = osc
+		}
+	}
+	for name, pan := range new.Pans {
+		if _, ok := s.Pans[name]; !ok {
+			s.Pans[name] = pan
+			s.pans = append(s.pans, pan)
+			s.modules[name] = pan
+		}
+	}
+	for name, sampler := range new.Samplers {
+		if _, ok := s.Samplers[name]; !ok {
+			s.Samplers[name] = sampler
+			s.samplers = append(s.samplers, sampler)
+			s.modules[name] = sampler
+		}
+	}
+	for name, seq := range new.Sequencers {
+		if _, ok := s.Sequencers[name]; !ok {
+			s.Sequencers[name] = seq
+			s.sequencers = append(s.sequencers, seq)
+			s.modules[name] = seq
+		}
+	}
+	for name, wt := range new.Wavetables {
+		if _, ok := s.Wavetables[name]; !ok {
+			s.Wavetables[name] = wt
+			s.wavetables = append(s.wavetables, wt)
+			s.modules[name] = wt
+		}
+	}
+}
+
+func (s *Synth) updateModules(new *Synth) {
+	for name, env := range s.Envelopes {
+		if newEnv, ok := new.Envelopes[name]; ok {
+			env.Update(newEnv)
+		}
+	}
+	for name, filter := range s.Filters {
+		if newFilter, ok := new.Filters[name]; ok {
+			filter.Update(newFilter)
+		}
+	}
+	for name, gate := range s.Gates {
+		if newGate, ok := new.Gates[name]; ok {
+			gate.Update(newGate)
+		}
+	}
+	for name, mixer := range s.Mixers {
+		if newMixer, ok := new.Mixers[name]; ok {
+			mixer.Update(newMixer)
+		}
+	}
+	for name, osc := range s.Oscillators {
+		if newOsc, ok := new.Oscillators[name]; ok {
+			osc.Update(newOsc)
+		}
+	}
+	for name, pan := range s.Pans {
+		if newPan, ok := new.Pans[name]; ok {
+			pan.Update(newPan)
+		}
+	}
+	for name, sampler := range s.Samplers {
+		if newSampler, ok := new.Samplers[name]; ok {
+			sampler.Update(newSampler)
+		}
+	}
+	for name, seq := range s.Sequencers {
+		if newSeq, ok := new.Sequencers[name]; ok {
+			seq.Update(newSeq)
+		}
+	}
+	for name, wt := range s.Wavetables {
+		if newWt, ok := new.Wavetables[name]; ok {
+			wt.Update(newWt)
 		}
 	}
 }

@@ -40,6 +40,17 @@ func (w *Wavetable) initialze(sampleRate float64) {
 	w.Signal = signal
 }
 
+func (w *Wavetable) Update(new *Wavetable) {
+	if new == nil {
+		return
+	}
+
+	w.Freq = new.Freq
+	w.CV = new.CV
+	w.Mod = new.Mod
+	w.Signal = new.Signal
+}
+
 func (w *Wavetable) Step(modules ModuleMap) {
 	length := len(w.Signal)
 	val := w.Signal[int(math.Floor(w.idx))%length]

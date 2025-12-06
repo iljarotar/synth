@@ -65,6 +65,26 @@ func (f *Filter) initialize(sampleRate float64) error {
 	return nil
 }
 
+func (f *Filter) Update(new *Filter) {
+	if new == nil {
+		return
+	}
+
+	f.Type = new.Type
+	f.Freq = new.Freq
+	f.Width = new.Width
+	f.CV = new.CV
+	f.Mod = new.Mod
+	f.In = new.In
+
+	f.a0 = new.a0
+	f.a1 = new.a1
+	f.a2 = new.a2
+	f.b0 = new.b0
+	f.b1 = new.b1
+	f.b2 = new.b2
+}
+
 func (f *Filter) Step(modules ModuleMap) {
 	freq := f.Freq
 	if f.CV != "" {

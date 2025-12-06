@@ -11,6 +11,15 @@ type (
 	SamplerMap map[string]*Sampler
 )
 
+func (s *Sampler) Update(new *Sampler) {
+	if new == nil {
+		return
+	}
+
+	s.In = new.In
+	s.Trigger = new.Trigger
+}
+
 func (s *Sampler) Step(modules ModuleMap) {
 	triggerValue := getMono(modules[s.Trigger])
 

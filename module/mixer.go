@@ -42,6 +42,17 @@ func (m *Mixer) initialize(sampleRate float64) error {
 	return nil
 }
 
+func (m *Mixer) Update(new *Mixer) {
+	if new == nil {
+		return
+	}
+
+	m.Gain = new.Gain
+	m.CV = new.CV
+	m.Mod = new.Mod
+	m.In = new.In
+}
+
 func (m *Mixer) Step(modules ModuleMap) {
 	var (
 		left, right, mono float64

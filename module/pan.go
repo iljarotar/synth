@@ -26,6 +26,16 @@ func (p *Pan) initialize() {
 	p.Pan = calc.Limit(p.Pan, panRange)
 }
 
+func (p *Pan) Update(new *Pan) {
+	if new == nil {
+		return
+	}
+
+	p.Pan = new.Pan
+	p.Mod = new.Mod
+	p.In = new.In
+}
+
 func (p *Pan) Step(modules ModuleMap) {
 	pan := modulate(p.Pan, panRange, getMono(modules[p.Mod]))
 	percent := calc.Percentage(pan, panRange)

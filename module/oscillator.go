@@ -57,6 +57,19 @@ func (o *Oscillator) initialize(sampleRate float64) error {
 	return nil
 }
 
+func (o *Oscillator) Update(new *Oscillator) {
+	if new == nil {
+		return
+	}
+
+	o.Type = new.Type
+	o.Freq = new.Freq
+	o.CV = new.CV
+	o.Mod = new.Mod
+	o.Phase = new.Phase
+	o.signal = new.signal
+}
+
 func (o *Oscillator) Step(modules ModuleMap) {
 	twoPi := 2 * math.Pi
 	freq := o.Freq

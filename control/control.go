@@ -75,9 +75,7 @@ func (c *control) LoadSynth(synth *synth.Synth) error {
 
 	if c.synth != nil {
 		c.maxOutput = 0
-		synth.Time = c.synth.Time
-		c.synth = synth
-		c.synth.FadeIn(0)
+		c.synth.Update(synth)
 		return nil
 	}
 

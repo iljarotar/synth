@@ -47,7 +47,7 @@ func Test_secondsToStep(t *testing.T) {
 	}
 }
 
-func TestSynth_deleteOldModules(t *testing.T) {
+func TestSynth_Update(t *testing.T) {
 	var (
 		env1 = &module.Envelope{}
 		env2 = &module.Envelope{}
@@ -77,7 +77,7 @@ func TestSynth_deleteOldModules(t *testing.T) {
 		want *Synth
 	}{
 		{
-			name: "delete old and leave others in place",
+			name: "update all modules",
 			s: &Synth{
 				Out:    "main",
 				Volume: 0.5,
@@ -159,49 +159,169 @@ func TestSynth_deleteOldModules(t *testing.T) {
 				wavetables:  []*module.Wavetable{w1, w2},
 			},
 			new: &Synth{
-				Envelopes:   module.EnvelopeMap{"env2": {}},
-				Filters:     module.FilterMap{"f2": {}},
-				Gates:       module.GateMap{"g2": {}},
-				Mixers:      module.MixerMap{"m2": {}},
-				Noises:      module.NoiseMap{"n2": {}},
-				Oscillators: module.OscillatorMap{"o2": {}},
-				Pans:        module.PanMap{"p2": {}},
-				Samplers:    module.SamplerMap{"s2": {}},
-				Sequencers:  module.SequencerMap{"seq2": {}},
-				Wavetables:  module.WavetableMap{"w2": {}},
+				Envelopes: module.EnvelopeMap{
+					"env2": {
+						Gate:    "new-gate",
+						Attack:  1,
+						Decay:   1,
+						Release: 1,
+						Peak:    100,
+						Level:   1,
+					},
+				},
+				Filters: module.FilterMap{
+					"f2": {
+						In:    "new-in",
+						Type:  "BandPass",
+						Freq:  200,
+						Width: 10,
+						CV:    "new-cv",
+						Mod:   "new-mod",
+					},
+				},
+				Gates: module.GateMap{
+					"g2": {
+						CV:     "new-cv",
+						BPM:    20,
+						Mod:    "new-mod",
+						Signal: []float64{1},
+					},
+				},
+				Mixers: module.MixerMap{
+					"m2": {
+						CV:   "new-mod",
+						Gain: 1,
+						Mod:  "new-mod",
+						In: map[string]float64{
+							"new-in": 1,
+						},
+					},
+				},
+				Noises: module.NoiseMap{"n2": {}},
+				Oscillators: module.OscillatorMap{
+					"o2": {
+						Module: module.Module{},
+						Type:   "Sine",
+						Freq:   200,
+						CV:     "new-cv",
+						Mod:    "new-mod",
+						Phase:  0.5,
+					},
+				},
+				Pans: module.PanMap{
+					"p2": {
+						Pan: 1,
+						Mod: "new-mod",
+						In:  "new-in",
+					},
+				},
+				Samplers: module.SamplerMap{
+					"s2": {
+						In:      "new-in",
+						Trigger: "new-trigger",
+					},
+				},
+				Sequencers: module.SequencerMap{
+					"seq2": {
+						Sequence:  []string{"a_4"},
+						Trigger:   "new-trigger",
+						Pitch:     440,
+						Transpose: 1,
+						Randomize: true,
+					},
+				},
+				Wavetables: module.WavetableMap{
+					"w2": {
+						Freq:   300,
+						CV:     "new-cv",
+						Mod:    "new-mod",
+						Signal: []float64{2},
+					},
+				},
 			},
 			want: &Synth{
 				Out:    "main",
 				Volume: 0.5,
 				Envelopes: module.EnvelopeMap{
-					"env2": env2,
+					"env2": {
+						Gate:    "new-gate",
+						Attack:  1,
+						Decay:   1,
+						Release: 1,
+						Peak:    1,
+						Level:   1,
+					},
 				},
 				Filters: module.FilterMap{
-					"f2": f2,
+					"f2": {
+						In:    "new-in",
+						Type:  "BandPass",
+						Freq:  200,
+						Width: 10,
+						CV:    "new-cv",
+						Mod:   "new-mod",
+					},
 				},
 				Gates: module.GateMap{
-					"g2": g2,
+					"g2": {
+						CV:     "new-cv",
+						BPM:    20,
+						Mod:    "new-mod",
+						Signal: []float64{1},
+					},
 				},
 				Mixers: module.MixerMap{
-					"m2": m2,
+					"m2": {
+						CV:   "new-mod",
+						Gain: 1,
+						Mod:  "new-mod",
+						In: map[string]float64{
+							"new-in": 1,
+						},
+					},
 				},
 				Noises: module.NoiseMap{
 					"n2": n2,
 				},
 				Oscillators: module.OscillatorMap{
-					"o2": o2,
+					"o2": {
+						Module: module.Module{},
+						Type:   "Sine",
+						Freq:   200,
+						CV:     "new-cv",
+						Mod:    "new-mod",
+						Phase:  0.5,
+					},
 				},
 				Pans: module.PanMap{
-					"p2": p2,
+					"p2": {
+						Pan: 1,
+						Mod: "new-mod",
+						In:  "new-in",
+					},
 				},
 				Samplers: module.SamplerMap{
-					"s2": s2,
+					"s2": {
+						In:      "new-in",
+						Trigger: "new-trigger",
+					},
 				},
 				Sequencers: module.SequencerMap{
-					"seq2": seq2,
+					"seq2": {
+						Sequence:  []string{"a_4"},
+						Trigger:   "new-trigger",
+						Pitch:     440,
+						Transpose: 1,
+						Randomize: true,
+					},
 				},
 				Wavetables: module.WavetableMap{
-					"w2": w2,
+					"w2": {
+						Freq:   300,
+						CV:     "new-cv",
+						Mod:    "new-mod",
+						Signal: []float64{1},
+					},
 				},
 				Time:         5,
 				VolumeMemory: 1,
@@ -234,23 +354,24 @@ func TestSynth_deleteOldModules(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.s.deleteOldModules(tt.new)
-			if diff := cmp.Diff(tt.want, tt.s, cmpopts.IgnoreUnexported(
-				Synth{},
-				module.Module{},
-				module.Envelope{},
-				module.Filter{},
-				module.Gate{},
-				module.Mixer{},
-				module.Noise{},
-				module.Oscillator{},
-				module.Pan{},
-				module.Sampler{},
-				module.Sequencer{},
-				module.Wavetable{},
-			),
+			tt.s.Update(tt.new)
+			if diff := cmp.Diff(tt.want, tt.s,
+				cmpopts.IgnoreUnexported(
+					module.Module{},
+					module.Envelope{},
+					module.Filter{},
+					module.Gate{},
+					module.Mixer{},
+					module.Noise{},
+					module.Oscillator{},
+					module.Pan{},
+					module.Sampler{},
+					module.Sequencer{},
+					module.Wavetable{},
+				),
+				cmp.AllowUnexported(Synth{}),
 			); diff != "" {
-				t.Errorf("Synth.deleteOldModules diff = %s", diff)
+				t.Errorf("Synth.Update() diff = %s", diff)
 			}
 		})
 	}

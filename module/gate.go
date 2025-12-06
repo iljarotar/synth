@@ -42,6 +42,17 @@ func (g *Gate) initialze(sampleRate float64) {
 	}
 }
 
+func (g *Gate) Update(new *Gate) {
+	if new == nil {
+		return
+	}
+
+	g.BPM = new.BPM
+	g.CV = new.CV
+	g.Mod = new.Mod
+	g.Signal = new.Signal
+}
+
 func (g *Gate) Step(modules ModuleMap) {
 	length := len(g.Signal)
 	val := g.Signal[int(math.Floor(g.idx))%length]
