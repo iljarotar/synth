@@ -26,25 +26,19 @@ type (
 	SequencerMap map[string]*Sequencer
 )
 
-func (m SequencerMap) Initialize(sequencers SequencerMap) error {
+func (m SequencerMap) Initialize() error {
 	for name, s := range m {
 		if s == nil {
 			continue
 		}
-
-		var sequencer *Sequencer
-		if seq, ok := sequencers[name]; ok {
-			sequencer = seq
-		}
-
-		if err := s.initialze(sequencer); err != nil {
+		if err := s.initialze(); err != nil {
 			return fmt.Errorf("failed to initialize sequencer %s: %w", name, err)
 		}
 	}
 	return nil
 }
 
-func (s *Sequencer) initialze(sequencer *Sequencer) error {
+func (s *Sequencer) initialze() error {
 	s.Pitch = calc.Limit(s.Pitch, pitchRange)
 	s.Transpose = calc.Limit(s.Transpose, transposeRange)
 	s.index = -1
@@ -52,13 +46,6 @@ func (s *Sequencer) initialze(sequencer *Sequencer) error {
 	err := s.makeSequence()
 	if err != nil {
 		return err
-	}
-
-	if sequencer != nil {
-		if sequencer.index < len(s.sequence) {
-			s.index = sequencer.index
-		}
-		s.triggerValue = sequencer.triggerValue
 	}
 
 	return nil

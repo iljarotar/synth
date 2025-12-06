@@ -20,22 +20,16 @@ type (
 	WavetableMap map[string]*Wavetable
 )
 
-func (m WavetableMap) Initialize(wavetables WavetableMap, sampleRate float64) {
-	for name, w := range m {
+func (m WavetableMap) Initialize(sampleRate float64) {
+	for _, w := range m {
 		if w == nil {
 			continue
 		}
-
-		var wavetable *Wavetable
-		if wt, ok := wavetables[name]; ok {
-			wavetable = wt
-		}
-
-		w.initialze(wavetable, sampleRate)
+		w.initialze(sampleRate)
 	}
 }
 
-func (w *Wavetable) initialze(wavetable *Wavetable, sampleRate float64) {
+func (w *Wavetable) initialze(sampleRate float64) {
 	w.sampleRate = sampleRate
 	w.Freq = calc.Limit(w.Freq, freqRange)
 
@@ -44,10 +38,6 @@ func (w *Wavetable) initialze(wavetable *Wavetable, sampleRate float64) {
 		signal = append(signal, calc.Limit(x, outputRange))
 	}
 	w.Signal = signal
-
-	if wavetable != nil {
-		w.idx = wavetable.idx
-	}
 }
 
 func (w *Wavetable) Step(modules ModuleMap) {

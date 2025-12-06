@@ -22,34 +22,21 @@ type (
 	EnvelopeMap map[string]*Envelope
 )
 
-func (m EnvelopeMap) Initialize(envelopes EnvelopeMap) {
-	for name, e := range m {
+func (m EnvelopeMap) Initialize() {
+	for _, e := range m {
 		if e == nil {
 			continue
 		}
-
-		var envelope *Envelope
-		if env, ok := envelopes[name]; ok {
-			envelope = env
-		}
-
-		e.initialize(envelope)
+		e.initialize()
 	}
 }
 
-func (e *Envelope) initialize(envelope *Envelope) {
+func (e *Envelope) initialize() {
 	e.Attack = calc.Limit(e.Attack, envelopeRange)
 	e.Decay = calc.Limit(e.Decay, envelopeRange)
 	e.Release = calc.Limit(e.Release, envelopeRange)
 	e.Peak = calc.Limit(e.Peak, gainRange)
 	e.Level = calc.Limit(e.Level, gainRange)
-
-	if envelope != nil {
-		e.triggeredAt = envelope.triggeredAt
-		e.releasedAt = envelope.releasedAt
-		e.gateValue = envelope.gateValue
-		e.level = envelope.level
-	}
 }
 
 func (e *Envelope) Step(t float64, modules ModuleMap) {

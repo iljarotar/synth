@@ -68,7 +68,7 @@ func (c *control) Stop(done chan<- bool, interrupt bool) {
 }
 
 func (c *control) LoadSynth(synth *synth.Synth) error {
-	err := synth.Initialize(c.synth, float64(c.config.SampleRate))
+	err := synth.Initialize(float64(c.config.SampleRate))
 	if err != nil {
 		return err
 	}

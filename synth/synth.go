@@ -1,6 +1,8 @@
 package synth
 
 import (
+	"slices"
+
 	"github.com/iljarotar/synth/calc"
 	"github.com/iljarotar/synth/log"
 	"github.com/iljarotar/synth/module"
@@ -50,7 +52,7 @@ type Synth struct {
 	wavetables  []*module.Wavetable
 }
 
-func (s *Synth) Initialize(synth *Synth, sampleRate float64) error {
+func (s *Synth) Initialize(sampleRate float64) error {
 	s.sampleRate = sampleRate
 	s.Volume = calc.Limit(s.Volume, calc.Range{
 		Min: 0,
@@ -61,41 +63,41 @@ func (s *Synth) Initialize(synth *Synth, sampleRate float64) error {
 	s.makeModulesMap()
 	s.flattenModules()
 
-	var (
-		envelopes   module.EnvelopeMap
-		filters     module.FilterMap
-		gates       module.GateMap
-		oscillators module.OscillatorMap
-		sequencers  module.SequencerMap
-		wavetables  module.WavetableMap
-	)
-
-	if synth != nil {
-		envelopes = synth.Envelopes
-		filters = synth.Filters
-		gates = synth.Gates
-		oscillators = synth.Oscillators
-		sequencers = synth.Sequencers
-		wavetables = synth.Wavetables
-	}
-
-	if err := s.Filters.Initialize(filters, sampleRate); err != nil {
+	if err := s.Filters.Initialize(sampleRate); err != nil {
 		return err
 	}
 	if err := s.Mixers.Initialize(sampleRate); err != nil {
 		return err
 	}
-	if err := s.Oscillators.Initialize(oscillators, sampleRate); err != nil {
+	if err := s.Oscillators.Initialize(sampleRate); err != nil {
 		return err
 	}
-	if err := s.Sequencers.Initialize(sequencers); err != nil {
+	if err := s.Sequencers.Initialize(); err != nil {
 		return err
 	}
 
-	s.Envelopes.Initialize(envelopes)
-	s.Gates.Initialze(gates, sampleRate)
+	s.Envelopes.Initialize()
+	s.Gates.Initialze(sampleRate)
 	s.Pans.Initialize()
-	s.Wavetables.Initialize(wavetables, sampleRate)
+	s.Wavetables.Initialize(sampleRate)
+
+	return nil
+}
+
+func (s *Synth) Update(from *Synth) error {
+	if from == nil {
+		return nil
+	}
+
+	if err := from.Initialize(s.sampleRate); err != nil {
+		return err
+	}
+
+	// - if new module just initialize and add
+	// - if existing updated call update func on module
+	// - re-fill module slices and replace old ones
+
+	s.deleteOldModules(from)
 
 	return nil
 }
@@ -305,4 +307,97 @@ func (s *Synth) flattenModules() {
 	s.samplers = lo.Values(s.Samplers)
 	s.sequencers = lo.Values(s.Sequencers)
 	s.wavetables = lo.Values(s.Wavetables)
+}
+
+func (s *Synth) deleteOldModules(new *Synth) {
+	for name, env := range s.Envelopes {
+		if _, ok := new.Envelopes[name]; !ok {
+			delete(s.Envelopes, name)
+			delete(s.modules, name)
+			s.envelopes = slices.DeleteFunc(s.envelopes, func(e *module.Envelope) bool {
+				return env == e
+			})
+		}
+	}
+	for name, filter := range s.Filters {
+		if _, ok := new.Filters[name]; !ok {
+			delete(s.Filters, name)
+			delete(s.modules, name)
+			s.filters = slices.DeleteFunc(s.filters, func(f *module.Filter) bool {
+				return filter == f
+			})
+		}
+	}
+	for name, gate := range s.Gates {
+		if _, ok := new.Gates[name]; !ok {
+			delete(s.Gates, name)
+			delete(s.modules, name)
+			s.gates = slices.DeleteFunc(s.gates, func(g *module.Gate) bool {
+				return gate == g
+			})
+		}
+	}
+	for name, mixer := range s.Mixers {
+		if _, ok := new.Mixers[name]; !ok {
+			delete(s.Mixers, name)
+			delete(s.modules, name)
+			s.mixers = slices.DeleteFunc(s.mixers, func(m *module.Mixer) bool {
+				return mixer == m
+			})
+		}
+	}
+	for name, noise := range s.Noises {
+		if _, ok := new.Noises[name]; !ok {
+			delete(s.Noises, name)
+			delete(s.modules, name)
+			s.noises = slices.DeleteFunc(s.noises, func(n *module.Noise) bool {
+				return noise == n
+			})
+		}
+	}
+	for name, osc := range s.Oscillators {
+		if _, ok := new.Oscillators[name]; !ok {
+			delete(s.Oscillators, name)
+			delete(s.modules, name)
+			s.oscillators = slices.DeleteFunc(s.oscillators, func(o *module.Oscillator) bool {
+				return osc == o
+			})
+		}
+	}
+	for name, pan := range s.Pans {
+		if _, ok := new.Pans[name]; !ok {
+			delete(s.Pans, name)
+			delete(s.modules, name)
+			s.pans = slices.DeleteFunc(s.pans, func(p *module.Pan) bool {
+				return pan == p
+			})
+		}
+	}
+	for name, sampler := range s.Samplers {
+		if _, ok := new.Samplers[name]; !ok {
+			delete(s.Samplers, name)
+			delete(s.modules, name)
+			s.samplers = slices.DeleteFunc(s.samplers, func(smplr *module.Sampler) bool {
+				return sampler == smplr
+			})
+		}
+	}
+	for name, seq := range s.Sequencers {
+		if _, ok := new.Sequencers[name]; !ok {
+			delete(s.Sequencers, name)
+			delete(s.modules, name)
+			s.sequencers = slices.DeleteFunc(s.sequencers, func(sq *module.Sequencer) bool {
+				return seq == sq
+			})
+		}
+	}
+	for name, wt := range s.Wavetables {
+		if _, ok := new.Wavetables[name]; !ok {
+			delete(s.Wavetables, name)
+			delete(s.modules, name)
+			s.wavetables = slices.DeleteFunc(s.wavetables, func(w *module.Wavetable) bool {
+				return wt == w
+			})
+		}
+	}
 }

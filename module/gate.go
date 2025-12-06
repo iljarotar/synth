@@ -20,22 +20,16 @@ type (
 	GateMap map[string]*Gate
 )
 
-func (m GateMap) Initialze(gates GateMap, sampleRate float64) {
-	for name, g := range m {
+func (m GateMap) Initialze(sampleRate float64) {
+	for _, g := range m {
 		if g == nil {
 			continue
 		}
-
-		var gate *Gate
-		if gt, ok := gates[name]; ok {
-			gate = gt
-		}
-
-		g.initialze(gate, sampleRate)
+		g.initialze(sampleRate)
 	}
 }
 
-func (g *Gate) initialze(gate *Gate, sampleRate float64) {
+func (g *Gate) initialze(sampleRate float64) {
 	g.sampleRate = sampleRate
 	g.BPM = calc.Limit(g.BPM, bpmRange)
 
@@ -45,10 +39,6 @@ func (g *Gate) initialze(gate *Gate, sampleRate float64) {
 		} else {
 			g.Signal[i] = 1
 		}
-	}
-
-	if gate != nil {
-		g.idx = gate.idx
 	}
 }
 
