@@ -208,6 +208,7 @@ sequencers:
     # a seqeunce of notes in scientific pitch notation
     # flats are denoted by `b`, sharps by `#`
     # a note is separated from its octave by an underscore
+    # minimum octave is 0, maximum is 10
     sequence: ["a_4", "eb_3", "c#_5"]
 
     # when the trigger's value changes from negative or zero to postive the next note in the sequence is triggered
