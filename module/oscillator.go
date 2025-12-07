@@ -10,11 +10,15 @@ import (
 type (
 	Oscillator struct {
 		Module
-		Type       oscillatorType `yaml:"type"`
-		Freq       float64        `yaml:"freq"`
-		CV         string         `yaml:"cv"`
-		Mod        string         `yaml:"mod"`
-		Phase      float64        `yaml:"phase"`
+		Type  oscillatorType `yaml:"type"`
+		Freq  float64        `yaml:"freq"`
+		CV    string         `yaml:"cv"`
+		Mod   string         `yaml:"mod"`
+		Phase float64        `yaml:"phase"`
+		Fade  float64        `yaml:"fade"`
+
+		freqFader *fader
+		// TODO: add a phaseFader?
 		signal     SignalFunc
 		sampleRate float64
 		arg        float64
@@ -47,6 +51,13 @@ func (m OscillatorMap) Initialize(sampleRate float64) error {
 func (o *Oscillator) initialize(sampleRate float64) error {
 	o.sampleRate = sampleRate
 	o.Freq = calc.Limit(o.Freq, freqRange)
+	o.Fade = calc.Limit(o.Fade, fadeRange)
+
+	o.freqFader = &fader{
+		current: o.Freq,
+		target:  o.Freq,
+	}
+	o.freqFader.initialize(o.Fade, sampleRate)
 
 	signal, err := newSignalFunc(o.Type)
 	if err != nil {
@@ -63,11 +74,14 @@ func (o *Oscillator) Update(new *Oscillator) {
 	}
 
 	o.Type = new.Type
-	o.Freq = new.Freq
 	o.CV = new.CV
 	o.Mod = new.Mod
 	o.Phase = new.Phase
+	o.Fade = new.Fade
 	o.signal = new.signal
+
+	o.freqFader.target = new.Freq
+	o.freqFader.initialize(o.Fade, o.sampleRate)
 }
 
 func (o *Oscillator) Step(modules ModuleMap) {
@@ -88,4 +102,5 @@ func (o *Oscillator) Step(modules ModuleMap) {
 	}
 
 	o.arg += twoPi * freq * mod / o.sampleRate
+	o.Freq = o.freqFader.fade()
 }

@@ -3,5 +3,6 @@ out: sine
 
 oscillators:
   sine:
+    fade: 1
     type: Sine
     freq: 440

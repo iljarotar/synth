@@ -7,12 +7,20 @@ import (
 type (
 	Envelope struct {
 		Module
-		Attack      float64 `yaml:"attack"`
-		Decay       float64 `yaml:"decay"`
-		Release     float64 `yaml:"release"`
-		Peak        float64 `yaml:"peak"`
-		Level       float64 `yaml:"level"`
-		Gate        string  `yaml:"gate"`
+		Attack  float64 `yaml:"attack"`
+		Decay   float64 `yaml:"decay"`
+		Release float64 `yaml:"release"`
+		Peak    float64 `yaml:"peak"`
+		Level   float64 `yaml:"level"`
+		Gate    string  `yaml:"gate"`
+		Fade    float64 `yaml:"fade"`
+
+		targetAttack  float64
+		targetDecay   float64
+		targetRelease float64
+		targetPeak    float64
+		targetLevel   float64
+
 		triggeredAt float64
 		releasedAt  float64
 		gateValue   float64
@@ -37,6 +45,7 @@ func (e *Envelope) initialize() {
 	e.Release = calc.Limit(e.Release, envelopeRange)
 	e.Peak = calc.Limit(e.Peak, gainRange)
 	e.Level = calc.Limit(e.Level, gainRange)
+	e.Fade = calc.Limit(e.Fade, fadeRange)
 }
 
 func (e *Envelope) Update(new *Envelope) {
