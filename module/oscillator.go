@@ -17,8 +17,8 @@ type (
 		Phase float64        `yaml:"phase"`
 		Fade  float64        `yaml:"fade"`
 
-		freqFader *fader
-		// TODO: add a phaseFader?
+		freqFader  *fader
+		phaseFader *fader
 		signal     SignalFunc
 		sampleRate float64
 		arg        float64
@@ -59,6 +59,12 @@ func (o *Oscillator) initialize(sampleRate float64) error {
 	}
 	o.freqFader.initialize(o.Fade, sampleRate)
 
+	o.phaseFader = &fader{
+		current: o.Phase,
+		target:  o.Phase,
+	}
+	o.phaseFader.initialize(o.Fade, sampleRate)
+
 	signal, err := newSignalFunc(o.Type)
 	if err != nil {
 		return err
@@ -76,12 +82,13 @@ func (o *Oscillator) Update(new *Oscillator) {
 	o.Type = new.Type
 	o.CV = new.CV
 	o.Mod = new.Mod
-	o.Phase = new.Phase
 	o.Fade = new.Fade
 	o.signal = new.signal
 
 	o.freqFader.target = new.Freq
 	o.freqFader.initialize(o.Fade, o.sampleRate)
+	o.phaseFader.target = new.Phase
+	o.phaseFader.initialize(o.Fade, o.sampleRate)
 }
 
 func (o *Oscillator) Step(modules ModuleMap) {
@@ -103,4 +110,5 @@ func (o *Oscillator) Step(modules ModuleMap) {
 
 	o.arg += twoPi * freq * mod / o.sampleRate
 	o.Freq = o.freqFader.fade()
+	o.Phase = o.phaseFader.fade()
 }
