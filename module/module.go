@@ -19,6 +19,22 @@ type (
 )
 
 var (
+	bpmRange = calc.Range{
+		Min: 0,
+		Max: 2000,
+	}
+	envelopeRange = calc.Range{
+		Min: 1e-15,
+		Max: 3600,
+	}
+	fadeRange = calc.Range{
+		Min: 0,
+		Max: 3600,
+	}
+	freqRange = calc.Range{
+		Min: 0,
+		Max: 20000,
+	}
 	gainRange = calc.Range{
 		Min: 0,
 		Max: 1,
@@ -27,21 +43,9 @@ var (
 		Min: -1,
 		Max: 1,
 	}
-	freqRange = calc.Range{
-		Min: 0,
-		Max: 20000,
-	}
 	panRange = calc.Range{
 		Min: -1,
 		Max: 1,
-	}
-	bpmRange = calc.Range{
-		Min: 0,
-		Max: 2000,
-	}
-	envelopeRange = calc.Range{
-		Min: 1e-15,
-		Max: 3600,
 	}
 	pitchRange = calc.Range{
 		Min: 400,
