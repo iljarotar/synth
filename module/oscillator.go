@@ -17,11 +17,12 @@ type (
 		Phase float64        `yaml:"phase"`
 		Fade  float64        `yaml:"fade"`
 
-		freqFader  *fader
-		phaseFader *fader
 		signal     SignalFunc
 		sampleRate float64
 		arg        float64
+
+		freqFader  *fader
+		phaseFader *fader
 	}
 
 	OscillatorMap  map[string]*Oscillator
@@ -57,13 +58,11 @@ func (o *Oscillator) initialize(sampleRate float64) error {
 		current: o.Freq,
 		target:  o.Freq,
 	}
-	o.freqFader.initialize(o.Fade, sampleRate)
-
 	o.phaseFader = &fader{
 		current: o.Phase,
 		target:  o.Phase,
 	}
-	o.phaseFader.initialize(o.Fade, sampleRate)
+	o.initializeFaders()
 
 	signal, err := newSignalFunc(o.Type)
 	if err != nil {
@@ -86,9 +85,8 @@ func (o *Oscillator) Update(new *Oscillator) {
 	o.signal = new.signal
 
 	o.freqFader.target = new.Freq
-	o.freqFader.initialize(o.Fade, o.sampleRate)
 	o.phaseFader.target = new.Phase
-	o.phaseFader.initialize(o.Fade, o.sampleRate)
+	o.initializeFaders()
 }
 
 func (o *Oscillator) Step(modules ModuleMap) {
@@ -111,4 +109,9 @@ func (o *Oscillator) Step(modules ModuleMap) {
 	o.arg += twoPi * freq * mod / o.sampleRate
 	o.Freq = o.freqFader.fade()
 	o.Phase = o.phaseFader.fade()
+}
+
+func (o *Oscillator) initializeFaders() {
+	o.freqFader.initialize(o.Fade, o.sampleRate)
+	o.phaseFader.initialize(o.Fade, o.sampleRate)
 }

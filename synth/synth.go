@@ -76,7 +76,7 @@ func (s *Synth) Initialize(sampleRate float64) error {
 		return err
 	}
 
-	s.Envelopes.Initialize()
+	s.Envelopes.Initialize(sampleRate)
 	s.Gates.Initialze(sampleRate)
 	s.Pans.Initialize()
 	s.Wavetables.Initialize(sampleRate)
