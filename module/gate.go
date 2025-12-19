@@ -9,12 +9,16 @@ import (
 type (
 	Gate struct {
 		Module
-		BPM        float64   `yaml:"bpm"`
-		CV         string    `yaml:"cv"`
-		Mod        string    `yaml:"mod"`
-		Signal     []float64 `yaml:"signal"`
+		BPM    float64   `yaml:"bpm"`
+		CV     string    `yaml:"cv"`
+		Mod    string    `yaml:"mod"`
+		Signal []float64 `yaml:"signal"`
+		Fade   float64   `yaml:"fade"`
+
 		sampleRate float64
 		idx        float64
+
+		bpmFader *fader
 	}
 
 	GateMap map[string]*Gate
@@ -32,6 +36,13 @@ func (m GateMap) Initialze(sampleRate float64) {
 func (g *Gate) initialze(sampleRate float64) {
 	g.sampleRate = sampleRate
 	g.BPM = calc.Limit(g.BPM, bpmRange)
+	g.Fade = calc.Limit(g.Fade, fadeRange)
+
+	g.bpmFader = &fader{
+		current: g.BPM,
+		target:  g.BPM,
+	}
+	g.bpmFader.initialize(g.Fade, g.sampleRate)
 
 	for i, val := range g.Signal {
 		if val <= 0 {
@@ -47,10 +58,15 @@ func (g *Gate) Update(new *Gate) {
 		return
 	}
 
-	g.BPM = new.BPM
 	g.CV = new.CV
 	g.Mod = new.Mod
 	g.Signal = new.Signal
+	g.Fade = new.Fade
+
+	if g.bpmFader != nil {
+		g.bpmFader.target = new.BPM
+		g.bpmFader.initialize(g.Fade, g.sampleRate)
+	}
 }
 
 func (g *Gate) Step(modules ModuleMap) {
@@ -74,6 +90,10 @@ func (g *Gate) Step(modules ModuleMap) {
 	}
 
 	g.idx += 1 / spb
+
+	if g.bpmFader != nil {
+		g.BPM = g.bpmFader.fade()
+	}
 }
 
 func samplesPerBeat(sampleRate, bpm float64) float64 {

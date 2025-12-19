@@ -80,11 +80,21 @@ func (e *Envelope) Update(new *Envelope) {
 	e.Gate = new.Gate
 	e.Fade = new.Fade
 
-	e.attackFader.target = new.Attack
-	e.decayFader.target = new.Decay
-	e.releaseFader.target = new.Release
-	e.peakFader.target = new.Peak
-	e.levelFader.target = new.Level
+	if e.attackFader != nil {
+		e.attackFader.target = new.Attack
+	}
+	if e.decayFader != nil {
+		e.decayFader.target = new.Decay
+	}
+	if e.releaseFader != nil {
+		e.releaseFader.target = new.Release
+	}
+	if e.peakFader != nil {
+		e.peakFader.target = new.Peak
+	}
+	if e.levelFader != nil {
+		e.levelFader.target = new.Level
+	}
 	e.initializeFaders()
 }
 
@@ -110,19 +120,39 @@ func (e *Envelope) Step(t float64, modules ModuleMap) {
 
 	e.gateValue = gateValue
 
-	e.Attack = e.attackFader.fade()
-	e.Decay = e.decayFader.fade()
-	e.Release = e.releaseFader.fade()
-	e.Peak = e.peakFader.fade()
-	e.Level = e.levelFader.fade()
+	if e.attackFader != nil {
+		e.Attack = e.attackFader.fade()
+	}
+	if e.decayFader != nil {
+		e.Decay = e.decayFader.fade()
+	}
+	if e.releaseFader != nil {
+		e.Release = e.releaseFader.fade()
+	}
+	if e.peakFader != nil {
+		e.Peak = e.peakFader.fade()
+	}
+	if e.levelFader != nil {
+		e.Level = e.levelFader.fade()
+	}
 }
 
 func (e *Envelope) initializeFaders() {
-	e.attackFader.initialize(e.Fade, e.sampleRate)
-	e.decayFader.initialize(e.Fade, e.sampleRate)
-	e.releaseFader.initialize(e.Fade, e.sampleRate)
-	e.peakFader.initialize(e.Peak, e.sampleRate)
-	e.levelFader.initialize(e.Fade, e.sampleRate)
+	if e.attackFader != nil {
+		e.attackFader.initialize(e.Fade, e.sampleRate)
+	}
+	if e.decayFader != nil {
+		e.decayFader.initialize(e.Fade, e.sampleRate)
+	}
+	if e.releaseFader != nil {
+		e.releaseFader.initialize(e.Fade, e.sampleRate)
+	}
+	if e.peakFader != nil {
+		e.peakFader.initialize(e.Peak, e.sampleRate)
+	}
+	if e.levelFader != nil {
+		e.levelFader.initialize(e.Fade, e.sampleRate)
+	}
 }
 
 func (e *Envelope) getValue(t float64) float64 {

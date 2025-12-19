@@ -101,8 +101,12 @@ func (f *Filter) Update(new *Filter) {
 	f.b1 = new.b1
 	f.b2 = new.b2
 
-	f.freqFader.target = new.Freq
-	f.widthFader.target = new.Width
+	if f.freqFader != nil {
+		f.freqFader.target = new.Freq
+	}
+	if f.widthFader != nil {
+		f.widthFader.target = new.Width
+	}
 	f.initializeFaders()
 }
 
@@ -123,8 +127,12 @@ func (f *Filter) Step(modules ModuleMap) {
 		Right: y / 2,
 	}
 
-	f.Freq = f.freqFader.fade()
-	f.Width = f.widthFader.fade()
+	if f.freqFader != nil {
+		f.Freq = f.freqFader.fade()
+	}
+	if f.widthFader != nil {
+		f.Width = f.widthFader.fade()
+	}
 }
 
 func (f *Filter) tap(x, freq float64) float64 {
@@ -207,8 +215,12 @@ func (f *Filter) calculateBandPassCoeffs(freq, width float64) {
 }
 
 func (f *Filter) initializeFaders() {
-	f.freqFader.initialize(f.Fade, f.sampleRate)
-	f.widthFader.initialize(f.Fade, f.sampleRate)
+	if f.freqFader != nil {
+		f.freqFader.initialize(f.Fade, f.sampleRate)
+	}
+	if f.widthFader != nil {
+		f.widthFader.initialize(f.Fade, f.sampleRate)
+	}
 }
 
 func getOmega(freq float64, sampleRate float64) float64 {

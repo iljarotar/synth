@@ -84,8 +84,12 @@ func (o *Oscillator) Update(new *Oscillator) {
 	o.Fade = new.Fade
 	o.signal = new.signal
 
-	o.freqFader.target = new.Freq
-	o.phaseFader.target = new.Phase
+	if o.freqFader != nil {
+		o.freqFader.target = new.Freq
+	}
+	if o.phaseFader != nil {
+		o.phaseFader.target = new.Phase
+	}
 	o.initializeFaders()
 }
 
@@ -107,11 +111,19 @@ func (o *Oscillator) Step(modules ModuleMap) {
 	}
 
 	o.arg += twoPi * freq * mod / o.sampleRate
-	o.Freq = o.freqFader.fade()
-	o.Phase = o.phaseFader.fade()
+	if o.freqFader != nil {
+		o.Freq = o.freqFader.fade()
+	}
+	if o.phaseFader != nil {
+		o.Phase = o.phaseFader.fade()
+	}
 }
 
 func (o *Oscillator) initializeFaders() {
-	o.freqFader.initialize(o.Fade, o.sampleRate)
-	o.phaseFader.initialize(o.Fade, o.sampleRate)
+	if o.freqFader != nil {
+		o.freqFader.initialize(o.Fade, o.sampleRate)
+	}
+	if o.phaseFader != nil {
+		o.phaseFader.initialize(o.Fade, o.sampleRate)
+	}
 }
