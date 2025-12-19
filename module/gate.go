@@ -42,7 +42,7 @@ func (g *Gate) initialze(sampleRate float64) {
 		current: g.BPM,
 		target:  g.BPM,
 	}
-	g.bpmFader.initialize(g.Fade, g.sampleRate)
+	g.bpmFader.initialize(g.Fade, sampleRate)
 
 	for i, val := range g.Signal {
 		if val <= 0 {
