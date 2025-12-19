@@ -4,6 +4,7 @@ out: lp
 filters:
   lp:
     type: BandPass
+    fade: 1
     freq: 800
     width: 20
     in: noise

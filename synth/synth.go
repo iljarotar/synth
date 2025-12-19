@@ -76,7 +76,7 @@ func (s *Synth) Initialize(sampleRate float64) error {
 		return err
 	}
 
-	s.Envelopes.Initialize()
+	s.Envelopes.Initialize(sampleRate)
 	s.Gates.Initialze(sampleRate)
 	s.Pans.Initialize()
 	s.Wavetables.Initialize(sampleRate)
@@ -221,12 +221,10 @@ func (s *Synth) step() {
 }
 
 func secondsToStep(seconds, delta, sampleRate float64) float64 {
-	if seconds == 0 {
+	if sampleRate == 0 || seconds == 0 {
 		return delta
 	}
-	steps := seconds * sampleRate
-	step := delta / steps
-	return step
+	return delta / (seconds * sampleRate)
 }
 
 func (s *Synth) makeModulesMap() {
