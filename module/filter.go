@@ -10,15 +10,20 @@ import (
 type (
 	Filter struct {
 		Module
-		Type                   filterType `yaml:"type"`
-		Freq                   float64    `yaml:"freq"`
-		Width                  float64    `yaml:"width"`
-		CV                     string     `yaml:"cv"`
-		Mod                    string     `yaml:"mod"`
-		In                     string     `yaml:"in"`
+		Type  filterType `yaml:"type"`
+		Freq  float64    `yaml:"freq"`
+		Width float64    `yaml:"width"`
+		CV    string     `yaml:"cv"`
+		Mod   string     `yaml:"mod"`
+		In    string     `yaml:"in"`
+		Fade  float64    `yaml:"fade"`
+
 		sampleRate             float64
 		a0, a1, a2, b0, b1, b2 float64
 		inputs                 filterInputs
+
+		freqFader  *fader
+		widthFader *fader
 	}
 
 	FilterMap  map[string]*Filter
@@ -58,8 +63,21 @@ func (f *Filter) initialize(sampleRate float64) error {
 	if err := validateFilterType(f.Type); err != nil {
 		return err
 	}
+
 	f.sampleRate = sampleRate
 	f.Freq = calc.Limit(f.Freq, freqRange)
+	f.Fade = calc.Limit(f.Fade, fadeRange)
+
+	f.freqFader = &fader{
+		current: f.Freq,
+		target:  f.Freq,
+	}
+	f.widthFader = &fader{
+		current: f.Width,
+		target:  f.Width,
+	}
+	f.initializeFaders()
+
 	f.calculateCoeffs(f.Freq)
 
 	return nil
@@ -71,11 +89,10 @@ func (f *Filter) Update(new *Filter) {
 	}
 
 	f.Type = new.Type
-	f.Freq = new.Freq
-	f.Width = new.Width
 	f.CV = new.CV
 	f.Mod = new.Mod
 	f.In = new.In
+	f.Fade = new.Fade
 
 	f.a0 = new.a0
 	f.a1 = new.a1
@@ -83,6 +100,10 @@ func (f *Filter) Update(new *Filter) {
 	f.b0 = new.b0
 	f.b1 = new.b1
 	f.b2 = new.b2
+
+	f.freqFader.target = new.Freq
+	f.widthFader.target = new.Width
+	f.initializeFaders()
 }
 
 func (f *Filter) Step(modules ModuleMap) {
@@ -101,6 +122,9 @@ func (f *Filter) Step(modules ModuleMap) {
 		Left:  y / 2,
 		Right: y / 2,
 	}
+
+	f.Freq = f.freqFader.fade()
+	f.Width = f.widthFader.fade()
 }
 
 func (f *Filter) tap(x, freq float64) float64 {
@@ -180,6 +204,11 @@ func (f *Filter) calculateBandPassCoeffs(freq, width float64) {
 	f.a0 = 1 + alpha
 	f.a1 = -2 * math.Cos(omega)
 	f.a2 = 1 - alpha
+}
+
+func (f *Filter) initializeFaders() {
+	f.freqFader.initialize(f.Fade, f.sampleRate)
+	f.widthFader.initialize(f.Fade, f.sampleRate)
 }
 
 func getOmega(freq float64, sampleRate float64) float64 {
