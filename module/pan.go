@@ -5,25 +5,38 @@ import "github.com/iljarotar/synth/calc"
 type (
 	Pan struct {
 		Module
-		Pan float64 `yaml:"pan"`
-		Mod string  `yaml:"mod"`
-		In  string  `yaml:"in"`
+		Pan  float64 `yaml:"pan"`
+		Mod  string  `yaml:"mod"`
+		In   string  `yaml:"in"`
+		Fade float64 `yaml:"fade"`
+
+		sampleRate float64
+
+		panFader *fader
 	}
 
 	PanMap map[string]*Pan
 )
 
-func (m PanMap) Initialize() {
+func (m PanMap) Initialize(sampleRate float64) {
 	for _, p := range m {
 		if p == nil {
 			continue
 		}
-		p.initialize()
+		p.initialize(sampleRate)
 	}
 }
 
-func (p *Pan) initialize() {
+func (p *Pan) initialize(sampleRate float64) {
+	p.sampleRate = sampleRate
 	p.Pan = calc.Limit(p.Pan, panRange)
+	p.Fade = calc.Limit(p.Fade, fadeRange)
+
+	p.panFader = &fader{
+		current: p.Pan,
+		target:  p.Pan,
+	}
+	p.panFader.initialize(p.Fade, sampleRate)
 }
 
 func (p *Pan) Update(new *Pan) {
@@ -31,9 +44,14 @@ func (p *Pan) Update(new *Pan) {
 		return
 	}
 
-	p.Pan = new.Pan
 	p.Mod = new.Mod
 	p.In = new.In
+	p.Fade = new.Fade
+
+	if p.panFader != nil {
+		p.panFader.target = new.Pan
+		p.panFader.initialize(p.Fade, p.sampleRate)
+	}
 }
 
 func (p *Pan) Step(modules ModuleMap) {
@@ -45,5 +63,9 @@ func (p *Pan) Step(modules ModuleMap) {
 		Mono:  in,
 		Right: in * percent,
 		Left:  in * (1 - percent),
+	}
+
+	if p.panFader != nil {
+		p.Pan = p.panFader.fade()
 	}
 }

@@ -1,3 +1,5 @@
+<!-- TODO: don't forget to add new `fade` field-->
+
 # Synth
 
 A modular synthesizer for the command line written in [golang](https://go.dev/).

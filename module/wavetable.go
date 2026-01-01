@@ -9,12 +9,16 @@ import (
 type (
 	Wavetable struct {
 		Module
-		Freq       float64   `yaml:"freq"`
-		CV         string    `yaml:"cv"`
-		Mod        string    `yaml:"mod"`
-		Signal     []float64 `yaml:"signal"`
+		Freq   float64   `yaml:"freq"`
+		CV     string    `yaml:"cv"`
+		Mod    string    `yaml:"mod"`
+		Signal []float64 `yaml:"signal"`
+		Fade   float64   `yaml:"fade"`
+
 		sampleRate float64
 		idx        float64
+
+		freqFader *fader
 	}
 
 	WavetableMap map[string]*Wavetable
@@ -32,6 +36,13 @@ func (m WavetableMap) Initialize(sampleRate float64) {
 func (w *Wavetable) initialze(sampleRate float64) {
 	w.sampleRate = sampleRate
 	w.Freq = calc.Limit(w.Freq, freqRange)
+	w.Fade = calc.Limit(w.Fade, fadeRange)
+
+	w.freqFader = &fader{
+		current: w.Freq,
+		target:  w.Freq,
+	}
+	w.freqFader.initialize(w.Fade, sampleRate)
 
 	var signal []float64
 	for _, x := range w.Signal {
@@ -45,10 +56,15 @@ func (w *Wavetable) Update(new *Wavetable) {
 		return
 	}
 
-	w.Freq = new.Freq
 	w.CV = new.CV
 	w.Mod = new.Mod
 	w.Signal = new.Signal
+	w.Fade = new.Fade
+
+	if w.freqFader != nil {
+		w.freqFader.target = new.Freq
+		w.freqFader.initialize(w.Fade, w.sampleRate)
+	}
 }
 
 func (w *Wavetable) Step(modules ModuleMap) {
@@ -67,4 +83,8 @@ func (w *Wavetable) Step(modules ModuleMap) {
 
 	mod := math.Pow(2, getMono(modules[w.Mod]))
 	w.idx += freq * mod * float64(length) / w.sampleRate
+
+	if w.freqFader != nil {
+		w.Freq = w.freqFader.fade()
+	}
 }

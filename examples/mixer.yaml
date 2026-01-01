@@ -3,6 +3,7 @@ out: main
 
 mixers:
   main:
+    fade: 3
     gain: 1
     in:
       sine1: 0.25
