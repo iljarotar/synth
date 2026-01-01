@@ -134,6 +134,13 @@ func (m *Mixer) updateGains(new *Mixer) {
 		m.gainFader.target = new.Gain
 	}
 
+	if m.inputFaders == nil {
+		m.inputFaders = map[string]*fader{}
+	}
+	if m.In == nil {
+		m.In = map[string]float64{}
+	}
+
 	for mod, gain := range new.In {
 		f, ok := m.inputFaders[mod]
 

@@ -244,39 +244,30 @@ func TestSynth_Update(t *testing.T) {
 				Volume: 0.5,
 				Envelopes: module.EnvelopeMap{
 					"env2": {
-						Gate:    "new-gate",
-						Attack:  1,
-						Decay:   1,
-						Release: 1,
-						Peak:    1,
-						Level:   1,
+						Gate: "new-gate",
 					},
 				},
 				Filters: module.FilterMap{
 					"f2": {
-						In:    "new-in",
-						Type:  "BandPass",
-						Freq:  200,
-						Width: 10,
-						CV:    "new-cv",
-						Mod:   "new-mod",
+						In:   "new-in",
+						Type: "BandPass",
+						CV:   "new-cv",
+						Mod:  "new-mod",
 					},
 				},
 				Gates: module.GateMap{
 					"g2": {
 						CV:     "new-cv",
-						BPM:    20,
 						Mod:    "new-mod",
 						Signal: []float64{1},
 					},
 				},
 				Mixers: module.MixerMap{
 					"m2": {
-						CV:   "new-mod",
-						Gain: 1,
-						Mod:  "new-mod",
+						CV:  "new-mod",
+						Mod: "new-mod",
 						In: map[string]float64{
-							"new-in": 1,
+							"new-in": 0,
 						},
 					},
 				},
@@ -287,15 +278,12 @@ func TestSynth_Update(t *testing.T) {
 					"o2": {
 						Module: module.Module{},
 						Type:   "Sine",
-						Freq:   200,
 						CV:     "new-cv",
 						Mod:    "new-mod",
-						Phase:  0.5,
 					},
 				},
 				Pans: module.PanMap{
 					"p2": {
-						Pan: 1,
 						Mod: "new-mod",
 						In:  "new-in",
 					},
@@ -317,7 +305,6 @@ func TestSynth_Update(t *testing.T) {
 				},
 				Wavetables: module.WavetableMap{
 					"w2": {
-						Freq:   300,
 						CV:     "new-cv",
 						Mod:    "new-mod",
 						Signal: []float64{1},
