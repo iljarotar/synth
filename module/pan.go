@@ -65,6 +65,10 @@ func (p *Pan) Step(modules ModuleMap) {
 		Left:  in * (1 - percent),
 	}
 
+	p.fade()
+}
+
+func (p *Pan) fade() {
 	if p.panFader != nil {
 		p.Pan = p.panFader.fade()
 	}
