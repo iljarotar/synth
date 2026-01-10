@@ -90,7 +90,10 @@ func (g *Gate) Step(modules ModuleMap) {
 	}
 
 	g.idx += 1 / spb
+	g.fade()
+}
 
+func (g *Gate) fade() {
 	if g.bpmFader != nil {
 		g.BPM = g.bpmFader.fade()
 	}

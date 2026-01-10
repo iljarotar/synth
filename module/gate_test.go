@@ -153,3 +153,167 @@ func Test_samplesPerBeat(t *testing.T) {
 		})
 	}
 }
+
+func TestGate_Update(t *testing.T) {
+	sampleRate := 44100.0
+
+	tests := []struct {
+		name string
+		g    *Gate
+		new  *Gate
+		want *Gate
+	}{
+		{
+			name: "no update necessary",
+			g: &Gate{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				BPM:        50,
+				CV:         "cv",
+				Mod:        "mod",
+				Signal:     []float64{1, 0},
+				Fade:       1,
+				sampleRate: sampleRate,
+				idx:        1,
+				bpmFader: &fader{
+					current: 50,
+					target:  50,
+					step:    1,
+				},
+			},
+			new: nil,
+			want: &Gate{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				BPM:        50,
+				CV:         "cv",
+				Mod:        "mod",
+				Signal:     []float64{1, 0},
+				Fade:       1,
+				sampleRate: sampleRate,
+				idx:        1,
+				bpmFader: &fader{
+					current: 50,
+					target:  50,
+					step:    1,
+				},
+			},
+		},
+		{
+			name: "update all",
+			g: &Gate{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				BPM:        50,
+				CV:         "cv",
+				Mod:        "mod",
+				Signal:     []float64{1, 0},
+				Fade:       1,
+				sampleRate: sampleRate,
+				idx:        1,
+				bpmFader: &fader{
+					current: 50,
+					target:  50,
+					step:    1,
+				},
+			},
+			new: &Gate{
+				BPM:    100,
+				CV:     "new-cv",
+				Mod:    "new-mod",
+				Signal: []float64{0, 1, 0, 1},
+				Fade:   2,
+			},
+			want: &Gate{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				BPM:        50,
+				CV:         "new-cv",
+				Mod:        "new-mod",
+				Signal:     []float64{0, 1, 0, 1},
+				Fade:       2,
+				sampleRate: sampleRate,
+				idx:        1,
+				bpmFader: &fader{
+					current: 50,
+					target:  100,
+					step:    25 / sampleRate,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.g.Update(tt.new)
+			if diff := cmp.Diff(tt.want, tt.g, cmp.AllowUnexported(Module{}, Gate{}, fader{})); diff != "" {
+				t.Errorf("Gate.Update() diff = %s", diff)
+			}
+		})
+	}
+}
+
+func TestGate_fade(t *testing.T) {
+	tests := []struct {
+		name string
+		g    *Gate
+		want *Gate
+	}{
+		{
+			name: "no fade necessary",
+			g: &Gate{
+				BPM: 50,
+				bpmFader: &fader{
+					current: 50,
+					target:  50,
+					step:    1,
+				},
+			},
+			want: &Gate{
+				BPM: 50,
+				bpmFader: &fader{
+					current: 50,
+					target:  50,
+				},
+			},
+		},
+		{
+			name: "fade",
+			g: &Gate{
+				BPM: 50,
+				bpmFader: &fader{
+					current: 50,
+					target:  100,
+					step:    1,
+				},
+			},
+			want: &Gate{
+				BPM: 51,
+				bpmFader: &fader{
+					current: 51,
+					target:  100,
+					step:    1,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.g.fade()
+			if diff := cmp.Diff(tt.want, tt.g, cmp.AllowUnexported(Module{}, Gate{}, fader{})); diff != "" {
+				t.Errorf("Gate.fade() diff = %s", diff)
+			}
+		})
+	}
+}
