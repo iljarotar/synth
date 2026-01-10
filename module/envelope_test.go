@@ -567,27 +567,27 @@ func TestEnvelope_fade(t *testing.T) {
 				attackFader: &fader{
 					current: 1,
 					target:  1,
-					step:    0.5, // step must be ignored when target is reached
+					step:    0.5,
 				},
 				decayFader: &fader{
 					current: 1,
 					target:  1,
-					step:    0.5, // step must be ignored when target is reached
+					step:    0.5,
 				},
 				releaseFader: &fader{
 					current: 1,
 					target:  1,
-					step:    0.5, // step must be ignored when target is reached
+					step:    0.5,
 				},
 				peakFader: &fader{
 					current: 1,
 					target:  1,
-					step:    0.5, // step must be ignored when target is reached
+					step:    0.5,
 				},
 				levelFader: &fader{
 					current: 1,
 					target:  1,
-					step:    0.5, // step must be ignored when target is reached
+					step:    0.5,
 				},
 			},
 			want: &Envelope{

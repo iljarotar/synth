@@ -122,6 +122,36 @@ func (e *Envelope) Step(t float64, modules ModuleMap) {
 	e.fade()
 }
 
+func (e *Envelope) getValue(t float64) float64 {
+	if e.releasedAt >= e.triggeredAt {
+		if t-e.releasedAt > e.Release {
+			return 0
+		}
+		return e.release(t)
+	}
+
+	switch {
+	case t-e.triggeredAt < e.Attack:
+		return e.attack(t)
+	case t-e.triggeredAt < e.Attack+e.Decay:
+		return e.decay(t)
+	default:
+		return e.Level
+	}
+}
+
+func (e *Envelope) attack(t float64) float64 {
+	start := e.triggeredAt
+	end := start + e.Attack
+	return linear(start, end, 0, e.Peak, t)
+}
+
+func (e *Envelope) decay(t float64) float64 {
+	start := e.triggeredAt + e.Attack
+	end := start + e.Decay
+	return linear(start, end, e.Peak, e.Level, t)
+}
+
 func (e *Envelope) initializeFaders() {
 	if e.attackFader != nil {
 		e.attackFader.initialize(e.Fade, e.sampleRate)
@@ -156,36 +186,6 @@ func (e *Envelope) fade() {
 	if e.levelFader != nil {
 		e.Level = e.levelFader.fade()
 	}
-}
-
-func (e *Envelope) getValue(t float64) float64 {
-	if e.releasedAt >= e.triggeredAt {
-		if t-e.releasedAt > e.Release {
-			return 0
-		}
-		return e.release(t)
-	}
-
-	switch {
-	case t-e.triggeredAt < e.Attack:
-		return e.attack(t)
-	case t-e.triggeredAt < e.Attack+e.Decay:
-		return e.decay(t)
-	default:
-		return e.Level
-	}
-}
-
-func (e *Envelope) attack(t float64) float64 {
-	start := e.triggeredAt
-	end := start + e.Attack
-	return linear(start, end, 0, e.Peak, t)
-}
-
-func (e *Envelope) decay(t float64) float64 {
-	start := e.triggeredAt + e.Attack
-	end := start + e.Decay
-	return linear(start, end, e.Peak, e.Level, t)
 }
 
 func (e *Envelope) release(t float64) float64 {
