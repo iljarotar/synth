@@ -209,8 +209,8 @@ pans:
     # a value of `-1` places the signal completely to the left, `1` places it to the right
     pan: -0.5
 
-    # cv for `pan`
-    cv: name-of-cv
+    # name of the module whose output should be stereo balanced
+    in: name-of-input-module
 
     # modulator for `pan`
     mod: name-of-mod
