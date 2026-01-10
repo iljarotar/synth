@@ -111,6 +111,10 @@ func (o *Oscillator) Step(modules ModuleMap) {
 	}
 
 	o.arg += twoPi * freq * mod / o.sampleRate
+	o.fade()
+}
+
+func (o *Oscillator) fade() {
 	if o.freqFader != nil {
 		o.Freq = o.freqFader.fade()
 	}
