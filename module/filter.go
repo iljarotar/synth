@@ -40,7 +40,7 @@ const (
 	filterTypeBandPass filterType = "BandPass"
 
 	gain  = -50
-	slope = 0.99 // how is this related to width?
+	slope = 0.99
 )
 
 var (
@@ -127,12 +127,7 @@ func (f *Filter) Step(modules ModuleMap) {
 		Right: y / 2,
 	}
 
-	if f.freqFader != nil {
-		f.Freq = f.freqFader.fade()
-	}
-	if f.widthFader != nil {
-		f.Width = f.widthFader.fade()
-	}
+	f.fade()
 }
 
 func (f *Filter) tap(x, freq float64) float64 {
@@ -220,6 +215,15 @@ func (f *Filter) initializeFaders() {
 	}
 	if f.widthFader != nil {
 		f.widthFader.initialize(f.Fade, f.sampleRate)
+	}
+}
+
+func (f *Filter) fade() {
+	if f.freqFader != nil {
+		f.Freq = f.freqFader.fade()
+	}
+	if f.widthFader != nil {
+		f.Width = f.widthFader.fade()
 	}
 }
 
