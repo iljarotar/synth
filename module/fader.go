@@ -20,6 +20,7 @@ func (f *fader) initialize(duration, sampleRate float64) {
 func (f *fader) fade() float64 {
 	// technically, this case is covered below, but for efficiency we make an early return here
 	if f.current == f.target {
+		f.step = 0
 		return f.current
 	}
 
