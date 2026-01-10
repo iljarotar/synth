@@ -25,7 +25,12 @@ cp bin/synth /usr/local/bin # or somewhere else in your PATH
 
 Patches for the modular synthesizer are provided in [yaml](https://yaml.org/) format.
 A patch contains configurations for all modules that you want the synthesizer to play.
-When you modify and save a patch while it is being played the synthesizer will reload the file.
+When you modify and save a patch during playback the synthesizer will reload the file.
+Since changing a parameter like volume or frequency by a large amount too quickly results in a clipping noise, most modules allow configuring a `fade` parameter that controls how long it takes for the module's parameters to transition from the previous value to the new one.
+Such a fade-over is not only useful to avoid clipping sounds but can also be utilised to create slow transitions in the music.
+Say, for example, you want to slowly fade in one module while slowly fading out another.
+You can add a `fade` parameter to the mixer that controls both modules' volumes—e.g. `fade: 5` for 5 seconds—and change the new module's volume to a positive value and the other one's to `0`.
+Then save the file and the transition will start.
 
 ### Patch Files
 
@@ -89,6 +94,10 @@ envelopes:
     # when gate output changes from positive to negative or zero the envelope is released
     gate: name-of-gate-module
 
+    # fade controls the transition length in seconds
+    # affected parameters are `attack`, `decay`, `release`, `peak` and `level`
+    fade: 2
+
 # filters of type low pass, high pass or band pass
 filters:
   # the unique module name to be used as a reference in other modules
@@ -113,6 +122,10 @@ filters:
     # name of the module whose output will be filtered
     in: name-of-input-module
 
+    # fade controls the transition length in seconds
+    # affected parameters are `freq` and `width`
+    fade: 2
+
 # gates can be used as gates for envelopes or sequencers or as triggers for samplers.
 gates:
   # the unique module name to be used as a reference in other modules
@@ -129,6 +142,10 @@ gates:
     # binary signal
     # each negative or zero value will be mapped to `-1`, each positive to `1`
     signal: [1, 0, 0, 1, 0, 1, 1, 0, 1, 0]
+
+    # fade controls the transition length in seconds
+    # affected parameter is `bpm`
+    fade: 2
 
 # mixers combine outputs of multiple modules and control their output levels
 mixers:
@@ -148,6 +165,10 @@ mixers:
     in:
       name-of-first-module: 0.5
       name-of-second-module: 0.25
+
+    # fade controls the transition length in seconds
+    # affected parameters are `gain` as well as all input modules' gain levels
+    fade: 2
 
 # noise modules simple output random values
 noises:
@@ -175,6 +196,10 @@ oscillators:
     # range `[-1, 1]`
     phase: 0.75
 
+    # fade controls the transition length in seconds
+    # affected parameters are `freq` and `phase`
+    fade: 2
+
 # pan modules are used to add stereo balance
 pans:
   # the unique module name to be used as a reference in other modules
@@ -184,11 +209,15 @@ pans:
     # a value of `-1` places the signal completely to the left, `1` places it to the right
     pan: -0.5
 
-    # cv for `pan`
-    cv: name-of-cv
+    # name of the module whose output should be stereo balanced
+    in: name-of-input-module
 
     # modulator for `pan`
     mod: name-of-mod
+
+    # fade controls the transition length in seconds
+    # affected parameter is `pan`
+    fade: 2
 
 # sample and hold modules
 samplers:
@@ -241,6 +270,10 @@ wavetables:
     # an arbitrary signal
     # the signal can have any length
     signal: [-1, 0, 0.25, -0.3, 0.8, 1]
+
+    # fade controls the transition length in seconds
+    # affected parameter is `freq`
+    fade: 2
 ```
 
 ### Configuration

@@ -160,3 +160,276 @@ func TestMixer_Step(t *testing.T) {
 		})
 	}
 }
+
+func TestMixer_Update(t *testing.T) {
+	sampleRate := 44100.0
+
+	tests := []struct {
+		name string
+		m    *Mixer
+		new  *Mixer
+		want *Mixer
+	}{
+		{
+			name: "no update necessary",
+			m: &Mixer{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				Gain: 1,
+				CV:   "cv",
+				Mod:  "mod",
+				In: map[string]float64{
+					"in1": 1,
+				},
+				Fade:       1,
+				sampleRate: sampleRate,
+				gainFader: &fader{
+					current: 1,
+					target:  1,
+					step:    0.5,
+				},
+				inputFaders: map[string]*fader{
+					"in1": {
+						current: 1,
+						target:  1,
+						step:    0.5,
+					},
+				},
+			},
+			new: nil,
+			want: &Mixer{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				Gain: 1,
+				CV:   "cv",
+				Mod:  "mod",
+				In: map[string]float64{
+					"in1": 1,
+				},
+				Fade:       1,
+				sampleRate: sampleRate,
+				gainFader: &fader{
+					current: 1,
+					target:  1,
+					step:    0.5,
+				},
+				inputFaders: map[string]*fader{
+					"in1": {
+						current: 1,
+						target:  1,
+						step:    0.5,
+					},
+				},
+			},
+		},
+		{
+			name: "update all",
+			m: &Mixer{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				Gain: 1,
+				CV:   "cv",
+				Mod:  "mod",
+				In: map[string]float64{
+					"in1": 1,
+					"in2": 1,
+				},
+				Fade:       1,
+				sampleRate: sampleRate,
+				gainFader: &fader{
+					current: 1,
+					target:  1,
+					step:    0.5,
+				},
+				inputFaders: map[string]*fader{
+					"in1": {
+						current: 1,
+						target:  1,
+						step:    0.5,
+					},
+					"in2": {
+						current: 1,
+						target:  1,
+						step:    0.5,
+					},
+				},
+			},
+			new: &Mixer{
+				Gain: 0.5,
+				CV:   "new-cv",
+				Mod:  "new-mod",
+				In: map[string]float64{
+					"in1": 0.5,
+					"in3": 0.5,
+				},
+				Fade: 2,
+			},
+			want: &Mixer{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				Gain: 1,
+				CV:   "new-cv",
+				Mod:  "new-mod",
+				In: map[string]float64{
+					"in1": 1,
+					"in2": 1,
+					"in3": 0,
+				},
+				Fade:       2,
+				sampleRate: sampleRate,
+				gainFader: &fader{
+					current: 1,
+					target:  0.5,
+					step:    -0.25 / sampleRate,
+				},
+				inputFaders: map[string]*fader{
+					"in1": {
+						current: 1,
+						target:  0.5,
+						step:    -0.25 / sampleRate,
+					},
+					"in2": {
+						current: 1,
+						target:  0,
+						step:    -0.5 / sampleRate,
+					},
+					"in3": {
+						current: 0,
+						target:  0.5,
+						step:    0.25 / sampleRate,
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.m.Update(tt.new)
+			if diff := cmp.Diff(tt.want, tt.m, cmp.AllowUnexported(Module{}, Mixer{}, fader{})); diff != "" {
+				t.Errorf("Mixer.Update() diff = %s", diff)
+			}
+		})
+	}
+}
+
+func TestMixer_fade(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *Mixer
+		want *Mixer
+	}{
+		{
+			name: "no fade necessary",
+			m: &Mixer{
+				Gain: 1,
+				In: map[string]float64{
+					"in1": 1,
+					"in2": 1,
+				},
+				gainFader: &fader{
+					current: 1,
+					target:  1,
+					step:    0.5,
+				},
+				inputFaders: map[string]*fader{
+					"in1": {
+						current: 1,
+						target:  1,
+						step:    0.5,
+					},
+					"in2": {
+						current: 1,
+						target:  1,
+						step:    0.5,
+					},
+				},
+			},
+			want: &Mixer{
+				Gain: 1,
+				In: map[string]float64{
+					"in1": 1,
+					"in2": 1,
+				},
+				gainFader: &fader{
+					current: 1,
+					target:  1,
+				},
+				inputFaders: map[string]*fader{
+					"in1": {
+						current: 1,
+						target:  1,
+					},
+					"in2": {
+						current: 1,
+						target:  1,
+					},
+				},
+			},
+		},
+		{
+			name: "fade all",
+			m: &Mixer{
+				Gain: 1,
+				In: map[string]float64{
+					"in1": 1,
+					"in2": 0.1,
+				},
+				gainFader: &fader{
+					current: 1,
+					target:  0.5,
+					step:    -0.1,
+				},
+				inputFaders: map[string]*fader{
+					"in1": {
+						current: 1,
+						target:  0.5,
+						step:    -0.2,
+					},
+					"in2": {
+						current: 0.1,
+						target:  0,
+						step:    -0.2,
+					},
+				},
+			},
+			want: &Mixer{
+				Gain: 0.9,
+				In: map[string]float64{
+					"in1": 0.8,
+				},
+				gainFader: &fader{
+					current: 0.9,
+					target:  0.5,
+					step:    -0.1,
+				},
+				inputFaders: map[string]*fader{
+					"in1": {
+						current: 0.8,
+						target:  0.5,
+						step:    -0.2,
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.m.fade()
+			if diff := cmp.Diff(tt.want, tt.m, cmp.AllowUnexported(Module{}, Mixer{}, fader{})); diff != "" {
+				t.Errorf("Mixer.fade() diff = %s", diff)
+			}
+		})
+	}
+}

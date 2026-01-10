@@ -2,6 +2,8 @@ package module
 
 import (
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestEnvelope_attack(t *testing.T) {
@@ -413,6 +415,282 @@ func Test_linear(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := linear(tt.startAt, tt.endAt, tt.startValue, tt.targetValue, tt.t); got != tt.want {
 				t.Errorf("linear() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestEnvelope_Update(t *testing.T) {
+	sampleRate := 44100.0
+
+	tests := []struct {
+		name string
+		e    *Envelope
+		new  *Envelope
+		want *Envelope
+	}{
+		{
+			name: "new is nil",
+			e: &Envelope{
+				Gate: "gate",
+			},
+			new: nil,
+			want: &Envelope{
+				Gate: "gate",
+			},
+		},
+		{
+			name: "update all",
+			e: &Envelope{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				Attack:      1,
+				Decay:       1,
+				Release:     1,
+				Peak:        1,
+				Level:       1,
+				Gate:        "gate",
+				Fade:        1,
+				triggeredAt: 1,
+				releasedAt:  2,
+				gateValue:   -1,
+				level:       1,
+				sampleRate:  44100,
+				attackFader: &fader{
+					current: 1,
+					target:  1,
+					step:    0,
+				},
+				decayFader: &fader{
+					current: 1,
+					target:  1,
+					step:    0,
+				},
+				releaseFader: &fader{
+					current: 1,
+					target:  1,
+					step:    0,
+				},
+				peakFader: &fader{
+					current: 1,
+					target:  1,
+					step:    0,
+				},
+				levelFader: &fader{
+					current: 1,
+					target:  1,
+					step:    0,
+				},
+			},
+			new: &Envelope{
+				Attack:  2,
+				Decay:   2,
+				Release: 2,
+				Peak:    2,
+				Level:   2,
+				Gate:    "new-gate",
+				Fade:    2,
+			},
+			want: &Envelope{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				Attack:      1,
+				Decay:       1,
+				Release:     1,
+				Peak:        1,
+				Level:       1,
+				Gate:        "new-gate",
+				Fade:        2,
+				triggeredAt: 1,
+				releasedAt:  2,
+				gateValue:   -1,
+				level:       1,
+				sampleRate:  sampleRate,
+				attackFader: &fader{
+					current: 1,
+					target:  2,
+					step:    0.5 / sampleRate,
+				},
+				decayFader: &fader{
+					current: 1,
+					target:  2,
+					step:    0.5 / sampleRate,
+				},
+				releaseFader: &fader{
+					current: 1,
+					target:  2,
+					step:    0.5 / sampleRate,
+				},
+				peakFader: &fader{
+					current: 1,
+					target:  2,
+					step:    0.5 / sampleRate,
+				},
+				levelFader: &fader{
+					current: 1,
+					target:  2,
+					step:    0.5 / sampleRate,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.e.Update(tt.new)
+			if diff := cmp.Diff(tt.want, tt.e, cmp.AllowUnexported(Module{}, Envelope{}, fader{})); diff != "" {
+				t.Errorf("Envelope.Update() diff = %s", diff)
+			}
+		})
+	}
+}
+
+func TestEnvelope_fade(t *testing.T) {
+	tests := []struct {
+		name string
+		e    *Envelope
+		want *Envelope
+	}{
+		{
+			name: "no fade necessary",
+			e: &Envelope{
+				Attack:  1,
+				Decay:   1,
+				Release: 1,
+				Peak:    1,
+				Level:   1,
+				attackFader: &fader{
+					current: 1,
+					target:  1,
+					step:    0.5,
+				},
+				decayFader: &fader{
+					current: 1,
+					target:  1,
+					step:    0.5,
+				},
+				releaseFader: &fader{
+					current: 1,
+					target:  1,
+					step:    0.5,
+				},
+				peakFader: &fader{
+					current: 1,
+					target:  1,
+					step:    0.5,
+				},
+				levelFader: &fader{
+					current: 1,
+					target:  1,
+					step:    0.5,
+				},
+			},
+			want: &Envelope{
+				Attack:  1,
+				Decay:   1,
+				Release: 1,
+				Peak:    1,
+				Level:   1,
+				attackFader: &fader{
+					current: 1,
+					target:  1,
+				},
+				decayFader: &fader{
+					current: 1,
+					target:  1,
+				},
+				releaseFader: &fader{
+					current: 1,
+					target:  1,
+				},
+				peakFader: &fader{
+					current: 1,
+					target:  1,
+				},
+				levelFader: &fader{
+					current: 1,
+					target:  1,
+				},
+			},
+		},
+		{
+			name: "fade all parameters",
+			e: &Envelope{
+				Attack:  1,
+				Decay:   1,
+				Release: 1,
+				Peak:    1,
+				Level:   1,
+				attackFader: &fader{
+					current: 1,
+					target:  2,
+					step:    0.1,
+				},
+				decayFader: &fader{
+					current: 1,
+					target:  2,
+					step:    0.1,
+				},
+				releaseFader: &fader{
+					current: 1,
+					target:  2,
+					step:    0.1,
+				},
+				peakFader: &fader{
+					current: 1,
+					target:  2,
+					step:    0.1,
+				},
+				levelFader: &fader{
+					current: 1,
+					target:  2,
+					step:    0.1,
+				},
+			},
+			want: &Envelope{
+				Attack:  1.1,
+				Decay:   1.1,
+				Release: 1.1,
+				Peak:    1.1,
+				Level:   1.1,
+				attackFader: &fader{
+					current: 1.1,
+					target:  2,
+					step:    0.1,
+				},
+				decayFader: &fader{
+					current: 1.1,
+					target:  2,
+					step:    0.1,
+				},
+				releaseFader: &fader{
+					current: 1.1,
+					target:  2,
+					step:    0.1,
+				},
+				peakFader: &fader{
+					current: 1.1,
+					target:  2,
+					step:    0.1,
+				},
+				levelFader: &fader{
+					current: 1.1,
+					target:  2,
+					step:    0.1,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.e.fade()
+			if diff := cmp.Diff(tt.want, tt.e, cmp.AllowUnexported(Module{}, Envelope{}, fader{})); diff != "" {
+				t.Errorf("Envelope.fade() diff = %s", diff)
 			}
 		})
 	}
