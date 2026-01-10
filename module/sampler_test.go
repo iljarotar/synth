@@ -1,6 +1,10 @@
 package module
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/google/go-cmp/cmp"
+)
 
 func TestSampler_Step(t *testing.T) {
 	tests := []struct {
@@ -101,6 +105,75 @@ func TestSampler_Step(t *testing.T) {
 			}
 			if tt.s.triggerValue != tt.wantTrigger {
 				t.Errorf("Sampler.Step() trigger = %v, want %v", tt.s.triggerValue, tt.wantTrigger)
+			}
+		})
+	}
+}
+
+func TestSampler_Update(t *testing.T) {
+	tests := []struct {
+		name string
+		s    *Sampler
+		new  *Sampler
+		want *Sampler
+	}{
+		{
+			name: "no update necessary",
+			s: &Sampler{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				In:           "in",
+				Trigger:      "trigger",
+				triggerValue: 1,
+			},
+			new: nil,
+			want: &Sampler{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				In:           "in",
+				Trigger:      "trigger",
+				triggerValue: 1,
+			},
+		},
+		{
+			name: "update all",
+			s: &Sampler{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				In:           "in",
+				Trigger:      "trigger",
+				triggerValue: 1,
+			},
+			new: &Sampler{
+				In:      "new-in",
+				Trigger: "new-trigger",
+			},
+			want: &Sampler{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				In:           "new-in",
+				Trigger:      "new-trigger",
+				triggerValue: 1,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.s.Update(tt.new)
+			if diff := cmp.Diff(tt.want, tt.s, cmp.AllowUnexported(Module{}, Sampler{})); diff != "" {
+				t.Errorf("Sampler.Update() diff = %s", diff)
 			}
 		})
 	}

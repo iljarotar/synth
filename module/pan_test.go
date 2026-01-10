@@ -121,7 +121,9 @@ func TestPan_Update(t *testing.T) {
 			p: &Pan{
 				Module: Module{
 					current: Output{
-						Mono: 1,
+						Mono:  1,
+						Left:  0.5,
+						Right: 0.5,
 					},
 				},
 				Pan:        0.5,
@@ -144,7 +146,9 @@ func TestPan_Update(t *testing.T) {
 			want: &Pan{
 				Module: Module{
 					current: Output{
-						Mono: 1,
+						Mono:  1,
+						Left:  0.5,
+						Right: 0.5,
 					},
 				},
 				Pan:        0.5,
