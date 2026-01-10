@@ -84,6 +84,10 @@ func (w *Wavetable) Step(modules ModuleMap) {
 	mod := math.Pow(2, getMono(modules[w.Mod]))
 	w.idx += freq * mod * float64(length) / w.sampleRate
 
+	w.fade()
+}
+
+func (w *Wavetable) fade() {
 	if w.freqFader != nil {
 		w.Freq = w.freqFader.fade()
 	}
