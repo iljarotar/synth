@@ -100,6 +100,10 @@ func (m *Mixer) Step(modules ModuleMap) {
 		Right: right,
 	}
 
+	m.fade()
+}
+
+func (m *Mixer) fade() {
 	if m.gainFader != nil {
 		m.Gain = m.gainFader.fade()
 	}
