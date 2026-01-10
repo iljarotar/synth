@@ -237,3 +237,96 @@ func TestSequencer_Step(t *testing.T) {
 		})
 	}
 }
+
+func TestSequencer_Update(t *testing.T) {
+	tests := []struct {
+		name string
+		s    *Sequencer
+		new  *Sequencer
+		want *Sequencer
+	}{
+		{
+			name: "no update necessary",
+			s: &Sequencer{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				Sequence:     []string{"a_4"},
+				Trigger:      "trigger",
+				Pitch:        440,
+				Transpose:    1,
+				Randomize:    true,
+				sequence:     []float64{440},
+				index:        1,
+				triggerValue: 1,
+			},
+			new: nil,
+			want: &Sequencer{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				Sequence:     []string{"a_4"},
+				Trigger:      "trigger",
+				Pitch:        440,
+				Transpose:    1,
+				Randomize:    true,
+				sequence:     []float64{440},
+				index:        1,
+				triggerValue: 1,
+			},
+		},
+		{
+			name: "update all",
+			s: &Sequencer{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				Sequence:     []string{"a_4"},
+				Trigger:      "trigger",
+				Pitch:        440,
+				Transpose:    1,
+				Randomize:    true,
+				sequence:     []float64{440},
+				index:        1,
+				triggerValue: 1,
+			},
+			new: &Sequencer{
+				Sequence:  []string{"a_5"},
+				Trigger:   "new-trigger",
+				Pitch:     441,
+				Transpose: 2,
+				Randomize: false,
+				sequence:  []float64{880},
+			},
+			want: &Sequencer{
+				Module: Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+				Sequence:     []string{"a_5"},
+				Trigger:      "new-trigger",
+				Pitch:        441,
+				Transpose:    2,
+				Randomize:    false,
+				sequence:     []float64{880},
+				index:        1,
+				triggerValue: 1,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.s.Update(tt.new)
+			if diff := cmp.Diff(tt.want, tt.s, cmp.AllowUnexported(Module{}, Sequencer{})); diff != "" {
+				t.Errorf("Sequencer.Update() diff = %s", diff)
+			}
+		})
+	}
+}
