@@ -60,6 +60,7 @@ func (s *Synth) Initialize(sampleRate float64) error {
 	})
 	s.VolumeMemory = s.Volume
 	s.Volume = 0
+	s.initializeEmptyMaps()
 	s.makeModulesMap()
 	s.flattenModules()
 
@@ -516,5 +517,38 @@ func (s *Synth) updateModules(new *Synth) {
 		if newWt, ok := new.Wavetables[name]; ok {
 			wt.Update(newWt)
 		}
+	}
+}
+
+func (s *Synth) initializeEmptyMaps() {
+	if s.Envelopes == nil {
+		s.Envelopes = module.EnvelopeMap{}
+	}
+	if s.Filters == nil {
+		s.Filters = module.FilterMap{}
+	}
+	if s.Gates == nil {
+		s.Gates = module.GateMap{}
+	}
+	if s.Mixers == nil {
+		s.Mixers = module.MixerMap{}
+	}
+	if s.Noises == nil {
+		s.Noises = module.NoiseMap{}
+	}
+	if s.Oscillators == nil {
+		s.Oscillators = module.OscillatorMap{}
+	}
+	if s.Pans == nil {
+		s.Pans = module.PanMap{}
+	}
+	if s.Samplers == nil {
+		s.Samplers = module.SamplerMap{}
+	}
+	if s.Sequencers == nil {
+		s.Sequencers = module.SequencerMap{}
+	}
+	if s.Wavetables == nil {
+		s.Wavetables = module.WavetableMap{}
 	}
 }

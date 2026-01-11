@@ -363,3 +363,36 @@ func TestSynth_Update(t *testing.T) {
 		})
 	}
 }
+
+func TestSynth_initializeEmptyMaps(t *testing.T) {
+	tests := []struct {
+		name string
+		s    *Synth
+		want *Synth
+	}{
+		{
+			name: "initialize empty",
+			s:    &Synth{},
+			want: &Synth{
+				Envelopes:   module.EnvelopeMap{},
+				Filters:     module.FilterMap{},
+				Gates:       module.GateMap{},
+				Mixers:      module.MixerMap{},
+				Noises:      module.NoiseMap{},
+				Oscillators: module.OscillatorMap{},
+				Pans:        module.PanMap{},
+				Samplers:    module.SamplerMap{},
+				Sequencers:  module.SequencerMap{},
+				Wavetables:  module.WavetableMap{},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.s.initializeEmptyMaps()
+			if diff := cmp.Diff(tt.want, tt.s, cmp.AllowUnexported(Synth{})); diff != "" {
+				t.Errorf("Synth.initializeEmptyMaps() diff = %s", diff)
+			}
+		})
+	}
+}
