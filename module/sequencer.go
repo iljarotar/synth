@@ -13,13 +13,14 @@ import (
 type (
 	Sequencer struct {
 		Module
-		Sequence     []string `yaml:"sequence"`
-		Trigger      string   `yaml:"trigger"`
-		Pitch        float64  `yaml:"pitch"`
-		Transpose    float64  `yaml:"transpose"`
-		Randomize    bool     `yaml:"randomize"`
+		Sequence  []string `yaml:"sequence"`
+		Trigger   string   `yaml:"trigger"`
+		Pitch     float64  `yaml:"pitch"`
+		Transpose float64  `yaml:"transpose"`
+		Randomize bool     `yaml:"randomize"`
+
 		sequence     []float64
-		index        int
+		idx          int
 		triggerValue float64
 	}
 
@@ -41,7 +42,7 @@ func (m SequencerMap) Initialize() error {
 func (s *Sequencer) initialze() error {
 	s.Pitch = calc.Limit(s.Pitch, pitchRange)
 	s.Transpose = calc.Limit(s.Transpose, transposeRange)
-	s.index = -1
+	s.idx = -1
 
 	err := s.makeSequence()
 	if err != nil {
@@ -62,6 +63,10 @@ func (s *Sequencer) Update(new *Sequencer) {
 	s.Pitch = new.Pitch
 	s.Transpose = new.Transpose
 	s.Randomize = new.Randomize
+
+	if s.idx >= len(s.sequence) {
+		s.idx = len(s.sequence) - 1
+	}
 }
 
 func (s *Sequencer) Step(modules ModuleMap) {
@@ -72,18 +77,18 @@ func (s *Sequencer) Step(modules ModuleMap) {
 	triggerValue := getMono(modules[s.Trigger])
 	if triggerValue > 0 && s.triggerValue <= 0 {
 		if s.Randomize {
-			s.index = rand.Intn(len(s.sequence))
+			s.idx = rand.Intn(len(s.sequence))
 		} else {
-			s.index = (s.index + 1) % len(s.sequence)
+			s.idx = (s.idx + 1) % len(s.sequence)
 		}
 	}
 	s.triggerValue = triggerValue
 
 	var freq float64
-	if s.index < 0 {
+	if s.idx < 0 {
 		freq = 0
 	} else {
-		freq = s.sequence[s.index]
+		freq = s.sequence[s.idx]
 	}
 
 	val := calc.Transpose(freq, freqRange, outputRange)
