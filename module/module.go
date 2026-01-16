@@ -39,6 +39,10 @@ var (
 		Min: 0,
 		Max: 1,
 	}
+	inputGainRange = calc.Range{
+		Min: 0,
+		Max: 1000,
+	}
 	outputRange = calc.Range{
 		Min: -1,
 		Max: 1,

@@ -48,7 +48,7 @@ func (m *Mixer) initialize(sampleRate float64) error {
 
 	m.inputFaders = map[string]*fader{}
 	for mod, gain := range m.In {
-		m.In[mod] = calc.Limit(gain, gainRange)
+		m.In[mod] = calc.Limit(gain, inputGainRange)
 
 		m.inputFaders[mod] = &fader{
 			current: gain,

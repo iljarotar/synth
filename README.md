@@ -161,7 +161,8 @@ mixers:
     mod: name-of-modulator
 
     # mapping of module names to their corresponding gain levels
-    # take care not to exceed 1 as the output is limited not to exceed `[-1, 1]`
+    # these gain levels can be in the range [0, 1000]
+    # the output will be limited not to exceed the range [-1, 0]
     in:
       name-of-first-module: 0.5
       name-of-second-module: 0.25
