@@ -70,8 +70,11 @@ func (g *Gate) Update(new *Gate) {
 }
 
 func (g *Gate) Step(modules ModuleMap) {
-	length := len(g.Signal)
-	val := g.Signal[int(math.Floor(g.idx))%length]
+	if len(g.Signal) < 1 {
+		return
+	}
+
+	val := g.Signal[int(math.Floor(g.idx))%len(g.Signal)]
 	g.current = Output{
 		Mono:  val,
 		Left:  val / 2,

@@ -68,8 +68,10 @@ func (w *Wavetable) Update(new *Wavetable) {
 }
 
 func (w *Wavetable) Step(modules ModuleMap) {
-	length := len(w.Signal)
-	val := w.Signal[int(math.Floor(w.idx))%length]
+	if len(w.Signal) < 1 {
+		return
+	}
+	val := w.Signal[int(math.Floor(w.idx))%len(w.Signal)]
 	w.current = Output{
 		Mono:  val,
 		Left:  val / 2,
@@ -82,7 +84,7 @@ func (w *Wavetable) Step(modules ModuleMap) {
 	}
 
 	mod := math.Pow(2, getMono(modules[w.Mod]))
-	w.idx += freq * mod * float64(length) / w.sampleRate
+	w.idx += freq * mod * float64(len(w.Signal)) / w.sampleRate
 
 	w.fade()
 }
