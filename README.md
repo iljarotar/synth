@@ -162,7 +162,7 @@ mixers:
 
     # mapping of module names to their corresponding gain levels
     # these gain levels can be in the range [0, 1000]
-    # the output will be limited not to exceed the range [-1, 0]
+    # the output will be limited not to exceed the range [-1, 1]
     in:
       name-of-first-module: 0.5
       name-of-second-module: 0.25
