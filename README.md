@@ -143,6 +143,10 @@ gates:
     # each negative or zero value will be mapped to `-1`, each positive to `1`
     signal: [1, 0, 0, 1, 0, 1, 1, 0, 1, 0]
 
+    # provides an initial offset to the signal
+    # count starts at 0
+    index: 4
+
     # fade controls the transition length in seconds
     # affected parameter is `bpm`
     fade: 2
@@ -253,6 +257,10 @@ sequencers:
 
     # if `true` the notes in the sequence will be played in random order
     randomize: true
+
+    # provides an initial offset to the sequence
+    # count starts at 0
+    index: 2
 
 # pass any values to a wavetable to create arbitrary signals
 wavetables:

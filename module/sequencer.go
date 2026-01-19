@@ -18,6 +18,7 @@ type (
 		Pitch     float64  `yaml:"pitch"`
 		Transpose float64  `yaml:"transpose"`
 		Randomize bool     `yaml:"randomize"`
+		Index     int      `yaml:"index"`
 
 		sequence     []float64
 		idx          int
@@ -42,7 +43,9 @@ func (m SequencerMap) Initialize() error {
 func (s *Sequencer) initialze() error {
 	s.Pitch = calc.Limit(s.Pitch, pitchRange)
 	s.Transpose = calc.Limit(s.Transpose, transposeRange)
-	s.idx = -1
+
+	s.Index = int(calc.Limit(float64(s.Index), calc.Range{Min: 0, Max: float64(len(s.Sequence) - 1)}))
+	s.idx = s.Index - 1
 
 	err := s.makeSequence()
 	if err != nil {

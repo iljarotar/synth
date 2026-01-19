@@ -14,6 +14,7 @@ gates:
   gate:
     bpm: 1080
     signal: [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0]
+    index: 10
 
 mixers:
   main:
@@ -31,3 +32,4 @@ sequencers:
     sequence: ["e_2", "f_2", "e_2", "e_1", "g#_3", "a#_3"]
     trigger: gate
     pitch: 440
+    index: 3

@@ -13,6 +13,7 @@ type (
 		CV     string    `yaml:"cv"`
 		Mod    string    `yaml:"mod"`
 		Signal []float64 `yaml:"signal"`
+		Index  int       `yaml:"index"`
 		Fade   float64   `yaml:"fade"`
 
 		sampleRate float64
@@ -37,6 +38,8 @@ func (g *Gate) initialze(sampleRate float64) {
 	g.sampleRate = sampleRate
 	g.BPM = calc.Limit(g.BPM, bpmRange)
 	g.Fade = calc.Limit(g.Fade, fadeRange)
+	g.Index = int(calc.Limit(float64(g.Index), calc.Range{Min: 0, Max: float64(len(g.Signal) - 1)}))
+	g.idx = float64(g.Index)
 
 	g.bpmFader = &fader{
 		current: g.BPM,

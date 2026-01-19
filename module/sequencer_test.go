@@ -258,6 +258,7 @@ func TestSequencer_Update(t *testing.T) {
 				Pitch:        440,
 				Transpose:    1,
 				Randomize:    true,
+				Index:        1,
 				sequence:     []float64{440},
 				idx:          1,
 				triggerValue: 1,
@@ -274,6 +275,7 @@ func TestSequencer_Update(t *testing.T) {
 				Pitch:        440,
 				Transpose:    1,
 				Randomize:    true,
+				Index:        1,
 				sequence:     []float64{440},
 				idx:          1,
 				triggerValue: 1,
@@ -292,6 +294,7 @@ func TestSequencer_Update(t *testing.T) {
 				Pitch:        440,
 				Transpose:    1,
 				Randomize:    true,
+				Index:        2,
 				sequence:     []float64{440, 110, 220},
 				idx:          2,
 				triggerValue: 1,
@@ -302,6 +305,7 @@ func TestSequencer_Update(t *testing.T) {
 				Pitch:     441,
 				Transpose: 2,
 				Randomize: false,
+				Index:     1,
 				sequence:  []float64{880, 220},
 			},
 			want: &Sequencer{
@@ -315,6 +319,7 @@ func TestSequencer_Update(t *testing.T) {
 				Pitch:        441,
 				Transpose:    2,
 				Randomize:    false,
+				Index:        2,
 				sequence:     []float64{880, 220},
 				idx:          1,
 				triggerValue: 1,
@@ -326,6 +331,52 @@ func TestSequencer_Update(t *testing.T) {
 			tt.s.Update(tt.new)
 			if diff := cmp.Diff(tt.want, tt.s, cmp.AllowUnexported(Module{}, Sequencer{})); diff != "" {
 				t.Errorf("Sequencer.Update() diff = %s", diff)
+			}
+		})
+	}
+}
+
+func TestSequencer_initialze(t *testing.T) {
+	tests := []struct {
+		name    string
+		s       *Sequencer
+		want    *Sequencer
+		wantErr bool
+	}{
+		{
+			name: "set limmits correctly",
+			s: &Sequencer{
+				Sequence:     []string{"a_4", "a_3"},
+				Trigger:      "trigger",
+				Pitch:        540,
+				Transpose:    25,
+				Randomize:    true,
+				Index:        2,
+				sequence:     []float64{},
+				idx:          0,
+				triggerValue: 0,
+			},
+			want: &Sequencer{
+				Sequence:     []string{"a_4", "a_3"},
+				Trigger:      "trigger",
+				Pitch:        500,
+				Transpose:    24,
+				Randomize:    true,
+				Index:        1,
+				sequence:     []float64{2000, 1000},
+				idx:          0,
+				triggerValue: 0,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.s.initialze(); (err != nil) != tt.wantErr {
+				t.Errorf("Sequencer.initialze() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if diff := cmp.Diff(tt.want, tt.s, cmp.AllowUnexported(Module{}, Sequencer{})); diff != "" {
+				t.Errorf("Sequencer.initialze() diff = %s", diff)
 			}
 		})
 	}
