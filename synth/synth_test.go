@@ -307,7 +307,7 @@ func TestSynth_Update(t *testing.T) {
 					"w2": {
 						CV:     "new-cv",
 						Mod:    "new-mod",
-						Signal: []float64{1},
+						Signal: []float64{2},
 					},
 				},
 				Time:         5,
