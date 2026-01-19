@@ -90,10 +90,6 @@ func (s *Synth) Update(from *Synth) error {
 		return nil
 	}
 
-	if err := from.Initialize(s.sampleRate); err != nil {
-		return err
-	}
-
 	s.deleteOldModules(from)
 	s.addNewModules(from)
 	s.updateModules(from)
