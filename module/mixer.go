@@ -9,9 +9,10 @@ import (
 type (
 	Mixer struct {
 		Module
-		Gain float64            `yaml:"gain"`
-		CV   string             `yaml:"cv"`
-		Mod  string             `yaml:"mod"`
+		Gain float64 `yaml:"gain"`
+		CV   string  `yaml:"cv"`
+		Mod  string  `yaml:"mod"`
+		// TODO: make `In` a mutexed map, too
 		In   map[string]float64 `yaml:"in"`
 		Fade float64            `yaml:"fade"`
 
@@ -71,13 +72,13 @@ func (m *Mixer) Update(new *Mixer) {
 	m.updateGains(new)
 }
 
-func (m *Mixer) Step(modules ModuleMap) {
+func (m *Mixer) Step(modules *ModuleMap) {
 	var (
 		left, right, mono float64
 	)
 
 	for name, gain := range m.In {
-		if mod, ok := modules[name]; ok {
+		if mod, ok := modules.Get(name); ok {
 			left += mod.Current().Left * gain
 			right += mod.Current().Right * gain
 			mono += mod.Current().Mono * gain
@@ -86,9 +87,9 @@ func (m *Mixer) Step(modules ModuleMap) {
 
 	gain := m.Gain
 	if m.CV != "" {
-		gain = cv(gainRange, getMono(modules[m.CV]))
+		gain = cv(gainRange, getMono(modules, m.CV))
 	}
-	gain = modulate(gain, gainRange, getMono(modules[m.Mod]))
+	gain = modulate(gain, gainRange, getMono(modules, m.Mod))
 
 	left = calc.Limit(left*gain, outputRange)
 	right = calc.Limit(right*gain, outputRange)

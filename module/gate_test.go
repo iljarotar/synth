@@ -39,7 +39,7 @@ func TestGate_Step(t *testing.T) {
 	tests := []struct {
 		name    string
 		g       *Gate
-		modules ModuleMap
+		modules *ModuleMap
 		want    float64
 		wantIdx float64
 	}{
@@ -52,6 +52,7 @@ func TestGate_Step(t *testing.T) {
 				sampleRate: sampleRate,
 				idx:        0,
 			},
+			modules: &ModuleMap{},
 			want:    1,
 			wantIdx: 0,
 		},
@@ -63,6 +64,7 @@ func TestGate_Step(t *testing.T) {
 				sampleRate: sampleRate,
 				idx:        0,
 			},
+			modules: &ModuleMap{},
 			want:    -1,
 			wantIdx: 1 / sampleRate,
 		},
@@ -75,10 +77,12 @@ func TestGate_Step(t *testing.T) {
 				idx:        1,
 				CV:         "cv",
 			},
-			modules: ModuleMap{
-				"cv": &Module{
-					current: Output{
-						Mono: calc.Transpose(120, bpmRange, outputRange),
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"cv": &Module{
+						current: Output{
+							Mono: calc.Transpose(120, bpmRange, outputRange),
+						},
 					},
 				},
 			},
@@ -94,10 +98,12 @@ func TestGate_Step(t *testing.T) {
 				idx:        2,
 				Mod:        "mod",
 			},
-			modules: ModuleMap{
-				"mod": &Module{
-					current: Output{
-						Mono: -0.03,
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"mod": &Module{
+						current: Output{
+							Mono: -0.03,
+						},
 					},
 				},
 			},

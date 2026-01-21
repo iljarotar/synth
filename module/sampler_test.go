@@ -10,7 +10,7 @@ func TestSampler_Step(t *testing.T) {
 	tests := []struct {
 		name        string
 		s           *Sampler
-		modules     ModuleMap
+		modules     *ModuleMap
 		want        float64
 		wantTrigger float64
 	}{
@@ -26,15 +26,17 @@ func TestSampler_Step(t *testing.T) {
 				Trigger:      "trigger",
 				triggerValue: 1,
 			},
-			modules: ModuleMap{
-				"in": &Module{
-					current: Output{
-						Mono: 1,
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"in": &Module{
+						current: Output{
+							Mono: 1,
+						},
 					},
-				},
-				"trigger": &Module{
-					current: Output{
-						Mono: 0,
+					"trigger": &Module{
+						current: Output{
+							Mono: 0,
+						},
 					},
 				},
 			},
@@ -53,15 +55,17 @@ func TestSampler_Step(t *testing.T) {
 				Trigger:      "trigger",
 				triggerValue: -1,
 			},
-			modules: ModuleMap{
-				"in": &Module{
-					current: Output{
-						Mono: 1,
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"in": &Module{
+						current: Output{
+							Mono: 1,
+						},
 					},
-				},
-				"trigger": &Module{
-					current: Output{
-						Mono: 1,
+					"trigger": &Module{
+						current: Output{
+							Mono: 1,
+						},
 					},
 				},
 			},
@@ -80,15 +84,17 @@ func TestSampler_Step(t *testing.T) {
 				Trigger:      "trigger",
 				triggerValue: 1,
 			},
-			modules: ModuleMap{
-				"in": &Module{
-					current: Output{
-						Mono: 1,
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"in": &Module{
+						current: Output{
+							Mono: 1,
+						},
 					},
-				},
-				"trigger": &Module{
-					current: Output{
-						Mono: 0.5,
+					"trigger": &Module{
+						current: Output{
+							Mono: 0.5,
+						},
 					},
 				},
 			},

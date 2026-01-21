@@ -110,15 +110,15 @@ func (f *Filter) Update(new *Filter) {
 	f.initializeFaders()
 }
 
-func (f *Filter) Step(modules ModuleMap) {
+func (f *Filter) Step(modules *ModuleMap) {
 	freq := f.Freq
 	if f.CV != "" {
-		freq = cv(freqRange, getMono(modules[f.CV]))
+		freq = cv(freqRange, getMono(modules, f.CV))
 	}
-	freq = modulate(freq, freqRange, getMono(modules[f.Mod]))
+	freq = modulate(freq, freqRange, getMono(modules, f.Mod))
 
 	f.calculateCoeffs(freq)
-	x := getMono(modules[f.In])
+	x := getMono(modules, f.In)
 	y := calc.Limit(f.tap(x, freq), outputRange)
 
 	f.current = Output{

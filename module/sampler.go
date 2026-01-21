@@ -20,11 +20,11 @@ func (s *Sampler) Update(new *Sampler) {
 	s.Trigger = new.Trigger
 }
 
-func (s *Sampler) Step(modules ModuleMap) {
-	triggerValue := getMono(modules[s.Trigger])
+func (s *Sampler) Step(modules *ModuleMap) {
+	triggerValue := getMono(modules, s.Trigger)
 
 	if triggerValue > 0 && s.triggerValue <= 0 {
-		val := getMono(modules[s.In])
+		val := getMono(modules, s.In)
 
 		s.current = Output{
 			Mono:  val,

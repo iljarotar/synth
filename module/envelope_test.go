@@ -233,7 +233,7 @@ func TestEnvelope_Step(t *testing.T) {
 		name            string
 		e               *Envelope
 		t               float64
-		modules         ModuleMap
+		modules         *ModuleMap
 		want            float64
 		wantTriggeredAt float64
 		wantReleasedAt  float64
@@ -250,10 +250,12 @@ func TestEnvelope_Step(t *testing.T) {
 				Level:   0.5,
 			},
 			t: 2,
-			modules: ModuleMap{
-				"gate": &Module{
-					current: Output{
-						Mono: 1,
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"gate": &Module{
+						current: Output{
+							Mono: 1,
+						},
 					},
 				},
 			},
@@ -277,10 +279,12 @@ func TestEnvelope_Step(t *testing.T) {
 				gateValue:   1,
 			},
 			t: 5,
-			modules: ModuleMap{
-				"gate": &Module{
-					current: Output{
-						Mono: -1,
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"gate": &Module{
+						current: Output{
+							Mono: -1,
+						},
 					},
 				},
 			},
@@ -303,10 +307,12 @@ func TestEnvelope_Step(t *testing.T) {
 				level:       0.25,
 			},
 			t: 8,
-			modules: ModuleMap{
-				"gate": &Module{
-					current: Output{
-						Mono: -1,
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"gate": &Module{
+						current: Output{
+							Mono: -1,
+						},
 					},
 				},
 			},
@@ -329,10 +335,12 @@ func TestEnvelope_Step(t *testing.T) {
 				Level:       0.75,
 			},
 			t: 8,
-			modules: ModuleMap{
-				"gate": &Module{
-					current: Output{
-						Mono: 1,
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"gate": &Module{
+						current: Output{
+							Mono: 1,
+						},
 					},
 				},
 			},

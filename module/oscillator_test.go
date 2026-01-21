@@ -13,14 +13,14 @@ func TestOscillator_Step(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		modules ModuleMap
+		modules *ModuleMap
 		o       *Oscillator
 		want    float64
 		wantArg float64
 	}{
 		{
 			name:    "all zero",
-			modules: ModuleMap{},
+			modules: &ModuleMap{},
 			o: &Oscillator{
 				Freq:       200,
 				signal:     SineSignalFunc(),
@@ -31,7 +31,7 @@ func TestOscillator_Step(t *testing.T) {
 		},
 		{
 			name:    "after one second",
-			modules: ModuleMap{},
+			modules: &ModuleMap{},
 			o: &Oscillator{
 				Freq:       200,
 				signal:     SineSignalFunc(),
@@ -44,7 +44,7 @@ func TestOscillator_Step(t *testing.T) {
 		},
 		{
 			name:    "phase shift",
-			modules: ModuleMap{},
+			modules: &ModuleMap{},
 			o: &Oscillator{
 				Freq:       200,
 				signal:     SineSignalFunc(),
@@ -57,10 +57,12 @@ func TestOscillator_Step(t *testing.T) {
 		},
 		{
 			name: "modulation",
-			modules: ModuleMap{
-				"mod": &Module{
-					current: Output{
-						Mono: 1,
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"mod": &Module{
+						current: Output{
+							Mono: 1,
+						},
 					},
 				},
 			},
@@ -77,10 +79,12 @@ func TestOscillator_Step(t *testing.T) {
 		},
 		{
 			name: "cv",
-			modules: ModuleMap{
-				"cv": &Module{
-					current: Output{
-						Mono: 1,
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"cv": &Module{
+						current: Output{
+							Mono: 1,
+						},
 					},
 				},
 			},

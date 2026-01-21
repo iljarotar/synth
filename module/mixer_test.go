@@ -10,7 +10,7 @@ func TestMixer_Step(t *testing.T) {
 	tests := []struct {
 		name    string
 		m       *Mixer
-		modules ModuleMap
+		modules *ModuleMap
 		want    Output
 	}{
 		{
@@ -20,8 +20,10 @@ func TestMixer_Step(t *testing.T) {
 				In:         map[string]float64{},
 				sampleRate: 1,
 			},
-			modules: ModuleMap{
-				"in": &Module{},
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"in": &Module{},
+				},
 			},
 			want: Output{},
 		},
@@ -34,9 +36,11 @@ func TestMixer_Step(t *testing.T) {
 				},
 				sampleRate: 1,
 			},
-			modules: ModuleMap{
-				"in": &Oscillator{
-					Module: Module{},
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"in": &Oscillator{
+						Module: Module{},
+					},
 				},
 			},
 			want: Output{},
@@ -50,12 +54,14 @@ func TestMixer_Step(t *testing.T) {
 				},
 				sampleRate: 1,
 			},
-			modules: ModuleMap{
-				"in": &Module{
-					current: Output{
-						Mono:  1,
-						Left:  0.5,
-						Right: 0.5,
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"in": &Module{
+						current: Output{
+							Mono:  1,
+							Left:  0.5,
+							Right: 0.5,
+						},
 					},
 				},
 			},
@@ -70,12 +76,14 @@ func TestMixer_Step(t *testing.T) {
 				},
 				sampleRate: 1,
 			},
-			modules: ModuleMap{
-				"in": &Module{
-					current: Output{
-						Mono:  1,
-						Left:  0.5,
-						Right: 0.5,
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"in": &Module{
+						current: Output{
+							Mono:  1,
+							Left:  0.5,
+							Right: 0.5,
+						},
 					},
 				},
 			},
@@ -95,19 +103,21 @@ func TestMixer_Step(t *testing.T) {
 				},
 				sampleRate: 1,
 			},
-			modules: ModuleMap{
-				"in": &Module{
-					current: Output{
-						Mono:  1,
-						Left:  0.5,
-						Right: 0.5,
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"in": &Module{
+						current: Output{
+							Mono:  1,
+							Left:  0.5,
+							Right: 0.5,
+						},
 					},
-				},
-				"lfo": &Module{
-					current: Output{
-						Mono:  0.5,
-						Left:  0.25,
-						Right: 0.25,
+					"lfo": &Module{
+						current: Output{
+							Mono:  0.5,
+							Left:  0.25,
+							Right: 0.25,
+						},
 					},
 				},
 			},
@@ -127,19 +137,21 @@ func TestMixer_Step(t *testing.T) {
 				},
 				sampleRate: 1,
 			},
-			modules: ModuleMap{
-				"in": &Module{
-					current: Output{
-						Mono:  1,
-						Left:  0.5,
-						Right: 0.5,
+			modules: &ModuleMap{
+				modules: map[string]IModule{
+					"in": &Module{
+						current: Output{
+							Mono:  1,
+							Left:  0.5,
+							Right: 0.5,
+						},
 					},
-				},
-				"cv": &Module{
-					current: Output{
-						Mono:  0.5,
-						Left:  0.25,
-						Right: 0.25,
+					"cv": &Module{
+						current: Output{
+							Mono:  0.5,
+							Left:  0.25,
+							Right: 0.25,
+						},
 					},
 				},
 			},

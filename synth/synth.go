@@ -38,7 +38,7 @@ type Synth struct {
 	volumeStep        float64
 	notifyFadeoutChan chan<- bool
 	logger            *log.Logger
-	modules           module.ModuleMap
+	modules           *module.ModuleMap
 
 	envelopes   []*module.Envelope
 	filters     []*module.Filter
@@ -98,11 +98,15 @@ func (s *Synth) Update(from *Synth) error {
 }
 
 func (s *Synth) GetOutput() Output {
+	if s.modules == nil {
+		return Output{}
+	}
+
 	s.step()
 	s.adjustVolume()
 	out := Output{Time: s.Time}
 
-	if mod, ok := s.modules[s.Out]; ok {
+	if mod, ok := s.modules.Get(s.Out); ok {
 		out.Left = mod.Current().Left * s.Volume
 		out.Right = mod.Current().Right * s.Volume
 		out.Mono = mod.Current().Mono * s.Volume
@@ -225,67 +229,69 @@ func secondsToStep(seconds, delta, sampleRate float64) float64 {
 }
 
 func (s *Synth) makeModulesMap() {
-	s.modules = module.ModuleMap{}
+	if s.modules == nil {
+		s.modules = module.NewModuleMap()
+	}
 
 	for name, e := range s.Envelopes {
 		if e == nil {
 			continue
 		}
-		s.modules[name] = e
+		s.modules.Set(name, e)
 	}
 	for name, f := range s.Filters {
 		if f == nil {
 			continue
 		}
-		s.modules[name] = f
+		s.modules.Set(name, f)
 	}
 	for name, g := range s.Gates {
 		if g == nil {
 			continue
 		}
-		s.modules[name] = g
+		s.modules.Set(name, g)
 	}
 	for name, m := range s.Mixers {
 		if m == nil {
 			continue
 		}
-		s.modules[name] = m
+		s.modules.Set(name, m)
 	}
 	for name, n := range s.Noises {
 		if n == nil {
 			continue
 		}
-		s.modules[name] = n
+		s.modules.Set(name, n)
 	}
 	for name, osc := range s.Oscillators {
 		if osc == nil {
 			continue
 		}
-		s.modules[name] = osc
+		s.modules.Set(name, osc)
 	}
 	for name, p := range s.Pans {
 		if p == nil {
 			continue
 		}
-		s.modules[name] = p
+		s.modules.Set(name, p)
 	}
 	for name, smplr := range s.Samplers {
 		if smplr == nil {
 			continue
 		}
-		s.modules[name] = smplr
+		s.modules.Set(name, smplr)
 	}
 	for name, seq := range s.Sequencers {
 		if seq == nil {
 			continue
 		}
-		s.modules[name] = seq
+		s.modules.Set(name, seq)
 	}
 	for name, w := range s.Wavetables {
 		if w == nil {
 			continue
 		}
-		s.modules[name] = w
+		s.modules.Set(name, w)
 	}
 }
 
@@ -303,10 +309,14 @@ func (s *Synth) flattenModules() {
 }
 
 func (s *Synth) deleteOldModules(new *Synth) {
+	if s.modules == nil {
+		s.modules = module.NewModuleMap()
+	}
+
 	for name, env := range s.Envelopes {
 		if _, ok := new.Envelopes[name]; !ok {
 			delete(s.Envelopes, name)
-			delete(s.modules, name)
+			s.modules.Delete(name)
 			s.envelopes = slices.DeleteFunc(s.envelopes, func(e *module.Envelope) bool {
 				return env == e
 			})
@@ -315,7 +325,7 @@ func (s *Synth) deleteOldModules(new *Synth) {
 	for name, filter := range s.Filters {
 		if _, ok := new.Filters[name]; !ok {
 			delete(s.Filters, name)
-			delete(s.modules, name)
+			s.modules.Delete(name)
 			s.filters = slices.DeleteFunc(s.filters, func(f *module.Filter) bool {
 				return filter == f
 			})
@@ -324,7 +334,7 @@ func (s *Synth) deleteOldModules(new *Synth) {
 	for name, gate := range s.Gates {
 		if _, ok := new.Gates[name]; !ok {
 			delete(s.Gates, name)
-			delete(s.modules, name)
+			s.modules.Delete(name)
 			s.gates = slices.DeleteFunc(s.gates, func(g *module.Gate) bool {
 				return gate == g
 			})
@@ -333,7 +343,7 @@ func (s *Synth) deleteOldModules(new *Synth) {
 	for name, mixer := range s.Mixers {
 		if _, ok := new.Mixers[name]; !ok {
 			delete(s.Mixers, name)
-			delete(s.modules, name)
+			s.modules.Delete(name)
 			s.mixers = slices.DeleteFunc(s.mixers, func(m *module.Mixer) bool {
 				return mixer == m
 			})
@@ -342,7 +352,7 @@ func (s *Synth) deleteOldModules(new *Synth) {
 	for name, noise := range s.Noises {
 		if _, ok := new.Noises[name]; !ok {
 			delete(s.Noises, name)
-			delete(s.modules, name)
+			s.modules.Delete(name)
 			s.noises = slices.DeleteFunc(s.noises, func(n *module.Noise) bool {
 				return noise == n
 			})
@@ -351,7 +361,7 @@ func (s *Synth) deleteOldModules(new *Synth) {
 	for name, osc := range s.Oscillators {
 		if _, ok := new.Oscillators[name]; !ok {
 			delete(s.Oscillators, name)
-			delete(s.modules, name)
+			s.modules.Delete(name)
 			s.oscillators = slices.DeleteFunc(s.oscillators, func(o *module.Oscillator) bool {
 				return osc == o
 			})
@@ -360,7 +370,7 @@ func (s *Synth) deleteOldModules(new *Synth) {
 	for name, pan := range s.Pans {
 		if _, ok := new.Pans[name]; !ok {
 			delete(s.Pans, name)
-			delete(s.modules, name)
+			s.modules.Delete(name)
 			s.pans = slices.DeleteFunc(s.pans, func(p *module.Pan) bool {
 				return pan == p
 			})
@@ -369,7 +379,7 @@ func (s *Synth) deleteOldModules(new *Synth) {
 	for name, sampler := range s.Samplers {
 		if _, ok := new.Samplers[name]; !ok {
 			delete(s.Samplers, name)
-			delete(s.modules, name)
+			s.modules.Delete(name)
 			s.samplers = slices.DeleteFunc(s.samplers, func(smplr *module.Sampler) bool {
 				return sampler == smplr
 			})
@@ -378,7 +388,7 @@ func (s *Synth) deleteOldModules(new *Synth) {
 	for name, seq := range s.Sequencers {
 		if _, ok := new.Sequencers[name]; !ok {
 			delete(s.Sequencers, name)
-			delete(s.modules, name)
+			s.modules.Delete(name)
 			s.sequencers = slices.DeleteFunc(s.sequencers, func(sq *module.Sequencer) bool {
 				return seq == sq
 			})
@@ -387,7 +397,7 @@ func (s *Synth) deleteOldModules(new *Synth) {
 	for name, wt := range s.Wavetables {
 		if _, ok := new.Wavetables[name]; !ok {
 			delete(s.Wavetables, name)
-			delete(s.modules, name)
+			s.modules.Delete(name)
 			s.wavetables = slices.DeleteFunc(s.wavetables, func(w *module.Wavetable) bool {
 				return wt == w
 			})
@@ -396,74 +406,78 @@ func (s *Synth) deleteOldModules(new *Synth) {
 }
 
 func (s *Synth) addNewModules(new *Synth) {
-	for name, env := range new.Envelopes {
+	if s.modules == nil {
+		s.modules = module.NewModuleMap()
+	}
+
+	for name, e := range new.Envelopes {
 		if _, ok := s.Envelopes[name]; !ok {
-			s.Envelopes[name] = env
-			s.envelopes = append(s.envelopes, env)
-			s.modules[name] = env
+			s.Envelopes[name] = e
+			s.envelopes = append(s.envelopes, e)
+			s.modules.Set(name, e)
 		}
 	}
-	for name, filter := range new.Filters {
+	for name, f := range new.Filters {
 		if _, ok := s.Filters[name]; !ok {
-			s.Filters[name] = filter
-			s.filters = append(s.filters, filter)
-			s.modules[name] = filter
+			s.Filters[name] = f
+			s.filters = append(s.filters, f)
+			s.modules.Set(name, f)
 		}
 	}
-	for name, gate := range new.Gates {
+	for name, g := range new.Gates {
 		if _, ok := s.Gates[name]; !ok {
-			s.Gates[name] = gate
-			s.gates = append(s.gates, gate)
-			s.modules[name] = gate
+			s.Gates[name] = g
+			s.gates = append(s.gates, g)
+			s.modules.Set(name, g)
 		}
 	}
-	for name, mixer := range new.Mixers {
+	for name, m := range new.Mixers {
 		if _, ok := s.Mixers[name]; !ok {
-			s.Mixers[name] = mixer
-			s.mixers = append(s.mixers, mixer)
-			s.modules[name] = mixer
+			s.Mixers[name] = m
+			s.mixers = append(s.mixers, m)
+			s.modules.Set(name, m)
 		}
 	}
-	for name, noise := range new.Noises {
+	for name, n := range new.Noises {
 		if _, ok := s.Noises[name]; !ok {
-			s.Noises[name] = noise
-			s.noises = append(s.noises, noise)
-			s.modules[name] = noise
+			s.Noises[name] = n
+			s.noises = append(s.noises, n)
+			s.modules.Set(name, n)
 		}
 	}
 	for name, osc := range new.Oscillators {
 		if _, ok := s.Oscillators[name]; !ok {
 			s.Oscillators[name] = osc
 			s.oscillators = append(s.oscillators, osc)
-			s.modules[name] = osc
+			s.modules.Set(name, osc)
 		}
 	}
-	for name, pan := range new.Pans {
+	for name, p := range new.Pans {
 		if _, ok := s.Pans[name]; !ok {
-			s.Pans[name] = pan
-			s.pans = append(s.pans, pan)
-			s.modules[name] = pan
+			s.Pans[name] = p
+			s.pans = append(s.pans, p)
+			s.modules.Set(name, p)
 		}
 	}
-	for name, sampler := range new.Samplers {
+	for name, smplr := range new.Samplers {
 		if _, ok := s.Samplers[name]; !ok {
-			s.Samplers[name] = sampler
-			s.samplers = append(s.samplers, sampler)
-			s.modules[name] = sampler
+			s.Samplers[name] = smplr
+			s.samplers = append(s.samplers, smplr)
+			s.modules.Set(name, smplr)
 		}
 	}
 	for name, seq := range new.Sequencers {
 		if _, ok := s.Sequencers[name]; !ok {
 			s.Sequencers[name] = seq
 			s.sequencers = append(s.sequencers, seq)
-			s.modules[name] = seq
+			s.modules.Set(name, seq)
 		}
 	}
-	for name, wt := range new.Wavetables {
+	for name, w := range new.Wavetables {
 		if _, ok := s.Wavetables[name]; !ok {
-			s.Wavetables[name] = wt
-			s.wavetables = append(s.wavetables, wt)
-			s.modules[name] = wt
+			s.Wavetables[name] = w
+			s.wavetables = append(s.wavetables, w)
+			s.modules.Set(name, w)
 		}
 	}
 }

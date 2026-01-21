@@ -71,10 +71,12 @@ func TestSynth_Update(t *testing.T) {
 		w2   = &module.Wavetable{}
 	)
 	tests := []struct {
-		name string
-		s    *Synth
-		new  *Synth
-		want *Synth
+		name           string
+		s              *Synth
+		new            *Synth
+		want           *Synth
+		currentModules map[string]module.IModule
+		wantModules    map[string]module.IModule
 	}{
 		{
 			name: "update all modules",
@@ -125,38 +127,16 @@ func TestSynth_Update(t *testing.T) {
 				VolumeMemory: 1,
 				sampleRate:   44100,
 				volumeStep:   0.1,
-				modules: module.ModuleMap{
-					"env1": env1,
-					"env2": env2,
-					"f1":   f1,
-					"f2":   f2,
-					"g1":   g1,
-					"g2":   g2,
-					"m1":   m1,
-					"m2":   m2,
-					"n1":   n1,
-					"n2":   n2,
-					"o1":   o1,
-					"o2":   o2,
-					"p1":   p1,
-					"p2":   p2,
-					"s1":   s1,
-					"s2":   s2,
-					"seq1": seq1,
-					"seq2": seq2,
-					"w1":   w1,
-					"w2":   w2,
-				},
-				envelopes:   []*module.Envelope{env1, env2},
-				filters:     []*module.Filter{f1, f2},
-				gates:       []*module.Gate{g1, g2},
-				mixers:      []*module.Mixer{m1, m2},
-				noises:      []*module.Noise{n1, n2},
-				oscillators: []*module.Oscillator{o1, o2},
-				pans:        []*module.Pan{p1, p2},
-				samplers:    []*module.Sampler{s1, s2},
-				sequencers:  []*module.Sequencer{seq1, seq2},
-				wavetables:  []*module.Wavetable{w1, w2},
+				envelopes:    []*module.Envelope{env1, env2},
+				filters:      []*module.Filter{f1, f2},
+				gates:        []*module.Gate{g1, g2},
+				mixers:       []*module.Mixer{m1, m2},
+				noises:       []*module.Noise{n1, n2},
+				oscillators:  []*module.Oscillator{o1, o2},
+				pans:         []*module.Pan{p1, p2},
+				samplers:     []*module.Sampler{s1, s2},
+				sequencers:   []*module.Sequencer{seq1, seq2},
+				wavetables:   []*module.Wavetable{w1, w2},
 			},
 			new: &Synth{
 				Envelopes: module.EnvelopeMap{
@@ -314,28 +294,17 @@ func TestSynth_Update(t *testing.T) {
 				VolumeMemory: 1,
 				sampleRate:   44100,
 				volumeStep:   0.1,
-				modules: module.ModuleMap{
-					"env2": env2,
-					"f2":   f2,
-					"g2":   g2,
-					"m2":   m2,
-					"n2":   n2,
-					"o2":   o2,
-					"p2":   p2,
-					"s2":   s2,
-					"seq2": seq2,
-					"w2":   w2,
-				},
-				envelopes:   []*module.Envelope{env2},
-				filters:     []*module.Filter{f2},
-				gates:       []*module.Gate{g2},
-				mixers:      []*module.Mixer{m2},
-				noises:      []*module.Noise{n2},
-				oscillators: []*module.Oscillator{o2},
-				pans:        []*module.Pan{p2},
-				samplers:    []*module.Sampler{s2},
-				sequencers:  []*module.Sequencer{seq2},
-				wavetables:  []*module.Wavetable{w2},
+				modules:      &module.ModuleMap{},
+				envelopes:    []*module.Envelope{env2},
+				filters:      []*module.Filter{f2},
+				gates:        []*module.Gate{g2},
+				mixers:       []*module.Mixer{m2},
+				noises:       []*module.Noise{n2},
+				oscillators:  []*module.Oscillator{o2},
+				pans:         []*module.Pan{p2},
+				samplers:     []*module.Sampler{s2},
+				sequencers:   []*module.Sequencer{seq2},
+				wavetables:   []*module.Wavetable{w2},
 			},
 		},
 	}
@@ -357,6 +326,7 @@ func TestSynth_Update(t *testing.T) {
 					module.Wavetable{},
 				),
 				cmp.AllowUnexported(Synth{}),
+				cmpopts.IgnoreUnexported(module.ModuleMap{}),
 			); diff != "" {
 				t.Errorf("Synth.Update() diff = %s", diff)
 			}

@@ -93,15 +93,15 @@ func (o *Oscillator) Update(new *Oscillator) {
 	o.initializeFaders()
 }
 
-func (o *Oscillator) Step(modules ModuleMap) {
+func (o *Oscillator) Step(modules *ModuleMap) {
 	twoPi := 2 * math.Pi
 	freq := o.Freq
 	if o.CV != "" {
-		freq = cv(freqRange, getMono(modules[o.CV]))
+		freq = cv(freqRange, getMono(modules, o.CV))
 	}
 
 	c := twoPi * o.Phase
-	mod := math.Pow(2, getMono(modules[o.Mod]))
+	mod := math.Pow(2, getMono(modules, o.Mod))
 
 	val := o.signal(o.arg + c)
 	o.current = Output{

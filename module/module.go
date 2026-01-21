@@ -1,13 +1,20 @@
 package module
 
-import "github.com/iljarotar/synth/calc"
+import (
+	"sync"
+
+	"github.com/iljarotar/synth/calc"
+)
 
 type (
 	IModule interface {
 		Current() Output
 	}
 
-	ModuleMap map[string]IModule
+	ModuleMap struct {
+		mu      sync.Mutex
+		modules map[string]IModule
+	}
 
 	Module struct {
 		current Output
@@ -61,6 +68,37 @@ var (
 	}
 )
 
+func NewModuleMap() *ModuleMap {
+	return &ModuleMap{
+		modules: map[string]IModule{},
+	}
+}
+
+func (m *ModuleMap) Get(name string) (IModule, bool) {
+	m.mu.Lock()
+	defer func() {
+		m.mu.Unlock()
+	}()
+	mod, found := m.modules[name]
+	return mod, found
+}
+
+func (m *ModuleMap) Set(name string, mod IModule) {
+	m.mu.Lock()
+	defer func() {
+		m.mu.Unlock()
+	}()
+	m.modules[name] = mod
+}
+
+func (m *ModuleMap) Delete(name string) {
+	m.mu.Lock()
+	defer func() {
+		m.mu.Unlock()
+	}()
+	delete(m.modules, name)
+}
+
 func (m *Module) Current() Output {
 	return m.current
 }
@@ -81,8 +119,9 @@ func cv(rng calc.Range, val float64) float64 {
 	return calc.Transpose(val, outputRange, rng)
 }
 
-func getMono(mod IModule) float64 {
-	if mod == nil {
+func getMono(modules *ModuleMap, name string) float64 {
+	mod, found := modules.Get(name)
+	if !found || mod == nil {
 		return 0
 	}
 	return mod.Current().Mono

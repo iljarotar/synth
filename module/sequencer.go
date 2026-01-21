@@ -72,12 +72,12 @@ func (s *Sequencer) Update(new *Sequencer) {
 	}
 }
 
-func (s *Sequencer) Step(modules ModuleMap) {
+func (s *Sequencer) Step(modules *ModuleMap) {
 	if len(s.sequence) < 1 {
 		return
 	}
 
-	triggerValue := getMono(modules[s.Trigger])
+	triggerValue := getMono(modules, s.Trigger)
 	if triggerValue > 0 && s.triggerValue <= 0 {
 		if s.Randomize {
 			s.idx = rand.Intn(len(s.sequence))
