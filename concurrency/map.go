@@ -1,6 +1,10 @@
 package concurrency
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/samber/lo"
+)
 
 type (
 	SyncMap[T comparable, E any] struct {
@@ -15,13 +19,12 @@ func NewSyncMap[T comparable, E any](m map[T]E) *SyncMap[T, E] {
 	}
 }
 
-func (m *SyncMap[T, E]) Get(idx T) (E, bool) {
+func (m *SyncMap[T, E]) Get(idx T) E {
 	m.mu.Lock()
 	defer func() {
 		m.mu.Unlock()
 	}()
-	e, found := m.m[idx]
-	return e, found
+	return m.m[idx]
 }
 
 func (m *SyncMap[T, E]) Set(idx T, e E) {
@@ -38,4 +41,8 @@ func (m *SyncMap[T, E]) Delete(idx T) {
 		m.mu.Unlock()
 	}()
 	delete(m.m, idx)
+}
+
+func (m *SyncMap[T, E]) Keys() []T {
+	return lo.Keys(m.m)
 }

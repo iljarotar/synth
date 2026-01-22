@@ -89,8 +89,8 @@ func cv(rng calc.Range, val float64) float64 {
 }
 
 func getMono(modules *ModuleMap, name string) float64 {
-	mod, found := modules.Get(name)
-	if !found || mod == nil {
+	mod := modules.Get(name)
+	if mod == nil {
 		return 0
 	}
 	return mod.Current().Mono

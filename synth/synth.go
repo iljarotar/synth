@@ -106,7 +106,7 @@ func (s *Synth) GetOutput() Output {
 	s.adjustVolume()
 	out := Output{Time: s.Time}
 
-	if mod, ok := s.modules.Get(s.Out); ok {
+	if mod := s.modules.Get(s.Out); mod != nil {
 		out.Left = mod.Current().Left * s.Volume
 		out.Right = mod.Current().Right * s.Volume
 		out.Mono = mod.Current().Mono * s.Volume
