@@ -20,11 +20,9 @@ func TestMixer_Step(t *testing.T) {
 				In:         map[string]float64{},
 				sampleRate: 1,
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"in": &Module{},
-				},
-			},
+			modules: NewModuleMap(map[string]IModule{
+				"in": &Module{},
+			}),
 			want: Output{},
 		},
 		{
@@ -36,13 +34,11 @@ func TestMixer_Step(t *testing.T) {
 				},
 				sampleRate: 1,
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"in": &Oscillator{
-						Module: Module{},
-					},
+			modules: NewModuleMap(map[string]IModule{
+				"in": &Oscillator{
+					Module: Module{},
 				},
-			},
+			}),
 			want: Output{},
 		},
 		{
@@ -54,17 +50,15 @@ func TestMixer_Step(t *testing.T) {
 				},
 				sampleRate: 1,
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"in": &Module{
-						current: Output{
-							Mono:  1,
-							Left:  0.5,
-							Right: 0.5,
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"in": &Module{
+					current: Output{
+						Mono:  1,
+						Left:  0.5,
+						Right: 0.5,
 					},
 				},
-			},
+			}),
 			want: Output{},
 		},
 		{
@@ -76,17 +70,15 @@ func TestMixer_Step(t *testing.T) {
 				},
 				sampleRate: 1,
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"in": &Module{
-						current: Output{
-							Mono:  1,
-							Left:  0.5,
-							Right: 0.5,
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"in": &Module{
+					current: Output{
+						Mono:  1,
+						Left:  0.5,
+						Right: 0.5,
 					},
 				},
-			},
+			}),
 			want: Output{
 				Mono:  1,
 				Left:  0.5,
@@ -103,24 +95,22 @@ func TestMixer_Step(t *testing.T) {
 				},
 				sampleRate: 1,
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"in": &Module{
-						current: Output{
-							Mono:  1,
-							Left:  0.5,
-							Right: 0.5,
-						},
-					},
-					"lfo": &Module{
-						current: Output{
-							Mono:  0.5,
-							Left:  0.25,
-							Right: 0.25,
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"in": &Module{
+					current: Output{
+						Mono:  1,
+						Left:  0.5,
+						Right: 0.5,
 					},
 				},
-			},
+				"lfo": &Module{
+					current: Output{
+						Mono:  0.5,
+						Left:  0.25,
+						Right: 0.25,
+					},
+				},
+			}),
 			want: Output{
 				Mono:  1 * 0.75,
 				Left:  0.5 * 0.75,
@@ -137,24 +127,22 @@ func TestMixer_Step(t *testing.T) {
 				},
 				sampleRate: 1,
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"in": &Module{
-						current: Output{
-							Mono:  1,
-							Left:  0.5,
-							Right: 0.5,
-						},
-					},
-					"cv": &Module{
-						current: Output{
-							Mono:  0.5,
-							Left:  0.25,
-							Right: 0.25,
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"in": &Module{
+					current: Output{
+						Mono:  1,
+						Left:  0.5,
+						Right: 0.5,
 					},
 				},
-			},
+				"cv": &Module{
+					current: Output{
+						Mono:  0.5,
+						Left:  0.25,
+						Right: 0.25,
+					},
+				},
+			}),
 			want: Output{
 				Mono:  1 * 0.75,
 				Left:  0.5 * 0.75,

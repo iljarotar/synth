@@ -57,15 +57,13 @@ func TestOscillator_Step(t *testing.T) {
 		},
 		{
 			name: "modulation",
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"mod": &Module{
-						current: Output{
-							Mono: 1,
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"mod": &Module{
+					current: Output{
+						Mono: 1,
 					},
 				},
-			},
+			}),
 			o: &Oscillator{
 				Freq:       200,
 				signal:     SineSignalFunc(),
@@ -79,15 +77,13 @@ func TestOscillator_Step(t *testing.T) {
 		},
 		{
 			name: "cv",
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"cv": &Module{
-						current: Output{
-							Mono: 1,
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"cv": &Module{
+					current: Output{
+						Mono: 1,
 					},
 				},
-			},
+			}),
 			o: &Oscillator{
 				Freq:       200,
 				signal:     SineSignalFunc(),

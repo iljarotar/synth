@@ -19,15 +19,13 @@ func TestPan_Step(t *testing.T) {
 				Pan: 0.5,
 				In:  "in",
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"in": &Module{
-						current: Output{
-							Mono: 1,
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"in": &Module{
+					current: Output{
+						Mono: 1,
 					},
 				},
-			},
+			}),
 			want: Output{
 				Mono:  1,
 				Left:  0.25,
@@ -41,20 +39,18 @@ func TestPan_Step(t *testing.T) {
 				Mod: "mod",
 				In:  "in",
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"in": &Module{
-						current: Output{
-							Mono: 1,
-						},
-					},
-					"mod": &Module{
-						current: Output{
-							Mono: 0.25,
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"in": &Module{
+					current: Output{
+						Mono: 1,
 					},
 				},
-			},
+				"mod": &Module{
+					current: Output{
+						Mono: 0.25,
+					},
+				},
+			}),
 			want: Output{
 				Mono:  1,
 				Left:  0.25,

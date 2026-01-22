@@ -230,7 +230,7 @@ func secondsToStep(seconds, delta, sampleRate float64) float64 {
 
 func (s *Synth) makeModulesMap() {
 	if s.modules == nil {
-		s.modules = module.NewModuleMap()
+		s.modules = module.NewModuleMap(map[string]module.IModule{})
 	}
 
 	for name, e := range s.Envelopes {
@@ -310,7 +310,7 @@ func (s *Synth) flattenModules() {
 
 func (s *Synth) deleteOldModules(new *Synth) {
 	if s.modules == nil {
-		s.modules = module.NewModuleMap()
+		s.modules = module.NewModuleMap(map[string]module.IModule{})
 	}
 
 	for name, env := range s.Envelopes {
@@ -407,7 +407,7 @@ func (s *Synth) deleteOldModules(new *Synth) {
 
 func (s *Synth) addNewModules(new *Synth) {
 	if s.modules == nil {
-		s.modules = module.NewModuleMap()
+		s.modules = module.NewModuleMap(map[string]module.IModule{})
 	}
 
 	for name, e := range new.Envelopes {

@@ -77,15 +77,13 @@ func TestGate_Step(t *testing.T) {
 				idx:        1,
 				CV:         "cv",
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"cv": &Module{
-						current: Output{
-							Mono: calc.Transpose(120, bpmRange, outputRange),
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"cv": &Module{
+					current: Output{
+						Mono: calc.Transpose(120, bpmRange, outputRange),
 					},
 				},
-			},
+			}),
 			want:    1,
 			wantIdx: 1 + 2/sampleRate,
 		},
@@ -98,15 +96,13 @@ func TestGate_Step(t *testing.T) {
 				idx:        2,
 				Mod:        "mod",
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"mod": &Module{
-						current: Output{
-							Mono: -0.03,
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"mod": &Module{
+					current: Output{
+						Mono: -0.03,
 					},
 				},
-			},
+			}),
 			want:    -1,
 			wantIdx: 2 + 0.5/sampleRate,
 		},

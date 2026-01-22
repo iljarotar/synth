@@ -1,9 +1,8 @@
 package module
 
 import (
-	"sync"
-
 	"github.com/iljarotar/synth/calc"
+	"github.com/iljarotar/synth/concurrency"
 )
 
 type (
@@ -11,10 +10,7 @@ type (
 		Current() Output
 	}
 
-	ModuleMap struct {
-		mu      sync.Mutex
-		modules map[string]IModule
-	}
+	ModuleMap = concurrency.SyncMap[string, IModule]
 
 	Module struct {
 		current Output
@@ -68,35 +64,8 @@ var (
 	}
 )
 
-func NewModuleMap() *ModuleMap {
-	return &ModuleMap{
-		modules: map[string]IModule{},
-	}
-}
-
-func (m *ModuleMap) Get(name string) (IModule, bool) {
-	m.mu.Lock()
-	defer func() {
-		m.mu.Unlock()
-	}()
-	mod, found := m.modules[name]
-	return mod, found
-}
-
-func (m *ModuleMap) Set(name string, mod IModule) {
-	m.mu.Lock()
-	defer func() {
-		m.mu.Unlock()
-	}()
-	m.modules[name] = mod
-}
-
-func (m *ModuleMap) Delete(name string) {
-	m.mu.Lock()
-	defer func() {
-		m.mu.Unlock()
-	}()
-	delete(m.modules, name)
+func NewModuleMap(m map[string]IModule) *ModuleMap {
+	return concurrency.NewSyncMap(m)
 }
 
 func (m *Module) Current() Output {

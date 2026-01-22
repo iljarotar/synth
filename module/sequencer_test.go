@@ -195,15 +195,13 @@ func TestSequencer_Step(t *testing.T) {
 				idx:          1,
 				triggerValue: 0,
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"trigger": &Module{
-						current: Output{
-							Mono: 1,
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"trigger": &Module{
+					current: Output{
+						Mono: 1,
 					},
 				},
-			},
+			}),
 			want:        calc.Transpose(110, freqRange, outputRange),
 			wantTrigger: 1,
 		},
@@ -216,15 +214,13 @@ func TestSequencer_Step(t *testing.T) {
 				idx:          2,
 				triggerValue: 0,
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"trigger": &Module{
-						current: Output{
-							Mono: 1,
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"trigger": &Module{
+					current: Output{
+						Mono: 1,
 					},
 				},
-			},
+			}),
 			want:        calc.Transpose(440, freqRange, outputRange),
 			wantTrigger: 1,
 		},

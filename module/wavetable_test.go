@@ -62,15 +62,13 @@ func TestWavetable_Step(t *testing.T) {
 				sampleRate: sampleRate,
 				idx:        0,
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"cv": &Module{
-						current: Output{
-							Mono: 0,
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"cv": &Module{
+					current: Output{
+						Mono: 0,
 					},
 				},
-			},
+			}),
 			want:    1,
 			wantIdx: 4 * freqRange.Max / (2 * sampleRate),
 		},
@@ -83,15 +81,13 @@ func TestWavetable_Step(t *testing.T) {
 				sampleRate: sampleRate,
 				idx:        2.5,
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"mod": &Module{
-						current: Output{
-							Mono: 1,
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"mod": &Module{
+					current: Output{
+						Mono: 1,
 					},
 				},
-			},
+			}),
 			want:    -1,
 			wantIdx: 2.5 + 16/sampleRate,
 		},

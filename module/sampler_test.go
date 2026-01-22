@@ -26,20 +26,18 @@ func TestSampler_Step(t *testing.T) {
 				Trigger:      "trigger",
 				triggerValue: 1,
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"in": &Module{
-						current: Output{
-							Mono: 1,
-						},
-					},
-					"trigger": &Module{
-						current: Output{
-							Mono: 0,
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"in": &Module{
+					current: Output{
+						Mono: 1,
 					},
 				},
-			},
+				"trigger": &Module{
+					current: Output{
+						Mono: 0,
+					},
+				},
+			}),
 			want:        0.5,
 			wantTrigger: 0,
 		},
@@ -55,20 +53,18 @@ func TestSampler_Step(t *testing.T) {
 				Trigger:      "trigger",
 				triggerValue: -1,
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"in": &Module{
-						current: Output{
-							Mono: 1,
-						},
-					},
-					"trigger": &Module{
-						current: Output{
-							Mono: 1,
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"in": &Module{
+					current: Output{
+						Mono: 1,
 					},
 				},
-			},
+				"trigger": &Module{
+					current: Output{
+						Mono: 1,
+					},
+				},
+			}),
 			want:        1,
 			wantTrigger: 1,
 		},
@@ -84,20 +80,18 @@ func TestSampler_Step(t *testing.T) {
 				Trigger:      "trigger",
 				triggerValue: 1,
 			},
-			modules: &ModuleMap{
-				modules: map[string]IModule{
-					"in": &Module{
-						current: Output{
-							Mono: 1,
-						},
-					},
-					"trigger": &Module{
-						current: Output{
-							Mono: 0.5,
-						},
+			modules: NewModuleMap(map[string]IModule{
+				"in": &Module{
+					current: Output{
+						Mono: 1,
 					},
 				},
-			},
+				"trigger": &Module{
+					current: Output{
+						Mono: 0.5,
+					},
+				},
+			}),
 			want:        0.5,
 			wantTrigger: 0.5,
 		},
