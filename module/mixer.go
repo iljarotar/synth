@@ -48,11 +48,13 @@ func (m *Mixer) initialize(sampleRate float64) error {
 		target:  m.Gain,
 	}
 
+	m.in = concurrency.NewSyncMap(m.In)
 	m.inputFaders = concurrency.NewSyncMap(map[string]*fader{})
-	for mod, gain := range m.In {
-		m.In[mod] = calc.Limit(gain, inputGainRange)
+	for _, name := range m.in.Keys() {
+		gain, _ := m.in.Get(name)
+		m.in.Set(name, calc.Limit(gain, inputGainRange))
 
-		m.inputFaders.Set(mod, &fader{
+		m.inputFaders.Set(name, &fader{
 			current: gain,
 			target:  gain,
 		})
@@ -70,6 +72,7 @@ func (m *Mixer) Update(new *Mixer) {
 	m.CV = new.CV
 	m.Mod = new.Mod
 	m.Fade = new.Fade
+	m.In = new.In
 	m.updateGains(new)
 }
 
@@ -78,8 +81,9 @@ func (m *Mixer) Step(modules *ModuleMap) {
 		left, right, mono float64
 	)
 
-	for name, gain := range m.In {
-		if mod := modules.Get(name); mod != nil {
+	for _, name := range m.in.Keys() {
+		gain, _ := m.in.Get(name)
+		if mod, _ := modules.Get(name); mod != nil {
 			left += mod.Current().Left * gain
 			right += mod.Current().Right * gain
 			mono += mod.Current().Mono * gain
@@ -111,15 +115,15 @@ func (m *Mixer) fade() {
 	}
 
 	for _, name := range m.inputFaders.Keys() {
-		f := m.inputFaders.Get(name)
+		f, _ := m.inputFaders.Get(name)
 		if f == nil {
 			continue
 		}
-		m.In[name] = f.fade()
+		m.in.Set(name, f.fade())
 
 		if f.current == 0 && f.target == 0 {
 			m.inputFaders.Delete(name)
-			delete(m.In, name)
+			m.in.Delete(name)
 		}
 	}
 }
@@ -130,7 +134,7 @@ func (m *Mixer) initializeFaders() {
 	}
 
 	for _, name := range m.inputFaders.Keys() {
-		if f := m.inputFaders.Get(name); f != nil {
+		if f, _ := m.inputFaders.Get(name); f != nil {
 			f.initialize(m.Fade, m.sampleRate)
 		}
 	}
@@ -144,31 +148,31 @@ func (m *Mixer) updateGains(new *Mixer) {
 	if m.inputFaders == nil {
 		m.inputFaders = concurrency.NewSyncMap(map[string]*fader{})
 	}
-	if m.In == nil {
-		m.In = map[string]float64{}
+	if m.in == nil {
+		m.in = concurrency.NewSyncMap(map[string]float64{})
 	}
 
-	for mod, gain := range new.In {
-		f := m.inputFaders.Get(mod)
+	for _, name := range new.in.Keys() {
+		f, _ := m.inputFaders.Get(name)
 		if f != nil {
-			f.target = gain
+			f.target = filterGain
 			continue
 		}
 
-		m.inputFaders.Set(mod, &fader{
+		m.inputFaders.Set(name, &fader{
 			current: 0,
-			target:  gain,
+			target:  filterGain,
 		})
-		m.In[mod] = 0
+		m.in.Set(name, 0)
 	}
 
 	for _, name := range m.inputFaders.Keys() {
-		f := m.inputFaders.Get(name)
+		f, _ := m.inputFaders.Get(name)
 		if f == nil {
 			continue
 		}
 
-		if _, ok := new.In[name]; !ok {
+		if _, ok := new.in.Get(name); !ok {
 			f.target = 0
 		}
 	}

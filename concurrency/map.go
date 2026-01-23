@@ -19,12 +19,13 @@ func NewSyncMap[T comparable, E any](m map[T]E) *SyncMap[T, E] {
 	}
 }
 
-func (m *SyncMap[T, E]) Get(idx T) E {
+func (m *SyncMap[T, E]) Get(idx T) (E, bool) {
 	m.mu.Lock()
 	defer func() {
 		m.mu.Unlock()
 	}()
-	return m.m[idx]
+	e, found := m.m[idx]
+	return e, found
 }
 
 func (m *SyncMap[T, E]) Set(idx T, e E) {

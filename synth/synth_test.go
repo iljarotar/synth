@@ -270,7 +270,7 @@ func TestSynth_Update(t *testing.T) {
 						CV:  "new-mod",
 						Mod: "new-mod",
 						In: map[string]float64{
-							"new-in": 0,
+							"new-in": 1,
 						},
 					},
 				},
@@ -310,7 +310,7 @@ func TestSynth_Update(t *testing.T) {
 					"w2": {
 						CV:     "new-cv",
 						Mod:    "new-mod",
-						Signal: []float64{2},
+						Signal: []float64{1},
 					},
 				},
 				Time:         5,
@@ -344,6 +344,11 @@ func TestSynth_Update(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			err := tt.new.Initialize(tt.s.sampleRate)
+			if err != nil {
+				t.Errorf("Synth.Update() new.Initialize() error %v", err)
+			}
+
 			tt.s.Update(tt.new)
 			if diff := cmp.Diff(tt.want, tt.s,
 				cmpopts.IgnoreUnexported(
