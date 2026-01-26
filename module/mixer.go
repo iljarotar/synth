@@ -153,15 +153,17 @@ func (m *Mixer) updateGains(new *Mixer) {
 	}
 
 	for _, name := range new.in.Keys() {
+		gain, _ := new.in.Get(name)
+
 		f, _ := m.inputFaders.Get(name)
 		if f != nil {
-			f.target = filterGain
+			f.target = gain
 			continue
 		}
 
 		m.inputFaders.Set(name, &fader{
 			current: 0,
-			target:  filterGain,
+			target:  gain,
 		})
 		m.in.Set(name, 0)
 	}
