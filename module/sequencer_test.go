@@ -170,7 +170,7 @@ func TestSequencer_Step(t *testing.T) {
 	tests := []struct {
 		name        string
 		s           *Sequencer
-		modules     ModuleMap
+		modules     *ModuleMap
 		want        float64
 		wantTrigger float64
 	}{
@@ -182,6 +182,7 @@ func TestSequencer_Step(t *testing.T) {
 				idx:          -1,
 				triggerValue: 0,
 			},
+			modules:     &ModuleMap{},
 			want:        -1,
 			wantTrigger: 0,
 		},
@@ -194,13 +195,13 @@ func TestSequencer_Step(t *testing.T) {
 				idx:          1,
 				triggerValue: 0,
 			},
-			modules: ModuleMap{
+			modules: NewModuleMap(map[string]IModule{
 				"trigger": &Module{
 					current: Output{
 						Mono: 1,
 					},
 				},
-			},
+			}),
 			want:        calc.Transpose(110, freqRange, outputRange),
 			wantTrigger: 1,
 		},
@@ -213,13 +214,13 @@ func TestSequencer_Step(t *testing.T) {
 				idx:          2,
 				triggerValue: 0,
 			},
-			modules: ModuleMap{
+			modules: NewModuleMap(map[string]IModule{
 				"trigger": &Module{
 					current: Output{
 						Mono: 1,
 					},
 				},
-			},
+			}),
 			want:        calc.Transpose(440, freqRange, outputRange),
 			wantTrigger: 1,
 		},

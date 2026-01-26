@@ -54,10 +54,10 @@ func (p *Pan) Update(new *Pan) {
 	}
 }
 
-func (p *Pan) Step(modules ModuleMap) {
-	pan := modulate(p.Pan, panRange, getMono(modules[p.Mod]))
+func (p *Pan) Step(modules *ModuleMap) {
+	pan := modulate(p.Pan, panRange, getMono(modules, p.Mod))
 	percent := calc.Percentage(pan, panRange)
-	in := getMono(modules[p.In])
+	in := getMono(modules, p.In)
 
 	p.current = Output{
 		Mono:  in,

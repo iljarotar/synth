@@ -98,8 +98,8 @@ func (e *Envelope) Update(new *Envelope) {
 	e.initializeFaders()
 }
 
-func (e *Envelope) Step(t float64, modules ModuleMap) {
-	gateValue := getMono(modules[e.Gate])
+func (e *Envelope) Step(t float64, modules *ModuleMap) {
+	gateValue := getMono(modules, e.Gate)
 
 	switch {
 	case e.gateValue <= 0 && gateValue > 0:

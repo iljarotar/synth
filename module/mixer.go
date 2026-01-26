@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/iljarotar/synth/calc"
+	"github.com/iljarotar/synth/concurrency"
 )
 
 type (
@@ -15,10 +16,11 @@ type (
 		In   map[string]float64 `yaml:"in"`
 		Fade float64            `yaml:"fade"`
 
+		in         *concurrency.SyncMap[string, float64]
 		sampleRate float64
 
 		gainFader   *fader
-		inputFaders map[string]*fader
+		inputFaders *concurrency.SyncMap[string, *fader]
 	}
 
 	MixerMap map[string]*Mixer
@@ -46,14 +48,16 @@ func (m *Mixer) initialize(sampleRate float64) error {
 		target:  m.Gain,
 	}
 
-	m.inputFaders = map[string]*fader{}
-	for mod, gain := range m.In {
-		m.In[mod] = calc.Limit(gain, inputGainRange)
+	m.in = concurrency.NewSyncMap(m.In)
+	m.inputFaders = concurrency.NewSyncMap(map[string]*fader{})
+	for _, name := range m.in.Keys() {
+		gain, _ := m.in.Get(name)
+		m.in.Set(name, calc.Limit(gain, inputGainRange))
 
-		m.inputFaders[mod] = &fader{
+		m.inputFaders.Set(name, &fader{
 			current: gain,
 			target:  gain,
-		}
+		})
 	}
 	m.initializeFaders()
 
@@ -68,16 +72,18 @@ func (m *Mixer) Update(new *Mixer) {
 	m.CV = new.CV
 	m.Mod = new.Mod
 	m.Fade = new.Fade
+	m.In = new.In
 	m.updateGains(new)
 }
 
-func (m *Mixer) Step(modules ModuleMap) {
+func (m *Mixer) Step(modules *ModuleMap) {
 	var (
 		left, right, mono float64
 	)
 
-	for name, gain := range m.In {
-		if mod, ok := modules[name]; ok {
+	for _, name := range m.in.Keys() {
+		gain, _ := m.in.Get(name)
+		if mod, _ := modules.Get(name); mod != nil {
 			left += mod.Current().Left * gain
 			right += mod.Current().Right * gain
 			mono += mod.Current().Mono * gain
@@ -86,9 +92,9 @@ func (m *Mixer) Step(modules ModuleMap) {
 
 	gain := m.Gain
 	if m.CV != "" {
-		gain = cv(gainRange, getMono(modules[m.CV]))
+		gain = cv(gainRange, getMono(modules, m.CV))
 	}
-	gain = modulate(gain, gainRange, getMono(modules[m.Mod]))
+	gain = modulate(gain, gainRange, getMono(modules, m.Mod))
 
 	left = calc.Limit(left*gain, outputRange)
 	right = calc.Limit(right*gain, outputRange)
@@ -108,15 +114,16 @@ func (m *Mixer) fade() {
 		m.Gain = m.gainFader.fade()
 	}
 
-	for mod, f := range m.inputFaders {
+	for _, name := range m.inputFaders.Keys() {
+		f, _ := m.inputFaders.Get(name)
 		if f == nil {
 			continue
 		}
-		m.In[mod] = f.fade()
+		m.in.Set(name, f.fade())
 
 		if f.current == 0 && f.target == 0 {
-			delete(m.inputFaders, mod)
-			delete(m.In, mod)
+			m.inputFaders.Delete(name)
+			m.in.Delete(name)
 		}
 	}
 }
@@ -126,9 +133,9 @@ func (m *Mixer) initializeFaders() {
 		m.gainFader.initialize(m.Fade, m.sampleRate)
 	}
 
-	for _, fader := range m.inputFaders {
-		if fader != nil {
-			fader.initialize(m.Fade, m.sampleRate)
+	for _, name := range m.inputFaders.Keys() {
+		if f, _ := m.inputFaders.Get(name); f != nil {
+			f.initialize(m.Fade, m.sampleRate)
 		}
 	}
 }
@@ -139,33 +146,35 @@ func (m *Mixer) updateGains(new *Mixer) {
 	}
 
 	if m.inputFaders == nil {
-		m.inputFaders = map[string]*fader{}
+		m.inputFaders = concurrency.NewSyncMap(map[string]*fader{})
 	}
-	if m.In == nil {
-		m.In = map[string]float64{}
+	if m.in == nil {
+		m.in = concurrency.NewSyncMap(map[string]float64{})
 	}
 
-	for mod, gain := range new.In {
-		f, ok := m.inputFaders[mod]
+	for _, name := range new.in.Keys() {
+		gain, _ := new.in.Get(name)
 
-		if ok && f != nil {
+		f, _ := m.inputFaders.Get(name)
+		if f != nil {
 			f.target = gain
 			continue
 		}
 
-		m.inputFaders[mod] = &fader{
+		m.inputFaders.Set(name, &fader{
 			current: 0,
 			target:  gain,
-		}
-		m.In[mod] = 0
+		})
+		m.in.Set(name, 0)
 	}
 
-	for mod, f := range m.inputFaders {
+	for _, name := range m.inputFaders.Keys() {
+		f, _ := m.inputFaders.Get(name)
 		if f == nil {
 			continue
 		}
 
-		if _, ok := new.In[mod]; !ok {
+		if _, ok := new.in.Get(name); !ok {
 			f.target = 0
 		}
 	}

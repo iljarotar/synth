@@ -1,13 +1,16 @@
 package module
 
-import "github.com/iljarotar/synth/calc"
+import (
+	"github.com/iljarotar/synth/calc"
+	"github.com/iljarotar/synth/concurrency"
+)
 
 type (
 	IModule interface {
 		Current() Output
 	}
 
-	ModuleMap map[string]IModule
+	ModuleMap = concurrency.SyncMap[string, IModule]
 
 	Module struct {
 		current Output
@@ -61,6 +64,10 @@ var (
 	}
 )
 
+func NewModuleMap(m map[string]IModule) *ModuleMap {
+	return concurrency.NewSyncMap(m)
+}
+
 func (m *Module) Current() Output {
 	return m.current
 }
@@ -81,7 +88,8 @@ func cv(rng calc.Range, val float64) float64 {
 	return calc.Transpose(val, outputRange, rng)
 }
 
-func getMono(mod IModule) float64 {
+func getMono(modules *ModuleMap, name string) float64 {
+	mod, _ := modules.Get(name)
 	if mod == nil {
 		return 0
 	}

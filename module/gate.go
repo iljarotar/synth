@@ -72,7 +72,7 @@ func (g *Gate) Update(new *Gate) {
 	}
 }
 
-func (g *Gate) Step(modules ModuleMap) {
+func (g *Gate) Step(modules *ModuleMap) {
 	if len(g.Signal) < 1 {
 		return
 	}
@@ -86,10 +86,10 @@ func (g *Gate) Step(modules ModuleMap) {
 
 	bpm := g.BPM
 	if g.CV != "" {
-		bpm = cv(bpmRange, getMono(modules[g.CV]))
+		bpm = cv(bpmRange, getMono(modules, g.CV))
 	}
 
-	bpm = modulate(bpm, bpmRange, getMono(modules[g.Mod]))
+	bpm = modulate(bpm, bpmRange, getMono(modules, g.Mod))
 	spb := samplesPerBeat(g.sampleRate, bpm)
 	if spb == 0 {
 		return

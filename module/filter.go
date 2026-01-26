@@ -38,13 +38,6 @@ const (
 	filterTypeLowPass  filterType = "LowPass"
 	filterTypeHighPass filterType = "HighPass"
 	filterTypeBandPass filterType = "BandPass"
-
-	gain  = -50
-	slope = 0.99
-)
-
-var (
-	amp = math.Pow(10, gain/40)
 )
 
 func (m FilterMap) Initialize(sampleRate float64) error {
@@ -110,15 +103,15 @@ func (f *Filter) Update(new *Filter) {
 	f.initializeFaders()
 }
 
-func (f *Filter) Step(modules ModuleMap) {
+func (f *Filter) Step(modules *ModuleMap) {
 	freq := f.Freq
 	if f.CV != "" {
-		freq = cv(freqRange, getMono(modules[f.CV]))
+		freq = cv(freqRange, getMono(modules, f.CV))
 	}
-	freq = modulate(freq, freqRange, getMono(modules[f.Mod]))
+	freq = modulate(freq, freqRange, getMono(modules, f.Mod))
 
 	f.calculateCoeffs(freq)
-	x := getMono(modules[f.In])
+	x := getMono(modules, f.In)
 	y := calc.Limit(f.tap(x, freq), outputRange)
 
 	f.current = Output{
@@ -232,8 +225,7 @@ func getOmega(freq float64, sampleRate float64) float64 {
 }
 
 func getAlphaLPHP(omega float64) float64 {
-	rootArg := (amp+1/amp)*(1/slope-slope) + 2
-	root := math.Sqrt(rootArg)
+	root := math.Sqrt(2)
 	factor := math.Sin(omega) / 2
 	return factor * root
 }

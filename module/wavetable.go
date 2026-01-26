@@ -67,7 +67,7 @@ func (w *Wavetable) Update(new *Wavetable) {
 	}
 }
 
-func (w *Wavetable) Step(modules ModuleMap) {
+func (w *Wavetable) Step(modules *ModuleMap) {
 	if len(w.Signal) < 1 {
 		return
 	}
@@ -80,10 +80,10 @@ func (w *Wavetable) Step(modules ModuleMap) {
 
 	freq := w.Freq
 	if w.CV != "" {
-		freq = cv(freqRange, getMono(modules[w.CV]))
+		freq = cv(freqRange, getMono(modules, w.CV))
 	}
 
-	mod := math.Pow(2, getMono(modules[w.Mod]))
+	mod := math.Pow(2, getMono(modules, w.Mod))
 	w.idx += freq * mod * float64(len(w.Signal)) / w.sampleRate
 
 	w.fade()

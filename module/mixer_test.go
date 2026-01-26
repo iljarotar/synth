@@ -4,25 +4,29 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/iljarotar/synth/concurrency"
 )
 
 func TestMixer_Step(t *testing.T) {
 	tests := []struct {
 		name    string
 		m       *Mixer
-		modules ModuleMap
+		modules *ModuleMap
 		want    Output
 	}{
 		{
 			name: "no input",
 			m: &Mixer{
-				Gain:       0,
-				In:         map[string]float64{},
-				sampleRate: 1,
+				Gain:        0,
+				In:          map[string]float64{},
+				sampleRate:  1,
+				inputFaders: concurrency.NewSyncMap(map[string]*fader{}),
+				in:          concurrency.NewSyncMap(map[string]float64{}),
 			},
-			modules: ModuleMap{
+			modules: NewModuleMap(map[string]IModule{
 				"in": &Module{},
-			},
+			}),
 			want: Output{},
 		},
 		{
@@ -32,13 +36,15 @@ func TestMixer_Step(t *testing.T) {
 				In: map[string]float64{
 					"sine": 1,
 				},
-				sampleRate: 1,
+				sampleRate:  1,
+				inputFaders: concurrency.NewSyncMap(map[string]*fader{}),
+				in:          concurrency.NewSyncMap(map[string]float64{}),
 			},
-			modules: ModuleMap{
+			modules: NewModuleMap(map[string]IModule{
 				"in": &Oscillator{
 					Module: Module{},
 				},
-			},
+			}),
 			want: Output{},
 		},
 		{
@@ -48,9 +54,11 @@ func TestMixer_Step(t *testing.T) {
 				In: map[string]float64{
 					"in": 0,
 				},
-				sampleRate: 1,
+				sampleRate:  1,
+				inputFaders: concurrency.NewSyncMap(map[string]*fader{}),
+				in:          concurrency.NewSyncMap(map[string]float64{}),
 			},
-			modules: ModuleMap{
+			modules: NewModuleMap(map[string]IModule{
 				"in": &Module{
 					current: Output{
 						Mono:  1,
@@ -58,7 +66,7 @@ func TestMixer_Step(t *testing.T) {
 						Right: 0.5,
 					},
 				},
-			},
+			}),
 			want: Output{},
 		},
 		{
@@ -68,9 +76,13 @@ func TestMixer_Step(t *testing.T) {
 				In: map[string]float64{
 					"in": 1,
 				},
-				sampleRate: 1,
+				sampleRate:  1,
+				inputFaders: concurrency.NewSyncMap(map[string]*fader{}),
+				in: concurrency.NewSyncMap(map[string]float64{
+					"in": 1,
+				}),
 			},
-			modules: ModuleMap{
+			modules: NewModuleMap(map[string]IModule{
 				"in": &Module{
 					current: Output{
 						Mono:  1,
@@ -78,7 +90,7 @@ func TestMixer_Step(t *testing.T) {
 						Right: 0.5,
 					},
 				},
-			},
+			}),
 			want: Output{
 				Mono:  1,
 				Left:  0.5,
@@ -93,9 +105,13 @@ func TestMixer_Step(t *testing.T) {
 				In: map[string]float64{
 					"in": 1,
 				},
-				sampleRate: 1,
+				sampleRate:  1,
+				inputFaders: concurrency.NewSyncMap(map[string]*fader{}),
+				in: concurrency.NewSyncMap(map[string]float64{
+					"in": 1,
+				}),
 			},
-			modules: ModuleMap{
+			modules: NewModuleMap(map[string]IModule{
 				"in": &Module{
 					current: Output{
 						Mono:  1,
@@ -110,7 +126,7 @@ func TestMixer_Step(t *testing.T) {
 						Right: 0.25,
 					},
 				},
-			},
+			}),
 			want: Output{
 				Mono:  1 * 0.75,
 				Left:  0.5 * 0.75,
@@ -125,9 +141,13 @@ func TestMixer_Step(t *testing.T) {
 				In: map[string]float64{
 					"in": 1,
 				},
-				sampleRate: 1,
+				sampleRate:  1,
+				inputFaders: concurrency.NewSyncMap(map[string]*fader{}),
+				in: concurrency.NewSyncMap(map[string]float64{
+					"in": 1,
+				}),
 			},
-			modules: ModuleMap{
+			modules: NewModuleMap(map[string]IModule{
 				"in": &Module{
 					current: Output{
 						Mono:  1,
@@ -142,7 +162,7 @@ func TestMixer_Step(t *testing.T) {
 						Right: 0.25,
 					},
 				},
-			},
+			}),
 			want: Output{
 				Mono:  1 * 0.75,
 				Left:  0.5 * 0.75,
@@ -191,13 +211,16 @@ func TestMixer_Update(t *testing.T) {
 					target:  1,
 					step:    0.5,
 				},
-				inputFaders: map[string]*fader{
+				inputFaders: concurrency.NewSyncMap(map[string]*fader{
 					"in1": {
 						current: 1,
 						target:  1,
 						step:    0.5,
 					},
-				},
+				}),
+				in: concurrency.NewSyncMap(map[string]float64{
+					"in": 1,
+				}),
 			},
 			new: nil,
 			want: &Mixer{
@@ -219,13 +242,16 @@ func TestMixer_Update(t *testing.T) {
 					target:  1,
 					step:    0.5,
 				},
-				inputFaders: map[string]*fader{
+				inputFaders: concurrency.NewSyncMap(map[string]*fader{
 					"in1": {
 						current: 1,
 						target:  1,
 						step:    0.5,
 					},
-				},
+				}),
+				in: concurrency.NewSyncMap(map[string]float64{
+					"in": 1,
+				}),
 			},
 		},
 		{
@@ -250,7 +276,7 @@ func TestMixer_Update(t *testing.T) {
 					target:  1,
 					step:    0.5,
 				},
-				inputFaders: map[string]*fader{
+				inputFaders: concurrency.NewSyncMap(map[string]*fader{
 					"in1": {
 						current: 1,
 						target:  1,
@@ -261,7 +287,11 @@ func TestMixer_Update(t *testing.T) {
 						target:  1,
 						step:    0.5,
 					},
-				},
+				}),
+				in: concurrency.NewSyncMap(map[string]float64{
+					"in1": 1,
+					"in2": 1,
+				}),
 			},
 			new: &Mixer{
 				Gain: 0.5,
@@ -272,6 +302,10 @@ func TestMixer_Update(t *testing.T) {
 					"in3": 0.5,
 				},
 				Fade: 2,
+				in: concurrency.NewSyncMap(map[string]float64{
+					"in1": 0.5,
+					"in3": 0.5,
+				}),
 			},
 			want: &Mixer{
 				Module: Module{
@@ -283,9 +317,8 @@ func TestMixer_Update(t *testing.T) {
 				CV:   "new-cv",
 				Mod:  "new-mod",
 				In: map[string]float64{
-					"in1": 1,
-					"in2": 1,
-					"in3": 0,
+					"in1": 0.5,
+					"in3": 0.5,
 				},
 				Fade:       2,
 				sampleRate: sampleRate,
@@ -294,7 +327,7 @@ func TestMixer_Update(t *testing.T) {
 					target:  0.5,
 					step:    -0.25 / sampleRate,
 				},
-				inputFaders: map[string]*fader{
+				inputFaders: concurrency.NewSyncMap(map[string]*fader{
 					"in1": {
 						current: 1,
 						target:  0.5,
@@ -310,14 +343,28 @@ func TestMixer_Update(t *testing.T) {
 						target:  0.5,
 						step:    0.25 / sampleRate,
 					},
-				},
+				}),
+				in: concurrency.NewSyncMap(map[string]float64{
+					"in1": 1,
+					"in2": 1,
+					"in3": 0,
+				}),
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.m.Update(tt.new)
-			if diff := cmp.Diff(tt.want, tt.m, cmp.AllowUnexported(Module{}, Mixer{}, fader{})); diff != "" {
+			if diff := cmp.Diff(
+				tt.want,
+				tt.m,
+				cmp.AllowUnexported(
+					Module{},
+					Mixer{},
+					fader{},
+				),
+				cmpopts.IgnoreUnexported(concurrency.SyncMap[string, *fader]{}, concurrency.SyncMap[string, float64]{}),
+			); diff != "" {
 				t.Errorf("Mixer.Update() diff = %s", diff)
 			}
 		})
@@ -343,7 +390,7 @@ func TestMixer_fade(t *testing.T) {
 					target:  1,
 					step:    0.5,
 				},
-				inputFaders: map[string]*fader{
+				inputFaders: concurrency.NewSyncMap(map[string]*fader{
 					"in1": {
 						current: 1,
 						target:  1,
@@ -354,7 +401,11 @@ func TestMixer_fade(t *testing.T) {
 						target:  1,
 						step:    0.5,
 					},
-				},
+				}),
+				in: concurrency.NewSyncMap(map[string]float64{
+					"in1": 1,
+					"in2": 1,
+				}),
 			},
 			want: &Mixer{
 				Gain: 1,
@@ -366,7 +417,7 @@ func TestMixer_fade(t *testing.T) {
 					current: 1,
 					target:  1,
 				},
-				inputFaders: map[string]*fader{
+				inputFaders: concurrency.NewSyncMap(map[string]*fader{
 					"in1": {
 						current: 1,
 						target:  1,
@@ -375,7 +426,11 @@ func TestMixer_fade(t *testing.T) {
 						current: 1,
 						target:  1,
 					},
-				},
+				}),
+				in: concurrency.NewSyncMap(map[string]float64{
+					"in1": 1,
+					"in2": 1,
+				}),
 			},
 		},
 		{
@@ -391,7 +446,7 @@ func TestMixer_fade(t *testing.T) {
 					target:  0.5,
 					step:    -0.1,
 				},
-				inputFaders: map[string]*fader{
+				inputFaders: concurrency.NewSyncMap(map[string]*fader{
 					"in1": {
 						current: 1,
 						target:  0.5,
@@ -402,32 +457,49 @@ func TestMixer_fade(t *testing.T) {
 						target:  0,
 						step:    -0.2,
 					},
-				},
+				}),
+				in: concurrency.NewSyncMap(map[string]float64{
+					"in1": 1,
+					"in2": 0.1,
+				}),
 			},
 			want: &Mixer{
 				Gain: 0.9,
 				In: map[string]float64{
-					"in1": 0.8,
+					"in1": 1,
+					"in2": 0.1,
 				},
 				gainFader: &fader{
 					current: 0.9,
 					target:  0.5,
 					step:    -0.1,
 				},
-				inputFaders: map[string]*fader{
+				inputFaders: concurrency.NewSyncMap(map[string]*fader{
 					"in1": {
 						current: 0.8,
 						target:  0.5,
 						step:    -0.2,
 					},
-				},
+				}),
+				in: concurrency.NewSyncMap(map[string]float64{
+					"in1": 0.8,
+				}),
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.m.fade()
-			if diff := cmp.Diff(tt.want, tt.m, cmp.AllowUnexported(Module{}, Mixer{}, fader{})); diff != "" {
+			if diff := cmp.Diff(
+				tt.want,
+				tt.m,
+				cmp.AllowUnexported(
+					Module{},
+					Mixer{},
+					fader{},
+				),
+				cmpopts.IgnoreUnexported(concurrency.SyncMap[string, *fader]{}, concurrency.SyncMap[string, float64]{}),
+			); diff != "" {
 				t.Errorf("Mixer.fade() diff = %s", diff)
 			}
 		})

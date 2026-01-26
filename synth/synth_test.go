@@ -1,6 +1,7 @@
 package synth
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -71,10 +72,12 @@ func TestSynth_Update(t *testing.T) {
 		w2   = &module.Wavetable{}
 	)
 	tests := []struct {
-		name string
-		s    *Synth
-		new  *Synth
-		want *Synth
+		name           string
+		s              *Synth
+		new            *Synth
+		want           *Synth
+		currentModules map[string]module.IModule
+		wantModules    map[string]module.IModule
 	}{
 		{
 			name: "update all modules",
@@ -125,7 +128,7 @@ func TestSynth_Update(t *testing.T) {
 				VolumeMemory: 1,
 				sampleRate:   44100,
 				volumeStep:   0.1,
-				modules: module.ModuleMap{
+				modules: module.NewModuleMap(map[string]module.IModule{
 					"env1": env1,
 					"env2": env2,
 					"f1":   f1,
@@ -146,7 +149,7 @@ func TestSynth_Update(t *testing.T) {
 					"seq2": seq2,
 					"w1":   w1,
 					"w2":   w2,
-				},
+				}),
 				envelopes:   []*module.Envelope{env1, env2},
 				filters:     []*module.Filter{f1, f2},
 				gates:       []*module.Gate{g1, g2},
@@ -267,7 +270,7 @@ func TestSynth_Update(t *testing.T) {
 						CV:  "new-mod",
 						Mod: "new-mod",
 						In: map[string]float64{
-							"new-in": 0,
+							"new-in": 1,
 						},
 					},
 				},
@@ -307,14 +310,14 @@ func TestSynth_Update(t *testing.T) {
 					"w2": {
 						CV:     "new-cv",
 						Mod:    "new-mod",
-						Signal: []float64{2},
+						Signal: []float64{1},
 					},
 				},
 				Time:         5,
 				VolumeMemory: 1,
 				sampleRate:   44100,
 				volumeStep:   0.1,
-				modules: module.ModuleMap{
+				modules: module.NewModuleMap(map[string]module.IModule{
 					"env2": env2,
 					"f2":   f2,
 					"g2":   g2,
@@ -325,7 +328,7 @@ func TestSynth_Update(t *testing.T) {
 					"s2":   s2,
 					"seq2": seq2,
 					"w2":   w2,
-				},
+				}),
 				envelopes:   []*module.Envelope{env2},
 				filters:     []*module.Filter{f2},
 				gates:       []*module.Gate{g2},
@@ -341,6 +344,11 @@ func TestSynth_Update(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			err := tt.new.Initialize(tt.s.sampleRate)
+			if err != nil {
+				t.Errorf("Synth.Update() new.Initialize() error %v", err)
+			}
+
 			tt.s.Update(tt.new)
 			if diff := cmp.Diff(tt.want, tt.s,
 				cmpopts.IgnoreUnexported(
@@ -356,7 +364,8 @@ func TestSynth_Update(t *testing.T) {
 					module.Sequencer{},
 					module.Wavetable{},
 				),
-				cmp.AllowUnexported(Synth{}),
+				cmp.AllowUnexported(Synth{}, module.ModuleMap{}),
+				cmpopts.IgnoreUnexported(sync.Mutex{}),
 			); diff != "" {
 				t.Errorf("Synth.Update() diff = %s", diff)
 			}
