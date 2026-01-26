@@ -38,13 +38,6 @@ const (
 	filterTypeLowPass  filterType = "LowPass"
 	filterTypeHighPass filterType = "HighPass"
 	filterTypeBandPass filterType = "BandPass"
-
-	filterGain  = -50
-	filterSlope = 0.99
-)
-
-var (
-	amp = math.Pow(10, filterGain/40)
 )
 
 func (m FilterMap) Initialize(sampleRate float64) error {
@@ -232,8 +225,7 @@ func getOmega(freq float64, sampleRate float64) float64 {
 }
 
 func getAlphaLPHP(omega float64) float64 {
-	rootArg := (amp+1/amp)*(1/filterSlope-filterSlope) + 2
-	root := math.Sqrt(rootArg)
+	root := math.Sqrt(2)
 	factor := math.Sin(omega) / 2
 	return factor * root
 }
