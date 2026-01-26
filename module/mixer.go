@@ -148,7 +148,7 @@ func (m *Mixer) updateGains(new *Mixer) {
 	if m.inputFaders == nil {
 		m.inputFaders = concurrency.NewSyncMap(map[string]*fader{})
 	}
-	if len(m.in.Keys()) == 0 {
+	if m.in == nil || len(m.in.Keys()) == 0 {
 		m.in = concurrency.NewSyncMap(map[string]float64{})
 	}
 
