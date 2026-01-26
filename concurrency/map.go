@@ -33,6 +33,9 @@ func (m *SyncMap[T, E]) Set(idx T, e E) {
 	defer func() {
 		m.mu.Unlock()
 	}()
+	if m.m == nil {
+		m.m = make(map[T]E)
+	}
 	m.m[idx] = e
 }
 
