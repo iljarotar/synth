@@ -62,6 +62,10 @@ var (
 		Min: -24,
 		Max: 24,
 	}
+	cvRange = calc.Range{
+		Min: 0,
+		Max: 1,
+	}
 )
 
 func NewModuleMap(m map[string]IModule) *ModuleMap {
@@ -84,8 +88,8 @@ func modulate(x float64, rng calc.Range, mod float64) float64 {
 }
 
 func cv(rng calc.Range, val float64) float64 {
-	val = calc.Limit(val, outputRange)
-	return calc.Transpose(val, outputRange, rng)
+	val = calc.Limit(val, cvRange)
+	return calc.Transpose(val, cvRange, rng)
 }
 
 func getMono(modules *ModuleMap, name string) float64 {

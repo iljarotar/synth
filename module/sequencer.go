@@ -94,7 +94,7 @@ func (s *Sequencer) Step(modules *ModuleMap) {
 		freq = s.sequence[s.idx]
 	}
 
-	val := calc.Transpose(freq, freqRange, outputRange)
+	val := calc.Transpose(freq, freqRange, cvRange)
 	s.current = Output{
 		Mono:  val,
 		Left:  val / 2,

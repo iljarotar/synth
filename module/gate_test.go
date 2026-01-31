@@ -80,7 +80,7 @@ func TestGate_Step(t *testing.T) {
 			modules: NewModuleMap(map[string]IModule{
 				"cv": &Module{
 					current: Output{
-						Mono: calc.Transpose(120, bpmRange, outputRange),
+						Mono: calc.Transpose(120, bpmRange, cvRange),
 					},
 				},
 			}),

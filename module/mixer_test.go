@@ -157,16 +157,14 @@ func TestMixer_Step(t *testing.T) {
 				},
 				"cv": &Module{
 					current: Output{
-						Mono:  0.5,
-						Left:  0.25,
-						Right: 0.25,
+						Mono: 0.5,
 					},
 				},
 			}),
 			want: Output{
-				Mono:  1 * 0.75,
-				Left:  0.5 * 0.75,
-				Right: 0.5 * 0.75,
+				Mono:  1 * 0.5,
+				Left:  0.5 * 0.5,
+				Right: 0.5 * 0.5,
 			},
 		},
 	}

@@ -106,12 +106,12 @@ func (e *Envelope) Step(t float64, modules *ModuleMap) {
 		e.triggeredAt = t
 	case e.gateValue > 0 && gateValue <= 0:
 		e.releasedAt = t
-		e.level = calc.Transpose(e.current.Mono, outputRange, gainRange)
+		e.level = calc.Transpose(e.current.Mono, cvRange, gainRange)
 	default:
 		// noop
 	}
 
-	val := calc.Transpose(e.getValue(t), gainRange, outputRange)
+	val := calc.Transpose(e.getValue(t), gainRange, cvRange)
 	e.current = Output{
 		Mono:  val,
 		Left:  val / 2,

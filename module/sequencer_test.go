@@ -183,7 +183,7 @@ func TestSequencer_Step(t *testing.T) {
 				triggerValue: 0,
 			},
 			modules:     &ModuleMap{},
-			want:        -1,
+			want:        0,
 			wantTrigger: 0,
 		},
 		{
@@ -202,7 +202,7 @@ func TestSequencer_Step(t *testing.T) {
 					},
 				},
 			}),
-			want:        calc.Transpose(110, freqRange, outputRange),
+			want:        calc.Transpose(110, freqRange, cvRange),
 			wantTrigger: 1,
 		},
 		{
@@ -221,7 +221,7 @@ func TestSequencer_Step(t *testing.T) {
 					},
 				},
 			}),
-			want:        calc.Transpose(440, freqRange, outputRange),
+			want:        calc.Transpose(440, freqRange, cvRange),
 			wantTrigger: 1,
 		},
 	}
