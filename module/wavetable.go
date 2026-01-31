@@ -29,11 +29,11 @@ func (m WavetableMap) Initialize(sampleRate float64) {
 		if w == nil {
 			continue
 		}
-		w.initialze(sampleRate)
+		w.initialize(sampleRate)
 	}
 }
 
-func (w *Wavetable) initialze(sampleRate float64) {
+func (w *Wavetable) initialize(sampleRate float64) {
 	w.sampleRate = sampleRate
 	w.Freq = calc.Limit(w.Freq, freqRange)
 	w.Fade = calc.Limit(w.Fade, fadeRange)

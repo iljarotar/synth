@@ -6,7 +6,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestWavetable_initialze(t *testing.T) {
+func TestWavetable_initialize(t *testing.T) {
 	tests := []struct {
 		name string
 		w    *Wavetable
@@ -22,7 +22,7 @@ func TestWavetable_initialze(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.w.initialze(0)
+			tt.w.initialize(0)
 
 			if diff := cmp.Diff(tt.want, tt.w.Signal); diff != "" {
 				t.Errorf("Wavetable.initialize() diff = %s", diff)

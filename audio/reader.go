@@ -11,7 +11,7 @@ type reader struct {
 
 func (r *reader) Read(buf []byte) (int, error) {
 	if len(buf)%int(bytesPerSample) != 0 {
-		return 0, fmt.Errorf("buffer lenght must be divisible by %d", bytesPerSample)
+		return 0, fmt.Errorf("buffer length must be divisible by %d", bytesPerSample)
 	}
 	numSamples := len(buf) / int(bytesPerSample)
 

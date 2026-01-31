@@ -8,7 +8,7 @@ import (
 	"github.com/iljarotar/synth/calc"
 )
 
-func TestGate_initialze(t *testing.T) {
+func TestGate_initialize(t *testing.T) {
 	tests := []struct {
 		name       string
 		g          *Gate
@@ -24,7 +24,7 @@ func TestGate_initialze(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.g.initialze(44100)
+			tt.g.initialize(44100)
 
 			if diff := cmp.Diff(tt.wantSignal, tt.g.Signal); diff != "" {
 				t.Errorf("Gate.initialize() signal diff = %s", diff)
@@ -80,7 +80,7 @@ func TestGate_Step(t *testing.T) {
 			modules: NewModuleMap(map[string]IModule{
 				"cv": &Module{
 					current: Output{
-						Mono: calc.Transpose(120, bpmRange, outputRange),
+						Mono: calc.Transpose(120, bpmRange, cvRange),
 					},
 				},
 			}),

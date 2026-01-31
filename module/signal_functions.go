@@ -20,7 +20,7 @@ func newSignalFunc(oscType oscillatorType) (SignalFunc, error) {
 	case oscillatorTypeReverseSawtooth:
 		return ReverseSawtoothSignalFunc(), nil
 	default:
-		return NoSignalFunc(), fmt.Errorf("unknow oscillator type %s", oscType)
+		return NoSignalFunc(), fmt.Errorf("unknown oscillator type %s", oscType)
 	}
 }
 

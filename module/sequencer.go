@@ -33,14 +33,14 @@ func (m SequencerMap) Initialize() error {
 		if s == nil {
 			continue
 		}
-		if err := s.initialze(); err != nil {
+		if err := s.initialize(); err != nil {
 			return fmt.Errorf("failed to initialize sequencer %s: %w", name, err)
 		}
 	}
 	return nil
 }
 
-func (s *Sequencer) initialze() error {
+func (s *Sequencer) initialize() error {
 	s.Pitch = calc.Limit(s.Pitch, pitchRange)
 	s.Transpose = calc.Limit(s.Transpose, transposeRange)
 
@@ -94,7 +94,7 @@ func (s *Sequencer) Step(modules *ModuleMap) {
 		freq = s.sequence[s.idx]
 	}
 
-	val := calc.Transpose(freq, freqRange, outputRange)
+	val := calc.Transpose(freq, freqRange, cvRange)
 	s.current = Output{
 		Mono:  val,
 		Left:  val / 2,

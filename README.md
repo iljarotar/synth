@@ -35,22 +35,32 @@ Then save the file and the transition will start.
 ### Patch Files
 
 This section explains all available modules and provides example configurations.
-To see some more examples see the [examples](examples/) directory.
+For more examples see the [examples](examples/) directory.
 
 Each module must have a unique name across all modules.
 This name is used as a reference in other modules, e.g. when a module is used as a CV or modulator.
+Each module outputs values in the interval `[-1, 1]`.
+Additionally, all parameters of a module are limited not to extend the reasonable ranges for each specific parameter, e.g. an oscillator's frequency will never exceed 20,000Hz.
+Such limitations make the outcome of a configuration more predictable.
+Those modules whose main purpose is to provide CV values for other modules only output values between `0` and `1`.
+
+#### CV
+
 If a module is provided with a CV its static value is ignored.
 For example, if you pass a CV to an oscillator this CV will provide the oscillator's frequency and the statically assigned frequency will be ignored.
+When mapping a CV-provider's output to a parameter, only positive values are considered.
+So a value in the interval `[0, 1]` is mapped to the respective parameter's range.
+For example, a sequencer will output values in the range `[0, 1]` and those values will be mapped to an oscillator's frequency range `[0, 20000]` if the sequencer is used as a CV for that oscillator.
+
+#### Modulation
+
 If a module is provided with a modulator it will modulate a parameter around its static or CV-provided value.
 For example, a mixer with a gain of `0.5` and a sine wave as a modulator will output a tremolo around the gain value of `0.5`.
-
-Each module outputs values in the range `[-1, 1]`.
-When using a module as a CV or modulator for some parameter of another module the range `[-1, 1]` is mapped to the range of the respective parameter.
-
-Example:
-An oscillator's frequency is in the range `[0, 20000]`.
+For example, an oscillator's frequency is in the range `[0, 20000]`.
 A modulator that outputs values in the entire possible range of `[-1, 1]` will modulate the oscillator's frequency in the entire range `[0, 20000]`.
-To control the amount of modulation you must pass the modulator through a mixer and attenuate its gain.
+To control the amount of modulation you must send the modulator through a mixer and attenuate its gain.
+
+#### Module Reference
 
 The following yaml file provides examples and explanations for all configuration parameters.
 
@@ -65,6 +75,7 @@ vol: 1
 out: name-of-main-module
 
 # adsr envelopes
+# output values in range [0, 1]
 envelopes:
   # the unique module name to be used as a reference in other modules
   envelope:
@@ -236,22 +247,23 @@ samplers:
     trigger: name-of-trigger-module
 
 # sequencers can be combined with oscillators or wavetables to create melodic sequences
+# output values in range [0, 1]
 sequencers:
   # the unique module name to be used as a reference in other modules
   sequencer:
-    # a seqeunce of notes in scientific pitch notation
+    # a sequence of notes in scientific pitch notation
     # flats are denoted by `b`, sharps by `#`
     # a note is separated from its octave by an underscore
     # minimum octave is 0, maximum is 10
     sequence: ["a_4", "eb_3", "c#_5"]
 
-    # when the trigger's value changes from negative or zero to postive the next note in the sequence is triggered
+    # when the trigger's value changes from negative or zero to positive the next note in the sequence is triggered
     trigger: name-of-trigger-module
 
     # base pitch from which to calculate all other frequencies
     pitch: 440
 
-    # tranpose the whole sequence by any number of semitones
+    # transpose the whole sequence by any number of semitones
     # range `[-24, 24]`
     transpose: -4
 

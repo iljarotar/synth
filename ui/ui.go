@@ -141,7 +141,7 @@ func (ui *UI) resetScreen() {
 		LineBreaks(1)
 	}
 	if ui.showVolumeWarning {
-		fmt.Printf("%s", log.Colored("[WARNING] Volume exceeded 100%%", log.ColorOrangeStorng))
+		fmt.Printf("%s", log.Colored("[WARNING] Volume exceeded 100%%", log.ColorOrangeStrong))
 		LineBreaks(2)
 	}
 	fmt.Printf("%s", ui.time)
