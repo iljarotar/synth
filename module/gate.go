@@ -25,16 +25,16 @@ type (
 	GateMap map[string]*Gate
 )
 
-func (m GateMap) Initialze(sampleRate float64) {
+func (m GateMap) Initialize(sampleRate float64) {
 	for _, g := range m {
 		if g == nil {
 			continue
 		}
-		g.initialze(sampleRate)
+		g.initialize(sampleRate)
 	}
 }
 
-func (g *Gate) initialze(sampleRate float64) {
+func (g *Gate) initialize(sampleRate float64) {
 	g.sampleRate = sampleRate
 	g.BPM = calc.Limit(g.BPM, bpmRange)
 	g.Fade = calc.Limit(g.Fade, fadeRange)

@@ -43,7 +43,7 @@ func (m OscillatorMap) Initialize(sampleRate float64) error {
 			continue
 		}
 		if err := o.initialize(sampleRate); err != nil {
-			return fmt.Errorf("failed to initialze oscillator %s: %w", name, err)
+			return fmt.Errorf("failed to initialize oscillator %s: %w", name, err)
 		}
 	}
 	return nil

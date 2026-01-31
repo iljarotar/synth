@@ -79,7 +79,7 @@ func TestPan_Update(t *testing.T) {
 		want *Pan
 	}{
 		{
-			name: "no udpate necessary",
+			name: "no update necessary",
 			p: &Pan{
 				Module: Module{
 					current: Output{

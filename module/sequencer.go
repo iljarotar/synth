@@ -33,14 +33,14 @@ func (m SequencerMap) Initialize() error {
 		if s == nil {
 			continue
 		}
-		if err := s.initialze(); err != nil {
+		if err := s.initialize(); err != nil {
 			return fmt.Errorf("failed to initialize sequencer %s: %w", name, err)
 		}
 	}
 	return nil
 }
 
-func (s *Sequencer) initialze() error {
+func (s *Sequencer) initialize() error {
 	s.Pitch = calc.Limit(s.Pitch, pitchRange)
 	s.Transpose = calc.Limit(s.Transpose, transposeRange)
 

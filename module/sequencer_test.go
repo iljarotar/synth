@@ -337,7 +337,7 @@ func TestSequencer_Update(t *testing.T) {
 	}
 }
 
-func TestSequencer_initialze(t *testing.T) {
+func TestSequencer_initialize(t *testing.T) {
 	tests := []struct {
 		name    string
 		s       *Sequencer
@@ -345,7 +345,7 @@ func TestSequencer_initialze(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "set limmits correctly",
+			name: "set limits correctly",
 			s: &Sequencer{
 				Sequence:     []string{"a_4", "a_3"},
 				Trigger:      "trigger",
@@ -373,11 +373,11 @@ func TestSequencer_initialze(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.s.initialze(); (err != nil) != tt.wantErr {
-				t.Errorf("Sequencer.initialze() error = %v, wantErr %v", err, tt.wantErr)
+			if err := tt.s.initialize(); (err != nil) != tt.wantErr {
+				t.Errorf("Sequencer.initialize() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if diff := cmp.Diff(tt.want, tt.s, cmp.AllowUnexported(Module{}, Sequencer{})); diff != "" {
-				t.Errorf("Sequencer.initialze() diff = %s", diff)
+				t.Errorf("Sequencer.initialize() diff = %s", diff)
 			}
 		})
 	}

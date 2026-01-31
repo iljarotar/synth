@@ -44,7 +44,7 @@ func (l *Logger) Info(log string) {
 }
 
 func (l *Logger) Warning(log string) {
-	l.sendLog(log, labelWarning, ColorOrangeStorng)
+	l.sendLog(log, labelWarning, ColorOrangeStrong)
 }
 
 func (l *Logger) Error(log string) {
