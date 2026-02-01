@@ -66,6 +66,14 @@ var (
 		Min: 0,
 		Max: 1,
 	}
+	combTimeRange = calc.Range{
+		Min: 0,
+		Max: 5000,
+	}
+	combMixRange = calc.Range{
+		Min: 0,
+		Max: 1,
+	}
 )
 
 func NewModuleMap(m map[string]IModule) *ModuleMap {

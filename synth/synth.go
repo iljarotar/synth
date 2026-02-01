@@ -21,6 +21,7 @@ type Synth struct {
 	Out    string  `yaml:"out"`
 	Volume float64 `yaml:"vol"`
 
+	Delays      module.DelayMap      `yaml:"delays"`
 	Envelopes   module.EnvelopeMap   `yaml:"envelopes"`
 	Filters     module.FilterMap     `yaml:"filters"`
 	Gates       module.GateMap       `yaml:"gates"`
@@ -40,6 +41,7 @@ type Synth struct {
 	logger            *log.Logger
 	modules           *module.ModuleMap
 
+	delays      []*module.Delay
 	envelopes   []*module.Envelope
 	filters     []*module.Filter
 	gates       []*module.Gate
@@ -77,6 +79,7 @@ func (s *Synth) Initialize(sampleRate float64) error {
 		return err
 	}
 
+	s.Delays.Initialize(sampleRate)
 	s.Envelopes.Initialize(sampleRate)
 	s.Gates.Initialize(sampleRate)
 	s.Pans.Initialize(sampleRate)
@@ -157,6 +160,12 @@ func (s *Synth) adjustVolume() {
 }
 
 func (s *Synth) step() {
+	for _, d := range s.delays {
+		if d == nil {
+			continue
+		}
+		d.Step(s.modules)
+	}
 	for _, e := range s.envelopes {
 		if e == nil {
 			continue
@@ -233,6 +242,12 @@ func (s *Synth) makeModulesMap() {
 		s.modules = module.NewModuleMap(map[string]module.IModule{})
 	}
 
+	for name, d := range s.Delays {
+		if d == nil {
+			continue
+		}
+		s.modules.Set(name, d)
+	}
 	for name, e := range s.Envelopes {
 		if e == nil {
 			continue
@@ -296,6 +311,7 @@ func (s *Synth) makeModulesMap() {
 }
 
 func (s *Synth) flattenModules() {
+	s.delays = lo.Values(s.Delays)
 	s.envelopes = lo.Values(s.Envelopes)
 	s.filters = lo.Values(s.Filters)
 	s.gates = lo.Values(s.Gates)
@@ -313,6 +329,15 @@ func (s *Synth) deleteOldModules(new *Synth) {
 		s.modules = module.NewModuleMap(map[string]module.IModule{})
 	}
 
+	for name, delay := range s.Delays {
+		if _, ok := new.Delays[name]; !ok {
+			delete(s.Delays, name)
+			s.modules.Delete(name)
+			s.delays = slices.DeleteFunc(s.delays, func(d *module.Delay) bool {
+				return delay == d
+			})
+		}
+	}
 	for name, env := range s.Envelopes {
 		if _, ok := new.Envelopes[name]; !ok {
 			delete(s.Envelopes, name)
@@ -410,6 +435,13 @@ func (s *Synth) addNewModules(new *Synth) {
 		s.modules = module.NewModuleMap(map[string]module.IModule{})
 	}
 
+	for name, d := range new.Delays {
+		if _, ok := s.Delays[name]; !ok {
+			s.Delays[name] = d
+			s.delays = append(s.delays, d)
+			s.modules.Set(name, d)
+		}
+	}
 	for name, e := range new.Envelopes {
 		if _, ok := s.Envelopes[name]; !ok {
 			s.Envelopes[name] = e
@@ -483,6 +515,11 @@ func (s *Synth) addNewModules(new *Synth) {
 }
 
 func (s *Synth) updateModules(new *Synth) {
+	for name, delay := range s.Delays {
+		if newDelay, ok := new.Delays[name]; ok {
+			delay.Update(newDelay)
+		}
+	}
 	for name, env := range s.Envelopes {
 		if newEnv, ok := new.Envelopes[name]; ok {
 			env.Update(newEnv)
@@ -531,6 +568,9 @@ func (s *Synth) updateModules(new *Synth) {
 }
 
 func (s *Synth) initializeEmptyMaps() {
+	if s.Delays == nil {
+		s.Delays = module.DelayMap{}
+	}
 	if s.Envelopes == nil {
 		s.Envelopes = module.EnvelopeMap{}
 	}
