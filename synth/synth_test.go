@@ -50,6 +50,8 @@ func Test_secondsToStep(t *testing.T) {
 
 func TestSynth_Update(t *testing.T) {
 	var (
+		d1   = &module.Delay{}
+		d2   = &module.Delay{}
 		env1 = &module.Envelope{}
 		env2 = &module.Envelope{}
 		f1   = &module.Filter{}
@@ -84,6 +86,10 @@ func TestSynth_Update(t *testing.T) {
 			s: &Synth{
 				Out:    "main",
 				Volume: 0.5,
+				Delays: module.DelayMap{
+					"d1": d1,
+					"d2": d2,
+				},
 				Envelopes: module.EnvelopeMap{
 					"env1": env1,
 					"env2": env2,
@@ -129,6 +135,8 @@ func TestSynth_Update(t *testing.T) {
 				sampleRate:   44100,
 				volumeStep:   0.1,
 				modules: module.NewModuleMap(map[string]module.IModule{
+					"d1":   d1,
+					"d2":   d2,
 					"env1": env1,
 					"env2": env2,
 					"f1":   f1,
@@ -150,6 +158,7 @@ func TestSynth_Update(t *testing.T) {
 					"w1":   w1,
 					"w2":   w2,
 				}),
+				delays:      []*module.Delay{d1, d2},
 				envelopes:   []*module.Envelope{env1, env2},
 				filters:     []*module.Filter{f1, f2},
 				gates:       []*module.Gate{g1, g2},
@@ -162,6 +171,16 @@ func TestSynth_Update(t *testing.T) {
 				wavetables:  []*module.Wavetable{w1, w2},
 			},
 			new: &Synth{
+				Delays: module.DelayMap{
+					"d2": {
+						Time: 20,
+						Mix:  0.5,
+						In:   "new-in",
+						CV:   "new-cv",
+						Mod:  "new-mod",
+						Fade: 2,
+					},
+				},
 				Envelopes: module.EnvelopeMap{
 					"env2": {
 						Gate:    "new-gate",
@@ -245,6 +264,15 @@ func TestSynth_Update(t *testing.T) {
 			want: &Synth{
 				Out:    "main",
 				Volume: 0.5,
+				Delays: module.DelayMap{
+					"d2": {
+						Time: 20,
+						In:   "new-in",
+						CV:   "new-cv",
+						Mod:  "new-mod",
+						Fade: 2,
+					},
+				},
 				Envelopes: module.EnvelopeMap{
 					"env2": {
 						Gate: "new-gate",
@@ -318,6 +346,7 @@ func TestSynth_Update(t *testing.T) {
 				sampleRate:   44100,
 				volumeStep:   0.1,
 				modules: module.NewModuleMap(map[string]module.IModule{
+					"d2":   d2,
 					"env2": env2,
 					"f2":   f2,
 					"g2":   g2,
@@ -329,6 +358,7 @@ func TestSynth_Update(t *testing.T) {
 					"seq2": seq2,
 					"w2":   w2,
 				}),
+				delays:      []*module.Delay{d2},
 				envelopes:   []*module.Envelope{env2},
 				filters:     []*module.Filter{f2},
 				gates:       []*module.Gate{g2},
@@ -353,6 +383,7 @@ func TestSynth_Update(t *testing.T) {
 			if diff := cmp.Diff(tt.want, tt.s,
 				cmpopts.IgnoreUnexported(
 					module.Module{},
+					module.Delay{},
 					module.Envelope{},
 					module.Filter{},
 					module.Gate{},
@@ -383,6 +414,7 @@ func TestSynth_initializeEmptyMaps(t *testing.T) {
 			name: "initialize empty",
 			s:    &Synth{},
 			want: &Synth{
+				Delays:      module.DelayMap{},
 				Envelopes:   module.EnvelopeMap{},
 				Filters:     module.FilterMap{},
 				Gates:       module.GateMap{},
