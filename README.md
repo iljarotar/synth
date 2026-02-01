@@ -74,6 +74,30 @@ vol: 1
 # name of the module to output
 out: name-of-main-module
 
+# delay effects
+delays:
+  # the unique module name to be used as a reference in other modules
+  delay:
+    # delay time in milliseconds in range [0, 5000]
+    time: 100
+
+    # mix of dry and wet signal [0, 1]
+    # 0 is only dry, 1 is 100% wet
+    mix: 0.25
+
+    # name of the module to run through the delay
+    in: name-of-input-module
+
+    # cv for `mix`
+    cv: name-of-cv-module
+
+    # modulator for `mix`
+    mod: name-of-modulator
+
+    # fade controls the transition length in seconds
+    # affected parameter is `mix`
+    fade: 2
+
 # adsr envelopes
 # output values in range [0, 1]
 envelopes:
