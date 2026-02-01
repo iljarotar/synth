@@ -1,0 +1,54 @@
+vol: 1
+out: main
+
+delays:
+  delay-bass:
+    time: 151
+    mix: 0.65
+    in: mix-bass
+    fade: 1
+
+envelopes:
+  env:
+    attack: 0.01
+    decay: 0.01
+    release: 0.2
+    peak: 0.5
+    level: 0.2
+    gate: gate
+
+gates:
+  gate:
+    bpm: 400
+    signal: [
+      1,0,0,0,
+      0,0,1,0,
+      0,0,0,0,
+      1,0,0,0,
+      0,0,0,0,
+      1,0,0,0,
+      0,0,0,0,
+      1,0,0,0,
+      ]
+
+mixers:
+  main:
+    gain: 1
+    in:
+      delay-bass: 1
+
+  mix-bass:
+    cv: env
+    in:
+      bass: 1
+
+oscillators:
+  bass:
+    type: Triangle
+    cv: seq-bass
+
+sequencers:
+  seq-bass:
+    sequence: [bb_2, b_2, bb_1, f#_2, f_2]
+    trigger: gate
+    pitch: 440

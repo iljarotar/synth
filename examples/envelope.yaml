@@ -3,7 +3,7 @@ out: main
 
 envelopes:
   env:
-    attack: 0.01
+    attack: 0.02
     decay: 0.01
     release: 0.2
     peak: 0.5
@@ -28,13 +28,13 @@ mixers:
       sine: 1
 
   tremolo_mix:
-    gain: 0.2
+    gain: 0.4
     in:
       tremolo: 1
 
 oscillators:
   sine:
-    type: Sawtooth
+    type: Sine
     freq: 80
 
   lfo:

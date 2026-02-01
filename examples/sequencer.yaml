@@ -4,15 +4,15 @@ out: main
 envelopes:
   env:
     peak: 1
-    level: 0.5
+    level: 0.6
     gate: gate
-    attack: 0.02
-    decay: 0.05
-    release: 0.15
+    attack: 0.01
+    decay: 0.01
+    release: 0.03
 
 gates:
   gate:
-    bpm: 1080
+    bpm: 1000
     signal: [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0]
     index: 10
 
@@ -24,7 +24,7 @@ mixers:
 
 oscillators:
   osc:
-    type: Sawtooth
+    type: Triangle
     cv: seq
 
 sequencers:
