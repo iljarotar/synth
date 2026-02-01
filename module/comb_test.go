@@ -158,6 +158,17 @@ func Test_comb_update(t *testing.T) {
 			wantY:   []float64{0.5, 0, 0},
 			wantIdx: 2,
 		},
+		{
+			name: "update to zero time",
+			c: &comb{
+				y:          []float64{0.5, 0, 0, 0, 0.5},
+				sampleRate: 6,
+				idx:        4,
+			},
+			time:    0,
+			wantY:   []float64{},
+			wantIdx: 0,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

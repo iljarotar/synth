@@ -1,6 +1,10 @@
 package module
 
-import "math"
+import (
+	"math"
+
+	"github.com/iljarotar/synth/calc"
+)
 
 type (
 	comb struct {
@@ -29,9 +33,10 @@ func (c *comb) update(seconds float64) {
 	}
 
 	c.y = c.y[:length]
-	if c.idx >= len(c.y) {
-		c.idx = len(c.y) - 1
-	}
+	c.idx = int(calc.Limit(float64(c.idx), calc.Range{
+		Min: 0,
+		Max: float64(len(c.y) - 1),
+	}))
 }
 
 func (c *comb) step(x, mix float64) float64 {
