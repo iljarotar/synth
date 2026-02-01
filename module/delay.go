@@ -13,7 +13,7 @@ type (
 		Fade float64 `yaml:"fade"`
 
 		sampleRate float64
-		comb       *comb
+		c          *comb
 
 		mixFader *fader
 	}
@@ -35,8 +35,8 @@ func (d *Delay) initialize(sampleRate float64) {
 	d.Time = calc.Limit(d.Time, combTimeRange)
 	d.Mix = calc.Limit(d.Mix, combMixRange)
 	d.Fade = calc.Limit(d.Fade, fadeRange)
-	d.comb = &comb{}
-	d.comb.initialize(d.Time/1000, sampleRate)
+	d.c = &comb{}
+	d.c.initialize(d.Time/1000, sampleRate)
 
 	d.mixFader = &fader{
 		current: d.Mix,
@@ -60,7 +60,9 @@ func (d *Delay) Update(new *Delay) {
 		d.mixFader.target = new.Mix
 		d.mixFader.initialize(d.Fade, d.sampleRate)
 	}
-	d.comb.update(d.Time / 1000)
+	if d.c != nil {
+		d.c.update(d.Time / 1000)
+	}
 }
 
 func (d *Delay) Step(modules *ModuleMap) {
@@ -70,7 +72,7 @@ func (d *Delay) Step(modules *ModuleMap) {
 	}
 	mix = modulate(mix, combMixRange, getMono(modules, d.Mod))
 
-	val := d.comb.step(getMono(modules, d.In), mix)
+	val := d.c.step(getMono(modules, d.In), mix)
 	d.current = Output{
 		Mono:  val,
 		Left:  val / 2,
