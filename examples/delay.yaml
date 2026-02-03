@@ -4,7 +4,7 @@ out: main
 delays:
   delay-bass:
     time: 151
-    mix: 0.65
+    gain: 0.7
     in: mix-bass
     fade: 1
 

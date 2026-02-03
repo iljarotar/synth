@@ -22,7 +22,7 @@ func TestDelay_Update(t *testing.T) {
 					},
 				},
 				Time:       30,
-				Mix:        0.5,
+				Gain:       0.5,
 				In:         "in",
 				CV:         "cv",
 				Mod:        "mod",
@@ -46,7 +46,7 @@ func TestDelay_Update(t *testing.T) {
 					},
 				},
 				Time:       30,
-				Mix:        0.5,
+				Gain:       0.5,
 				In:         "in",
 				CV:         "cv",
 				Mod:        "mod",
@@ -72,7 +72,7 @@ func TestDelay_Update(t *testing.T) {
 					},
 				},
 				Time:       900,
-				Mix:        0.5,
+				Gain:       0.5,
 				In:         "in",
 				CV:         "cv",
 				Mod:        "mod",
@@ -90,7 +90,7 @@ func TestDelay_Update(t *testing.T) {
 			},
 			new: &Delay{
 				Time: 1000,
-				Mix:  0.25,
+				Gain: 0.25,
 				In:   "new-in",
 				CV:   "new-cv",
 				Mod:  "new-mod",
@@ -103,7 +103,7 @@ func TestDelay_Update(t *testing.T) {
 					},
 				},
 				Time:       1000,
-				Mix:        0.5,
+				Gain:       0.5,
 				In:         "new-in",
 				CV:         "new-cv",
 				Mod:        "new-mod",
@@ -148,14 +148,14 @@ func TestDelay_Step(t *testing.T) {
 				},
 			}),
 			d: &Delay{
-				Mix: 0.25,
-				In:  "in",
+				Gain: 0.25,
+				In:   "in",
 				c: &comb{
 					y:   []float64{},
 					idx: 2,
 				},
 			},
-			want: 0.75,
+			want: 1,
 		},
 		{
 			name: "non-zero time",
@@ -167,14 +167,14 @@ func TestDelay_Step(t *testing.T) {
 				},
 			}),
 			d: &Delay{
-				Mix: 0.25,
-				In:  "in",
+				Gain: 0.25,
+				In:   "in",
 				c: &comb{
 					y:   []float64{0.5, 0.25, 0, 0, 0, 0},
 					idx: 1,
 				},
 			},
-			want: 0.8125,
+			want: 1.0625,
 		},
 		{
 			name: "cv",
@@ -191,15 +191,15 @@ func TestDelay_Step(t *testing.T) {
 				},
 			}),
 			d: &Delay{
-				Mix: 0.25,
-				In:  "in",
-				CV:  "cv",
+				Gain: 0.25,
+				In:   "in",
+				CV:   "cv",
 				c: &comb{
 					y:   []float64{0.5, 0.25, 0, 0, 0, 0},
 					idx: 1,
 				},
 			},
-			want: 0.625,
+			want: 1.125,
 		},
 		{
 			name: "mod and cv",
@@ -221,16 +221,16 @@ func TestDelay_Step(t *testing.T) {
 				},
 			}),
 			d: &Delay{
-				Mix: 0.25,
-				In:  "in",
-				CV:  "cv",
-				Mod: "mod",
+				Gain: 0.25,
+				In:   "in",
+				CV:   "cv",
+				Mod:  "mod",
 				c: &comb{
 					y:   []float64{0.5, 0.25, 0, 0, 0, 0},
 					idx: 1,
 				},
 			},
-			want: 0.7,
+			want: 1.1,
 		},
 	}
 	for _, tt := range tests {
@@ -252,7 +252,7 @@ func TestDelay_fade(t *testing.T) {
 		{
 			name: "no fade necessary",
 			d: &Delay{
-				Mix: 0.5,
+				Gain: 0.5,
 				mixFader: &fader{
 					current: 0.5,
 					target:  0.5,
@@ -260,7 +260,7 @@ func TestDelay_fade(t *testing.T) {
 				},
 			},
 			want: &Delay{
-				Mix: 0.5,
+				Gain: 0.5,
 				mixFader: &fader{
 					current: 0.5,
 					target:  0.5,
@@ -270,7 +270,7 @@ func TestDelay_fade(t *testing.T) {
 		{
 			name: "fade",
 			d: &Delay{
-				Mix: 0.5,
+				Gain: 0.5,
 				mixFader: &fader{
 					current: 0.5,
 					target:  0.4,
@@ -278,7 +278,7 @@ func TestDelay_fade(t *testing.T) {
 				},
 			},
 			want: &Delay{
-				Mix: 0.45,
+				Gain: 0.45,
 				mixFader: &fader{
 					current: 0.45,
 					target:  0.4,

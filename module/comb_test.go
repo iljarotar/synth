@@ -66,7 +66,7 @@ func Test_comb_step(t *testing.T) {
 			},
 			x:     1,
 			gain:  0.5,
-			want:  0.5,
+			want:  1,
 			wantY: []float64{},
 		},
 		{
@@ -76,8 +76,8 @@ func Test_comb_step(t *testing.T) {
 			},
 			x:       1,
 			gain:    0.25,
-			want:    0.75,
-			wantY:   []float64{0.75, 0, 0, 0, 0},
+			want:    1,
+			wantY:   []float64{1, 0, 0, 0, 0},
 			wantIdx: 1,
 		},
 		{
@@ -88,8 +88,8 @@ func Test_comb_step(t *testing.T) {
 			},
 			x:       1,
 			gain:    0.25,
-			want:    0.8125,
-			wantY:   []float64{0.5, 0, 0.8125, 0, 0},
+			want:    1.0625,
+			wantY:   []float64{0.5, 0, 1.0625, 0, 0},
 			wantIdx: 3,
 		},
 		{
@@ -100,8 +100,8 @@ func Test_comb_step(t *testing.T) {
 			},
 			x:       1,
 			gain:    0.25,
-			want:    0.875,
-			wantY:   []float64{0.5, 0, 0.25, 0, 0.875},
+			want:    1.125,
+			wantY:   []float64{0.5, 0, 0.25, 0, 1.125},
 			wantIdx: 0,
 		},
 	}

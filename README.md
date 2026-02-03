@@ -81,9 +81,8 @@ delays:
     # delay time in milliseconds in range [0, 5000]
     time: 100
 
-    # mix of dry and wet signal [0, 1]
-    # 0 is only dry, 1 is 100% wet
-    mix: 0.25
+    # gain of delayed signal in range [0, 1]
+    gain: 0.25
 
     # name of the module to run through the delay
     in: name-of-input-module
@@ -95,7 +94,7 @@ delays:
     mod: name-of-modulator
 
     # fade controls the transition length in seconds
-    # affected parameter is `mix`
+    # affected parameter is `gain`
     fade: 2
 
 # adsr envelopes

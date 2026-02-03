@@ -174,7 +174,7 @@ func TestSynth_Update(t *testing.T) {
 				Delays: module.DelayMap{
 					"d2": {
 						Time: 20,
-						Mix:  0.5,
+						Gain: 0.5,
 						In:   "new-in",
 						CV:   "new-cv",
 						Mod:  "new-mod",

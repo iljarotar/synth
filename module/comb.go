@@ -40,13 +40,13 @@ func (c *comb) update(seconds float64) {
 }
 
 func (c *comb) step(x, mix float64) float64 {
-	y := x * (1 - mix)
-
-	if len(c.y) > 0 {
-		y += c.y[c.idx] * mix
-		c.y[c.idx] = y
-		c.idx = (c.idx + 1) % len(c.y)
+	if len(c.y) == 0 {
+		return x
 	}
+
+	y := x + c.y[c.idx]*mix
+	c.y[c.idx] = y
+	c.idx = (c.idx + 1) % len(c.y)
 
 	return y
 }

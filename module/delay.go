@@ -6,7 +6,7 @@ type (
 	Delay struct {
 		Module
 		Time float64 `yaml:"time"`
-		Mix  float64 `yaml:"mix"`
+		Gain float64 `yaml:"gain"`
 		In   string  `yaml:"in"`
 		CV   string  `yaml:"cv"`
 		Mod  string  `yaml:"mod"`
@@ -33,14 +33,14 @@ func (m DelayMap) Initialize(sampleRate float64) {
 func (d *Delay) initialize(sampleRate float64) {
 	d.sampleRate = sampleRate
 	d.Time = calc.Limit(d.Time, combTimeRange)
-	d.Mix = calc.Limit(d.Mix, combMixRange)
+	d.Gain = calc.Limit(d.Gain, combMixRange)
 	d.Fade = calc.Limit(d.Fade, fadeRange)
 	d.c = &comb{}
 	d.c.initialize(d.Time/1000, sampleRate)
 
 	d.mixFader = &fader{
-		current: d.Mix,
-		target:  d.Mix,
+		current: d.Gain,
+		target:  d.Gain,
 	}
 	d.mixFader.initialize(d.Fade, sampleRate)
 }
@@ -57,7 +57,7 @@ func (d *Delay) Update(new *Delay) {
 	d.Fade = new.Fade
 
 	if d.mixFader != nil {
-		d.mixFader.target = new.Mix
+		d.mixFader.target = new.Gain
 		d.mixFader.initialize(d.Fade, d.sampleRate)
 	}
 	if d.c != nil {
@@ -66,7 +66,7 @@ func (d *Delay) Update(new *Delay) {
 }
 
 func (d *Delay) Step(modules *ModuleMap) {
-	mix := d.Mix
+	mix := d.Gain
 	if d.CV != "" {
 		mix = cv(combMixRange, getMono(modules, d.CV))
 	}
@@ -84,6 +84,6 @@ func (d *Delay) Step(modules *ModuleMap) {
 
 func (d *Delay) fade() {
 	if d.mixFader != nil {
-		d.Mix = d.mixFader.fade()
+		d.Gain = d.mixFader.fade()
 	}
 }
