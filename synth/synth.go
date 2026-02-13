@@ -96,6 +96,7 @@ func (s *Synth) Update(from *Synth) error {
 	s.deleteOldModules(from)
 	s.addNewModules(from)
 	s.updateModules(from)
+	s.Out = from.Out
 
 	return nil
 }

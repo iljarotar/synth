@@ -171,6 +171,8 @@ func TestSynth_Update(t *testing.T) {
 				wavetables:  []*module.Wavetable{w1, w2},
 			},
 			new: &Synth{
+				Out:    "new-main",
+				Volume: 0.5,
 				Delays: module.DelayMap{
 					"d2": {
 						Time: 20,
@@ -262,7 +264,7 @@ func TestSynth_Update(t *testing.T) {
 				},
 			},
 			want: &Synth{
-				Out:    "main",
+				Out:    "new-main",
 				Volume: 0.5,
 				Delays: module.DelayMap{
 					"d2": {
