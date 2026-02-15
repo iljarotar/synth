@@ -87,14 +87,14 @@ delays:
     # name of the module to run through the delay
     in: name-of-input-module
 
-    # cv for `mix`
+    # cv for mix
     cv: name-of-cv-module
 
-    # modulator for `mix`
+    # modulator for mix
     mod: name-of-modulator
 
     # fade controls the transition length in seconds
-    # affected parameter is `gain`
+    # affected parameter is gain
     fade: 2
 
 # adsr envelopes
@@ -129,7 +129,7 @@ envelopes:
     gate: name-of-gate-module
 
     # fade controls the transition length in seconds
-    # affected parameters are `attack`, `decay`, `release`, `peak` and `level`
+    # affected parameters are attack, decay, release, peak and level
     fade: 2
 
 # filters of type low pass, high pass or band pass
@@ -147,17 +147,17 @@ filters:
     # ignored for other types
     width: 50
 
-    # cv for `freq`
+    # cv for freq
     cv: name-of-cv
 
-    # modulator for `freq`
+    # modulator for freq
     mod: name-of-modulator
 
     # name of the module whose output will be filtered
     in: name-of-input-module
 
     # fade controls the transition length in seconds
-    # affected parameters are `freq` and `width`
+    # affected parameters are freq and width
     fade: 2
 
 # gates can be used as gates for envelopes or sequencers or as triggers for samplers.
@@ -167,14 +167,14 @@ gates:
     # beats per minute controls the tempo of the gate signal
     bpm: 260
 
-    # cv for `bpm`
+    # cv for bpm
     cv: name-of-cv
 
-    # modulator for `bpm`
+    # modulator for bpm
     mod: name-of-modulator
 
     # binary signal
-    # each negative or zero value will be mapped to `-1`, each positive to `1`
+    # each negative or zero value will be mapped to -1, each positive to 1
     signal: [1, 0, 0, 1, 0, 1, 1, 0, 1, 0]
 
     # provides an initial offset to the signal
@@ -182,7 +182,7 @@ gates:
     index: 4
 
     # fade controls the transition length in seconds
-    # affected parameter is `bpm`
+    # affected parameter is bpm
     fade: 2
 
 # mixers combine outputs of multiple modules and control their output levels
@@ -192,10 +192,10 @@ mixers:
     # gain in range [0, 1]
     gain: 0.5
 
-    # cv for `gain`
+    # cv for gain
     cv: name-of-cv
 
-    # modulator for `gain`
+    # modulator for gain
     mod: name-of-modulator
 
     # mapping of module names to their corresponding gain levels
@@ -206,13 +206,13 @@ mixers:
       name-of-second-module: 0.25
 
     # fade controls the transition length in seconds
-    # affected parameters are `gain` as well as all input modules' gain levels
+    # affected parameters are gain as well as all input modules' gain levels
     fade: 2
 
 # noise modules simple output random values
 noises:
   # the unique module name to be used as a reference in other modules
-  # a noise module doesn't have any parameters to configure, so pass an empty object `{}`
+  # a noise module doesn't have any parameters to configure, so pass an empty object {}
   noise: {}
 
 # oscillators output basic wave forms like sine waves, triangles, etc.
@@ -222,21 +222,22 @@ oscillators:
     # one of Sine, Square, Triangle, Sawtooth, ReverseSawtooth
     type: Sine
 
-    # frequency in range `[0, 20000]`
+    # frequency in range [0, 20000]
     freq: 440
 
-    # cv for `freq`
+    # cv for freq
     cv: name-of-cv
 
-    # modulator for `freq`
+    # modulator for freq
+    # maximum amount of modulation is one octave up and down
     mod: name-of-mod
 
     # static phase shift in percent of one period
-    # range `[-1, 1]`
+    # range [-1, 1]
     phase: 0.75
 
     # fade controls the transition length in seconds
-    # affected parameters are `freq` and `phase`
+    # affected parameters are freq and phase
     fade: 2
 
 # pan modules are used to add stereo balance
@@ -244,18 +245,18 @@ pans:
   # the unique module name to be used as a reference in other modules
   pan:
     # specifies how big a portion of the signal is output through the left and right channels
-    # range `[1-, 1]`
-    # a value of `-1` places the signal completely to the left, `1` places it to the right
+    # range [1-, 1]
+    # a value of -1 places the signal completely to the left, 1 places it to the right
     pan: -0.5
 
     # name of the module whose output should be stereo balanced
     in: name-of-input-module
 
-    # modulator for `pan`
+    # modulator for pan
     mod: name-of-mod
 
     # fade controls the transition length in seconds
-    # affected parameter is `pan`
+    # affected parameter is pan
     fade: 2
 
 # sample and hold modules
@@ -275,7 +276,7 @@ sequencers:
   # the unique module name to be used as a reference in other modules
   sequencer:
     # a sequence of notes in scientific pitch notation
-    # flats are denoted by `b`, sharps by `#`
+    # flats are denoted by 'b', sharps by '#'
     # a note is separated from its octave by an underscore
     # minimum octave is 0, maximum is 10
     sequence: ["a_4", "eb_3", "c#_5"]
@@ -287,10 +288,10 @@ sequencers:
     pitch: 440
 
     # transpose the whole sequence by any number of semitones
-    # range `[-24, 24]`
+    # range [-24, 24]
     transpose: -4
 
-    # if `true` the notes in the sequence will be played in random order
+    # if true the notes in the sequence will be played in random order
     randomize: true
 
     # provides an initial offset to the sequence
@@ -301,14 +302,14 @@ sequencers:
 wavetables:
   # the unique module name to be used as a reference in other modules
   wavetable:
-    # frequency in range `[0, 20000]`
-    # specifies how many times per second the entire signal given in the `signal` field will be played
+    # frequency in range [0, 20000]
+    # specifies how many times per second the entire signal given in the signal field will be played
     freq: 440
 
-    # cv for `freq`
+    # cv for freq
     cv: name-of-cv
 
-    # modulator for `freq`
+    # modulator for freq
     mod: name-of-mod
 
     # an arbitrary signal
@@ -316,7 +317,7 @@ wavetables:
     signal: [-1, 0, 0.25, -0.3, 0.8, 1]
 
     # fade controls the transition length in seconds
-    # affected parameter is `freq`
+    # affected parameter is freq
     fade: 2
 ```
 
