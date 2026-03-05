@@ -21,18 +21,14 @@ func NewSyncMap[T comparable, E any](m map[T]E) *SyncMap[T, E] {
 
 func (m *SyncMap[T, E]) Get(idx T) (E, bool) {
 	m.mu.Lock()
-	defer func() {
-		m.mu.Unlock()
-	}()
+	defer m.mu.Unlock()
 	e, found := m.m[idx]
 	return e, found
 }
 
 func (m *SyncMap[T, E]) Set(idx T, e E) {
 	m.mu.Lock()
-	defer func() {
-		m.mu.Unlock()
-	}()
+	defer m.mu.Unlock()
 	if m.m == nil {
 		m.m = make(map[T]E)
 	}
@@ -41,12 +37,13 @@ func (m *SyncMap[T, E]) Set(idx T, e E) {
 
 func (m *SyncMap[T, E]) Delete(idx T) {
 	m.mu.Lock()
-	defer func() {
-		m.mu.Unlock()
-	}()
+	defer m.mu.Unlock()
 	delete(m.m, idx)
 }
 
 func (m *SyncMap[T, E]) Keys() []T {
-	return lo.Keys(m.m)
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	keys := lo.Keys(m.m)
+	return keys
 }
