@@ -120,7 +120,7 @@ func start(filename string, c *config.Config) error {
 	defer func() {
 		err := loader.Close()
 		if err != nil {
-			fmt.Printf("failed to close loader:%v", err)
+			fmt.Printf("failed to close loader: %v", err)
 		}
 	}()
 
@@ -136,11 +136,11 @@ func start(filename string, c *config.Config) error {
 
 	state, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
-		return fmt.Errorf("failed to initialize raw terminal:%w", err)
+		return fmt.Errorf("failed to initialize raw terminal: %w", err)
 	}
 	defer func() {
 		if err := term.Restore(int(os.Stdin.Fd()), state); err != nil {
-			fmt.Printf("failed to restore terminal state:%v", err)
+			fmt.Printf("failed to restore terminal state: %v", err)
 		}
 	}()
 
