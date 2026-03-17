@@ -75,8 +75,7 @@ func (c *control) LoadSynth(synth *synth.Synth) error {
 
 	if c.synth != nil {
 		c.maxOutput = 0
-		c.synth.Update(synth)
-		return nil
+		return c.synth.Update(synth)
 	}
 
 	c.synth = synth

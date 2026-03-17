@@ -381,7 +381,11 @@ func TestSynth_Update(t *testing.T) {
 				t.Errorf("Synth.Update() new.Initialize() error %v", err)
 			}
 
-			tt.s.Update(tt.new)
+			err = tt.s.Update(tt.new)
+			if err != nil {
+				t.Errorf("Synth.Update() error %v", err)
+			}
+
 			if diff := cmp.Diff(tt.want, tt.s,
 				cmpopts.IgnoreUnexported(
 					module.Module{},

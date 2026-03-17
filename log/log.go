@@ -19,7 +19,6 @@ type (
 
 	Logger struct {
 		maxLogs          uint
-		logs             []string
 		State            State
 		currentTime      int
 		logSubscribers   []chan<- string
@@ -73,10 +72,8 @@ func (l *Logger) sendState() {
 
 func (l *Logger) sendLog(log, label string, labelColor Color) {
 	time := formatTime(l.currentTime)
-	coloredLabel := fmt.Sprintf("%s", Colored(label, labelColor))
-
 	for _, s := range l.logSubscribers {
-		s <- fmt.Sprintf("[%s] %s %s", time, coloredLabel, log)
+		s <- fmt.Sprintf("[%s] %s %s", time, Colored(label, labelColor), log)
 	}
 }
 
