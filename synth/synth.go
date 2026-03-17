@@ -4,6 +4,7 @@ import (
 	"slices"
 
 	"github.com/iljarotar/synth/calc"
+	"github.com/iljarotar/synth/log"
 	"github.com/iljarotar/synth/module"
 	"github.com/samber/lo"
 )
@@ -37,6 +38,7 @@ type Synth struct {
 	sampleRate        float64
 	volumeStep        float64
 	notifyFadeoutChan chan<- bool
+	logger            *log.Logger
 	modules           *module.ModuleMap
 
 	delays      []*module.Delay

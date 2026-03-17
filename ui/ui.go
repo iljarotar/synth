@@ -58,8 +58,7 @@ func NewUI(c Config) *UI {
 func Clear() {
 	cmd := exec.Command("clear")
 	cmd.Stdout = os.Stdout
-	// FIXME: check error
-	_ = cmd.Run()
+	cmd.Run()
 }
 
 func LineBreaks(number int) {

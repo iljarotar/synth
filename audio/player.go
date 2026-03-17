@@ -12,7 +12,12 @@ const (
 	bufferSize     = 512
 )
 
-func Start(sampleRate int, readSample func() [2]float64) error {
+type Context struct {
+	ctx    *oto.Context
+	player *oto.Player
+}
+
+func NewContext(sampleRate int, readSample func() [2]float64) (*Context, error) {
 	ctx, ready, err := oto.NewContext(&oto.NewContextOptions{
 		SampleRate:   sampleRate,
 		ChannelCount: 2,
@@ -21,7 +26,7 @@ func Start(sampleRate int, readSample func() [2]float64) error {
 	})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 	<-ready
 
@@ -32,7 +37,17 @@ func Start(sampleRate int, readSample func() [2]float64) error {
 	player := ctx.NewPlayer(sampleReader)
 	player.SetBufferSize(bufferSize * bytesPerSample)
 	player.Play()
-	return nil
+
+	context := &Context{
+		ctx:    ctx,
+		player: player,
+	}
+
+	return context, nil
+}
+
+func (a *Context) Close() error {
+	return a.player.Close()
 }
 
 func bufferDuration(bufferSize, sampleRate float64) time.Duration {

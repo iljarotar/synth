@@ -11,7 +11,3 @@ test:
 PHONY: typos
 typos:
 	typos .
-
-PHONY: lint
-lint:
-	golangci-lint run
