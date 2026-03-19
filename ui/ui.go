@@ -12,22 +12,13 @@ import (
 type (
 	Signal string
 
-	control interface {
-		DecreaseVolume()
-		IncreaseVolume()
-		Volume() float64
-	}
-
 	UI struct {
 		logger     *log.Logger
 		file       string
-		duration   float64
 		signalChan chan<- Signal
-		control    control
 
-		logs              []string
-		time              string
-		showVolumeWarning bool
+		logs []string
+		time string
 	}
 
 	Config struct {
@@ -35,7 +26,6 @@ type (
 		File       string
 		Duration   float64
 		SignalChan chan<- Signal
-		Control    control
 	}
 )
 
@@ -48,18 +38,9 @@ func NewUI(c Config) *UI {
 	return &UI{
 		logger:     c.Logger,
 		file:       c.File,
-		duration:   c.Duration,
 		signalChan: c.SignalChan,
-		control:    c.Control,
 		time:       "00:00:00",
 	}
-}
-
-func Clear() {
-	cmd := exec.Command("clear")
-	cmd.Stdout = os.Stdout
-	// FIXME: check error
-	_ = cmd.Run()
 }
 
 func LineBreaks(number int) {
@@ -75,8 +56,8 @@ func (ui *UI) Enter() {
 	logChan := make(chan string)
 	ui.logger.SubscribeToLogs(logChan)
 
-	stateChan := make(chan log.State)
-	ui.logger.SubscribeToState(stateChan)
+	timeChan := make(chan string)
+	ui.logger.SubscribeToTime(timeChan)
 
 	for {
 		select {
@@ -84,13 +65,9 @@ func (ui *UI) Enter() {
 			ui.appendLog(log)
 			ui.resetScreen()
 
-		case state := <-stateChan:
-			if state.VolumeWarning != ui.showVolumeWarning {
-				ui.showVolumeWarning = state.VolumeWarning
-				ui.resetScreen()
-			}
-			if state.Time != ui.time {
-				ui.time = state.Time
+		case time := <-timeChan:
+			if time != ui.time {
+				ui.time = time
 				ui.updateTime()
 			}
 		}
@@ -119,20 +96,12 @@ func (ui *UI) handleInput(r rune) {
 	case "q":
 		ui.resetScreen()
 		ui.signalChan <- SignalQuit
-	case "d":
-		ui.control.IncreaseVolume()
-		ui.resetScreen()
-	case "s":
-		ui.control.DecreaseVolume()
-		ui.resetScreen()
 	}
 }
 
 func (ui *UI) resetScreen() {
-	Clear()
+	ui.clear()
 	fmt.Printf("%s %s", log.Colored("Synth playing", log.ColorBlueStrong), ui.file)
-	LineBreaks(1)
-	fmt.Printf("%s %s", log.Colored("Volume", log.ColorBlueStrong), fmt.Sprintf("%v", ui.control.Volume()))
 	LineBreaks(2)
 
 	for _, log := range ui.logs {
@@ -141,32 +110,16 @@ func (ui *UI) resetScreen() {
 	if len(ui.logs) > 0 {
 		LineBreaks(1)
 	}
-	if ui.showVolumeWarning {
-		fmt.Printf("%s", log.Colored("[WARNING] Volume exceeded 100%%", log.ColorOrangeStrong))
-		LineBreaks(2)
-	}
-	fmt.Printf("%s", ui.time)
-	if ui.duration > 0 {
-		fmt.Printf(" - automatically stopping after %fs", ui.duration)
-	}
-
-	LineBreaks(2)
-	fmt.Printf("%s ", log.Colored("Keybindings", log.ColorBlueStrong))
-	LineBreaks(1)
-	fmt.Print("q: quit")
-	LineBreaks(1)
-	fmt.Print("d: raise volume")
-	LineBreaks(1)
-	fmt.Print("s: reduce volume")
+	fmt.Printf("%s ", ui.time)
+	fmt.Print("Press 'q' to quit")
 }
 
 func (ui *UI) updateTime() {
 	// using ANSI escape sequences:
 	// \0337 to save current cursor location
-	// \033[1A to move cursor up one line
 	// \r to move cursor to beginning of line
 	// \0338 to restore original cursor location
-	fmt.Printf("\0337\033[5A\r%s\0338", ui.time)
+	fmt.Printf("\0337\r%s\0338", ui.time)
 }
 
 func (ui *UI) appendLog(log string) {
@@ -176,4 +129,13 @@ func (ui *UI) appendLog(log string) {
 		logs = logs[1:]
 	}
 	ui.logs = logs
+}
+
+func (ui *UI) clear() {
+	cmd := exec.Command("clear")
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	if err != nil {
+		ui.logger.Error(err.Error())
+	}
 }

@@ -12,17 +12,12 @@ const (
 )
 
 type (
-	State struct {
-		Time          string
-		VolumeWarning bool
-	}
-
 	Logger struct {
-		maxLogs          uint
-		State            State
-		currentTime      int
-		logSubscribers   []chan<- string
-		stateSubscribers []chan<- State
+		maxLogs         uint
+		time            string
+		currentTime     int
+		logSubscribers  []chan<- string
+		timeSubscribers []chan<- string
 	}
 )
 
@@ -34,8 +29,8 @@ func (l *Logger) SubscribeToLogs(subscriber chan<- string) {
 	l.logSubscribers = append(l.logSubscribers, subscriber)
 }
 
-func (l *Logger) SubscribeToState(subscriber chan<- State) {
-	l.stateSubscribers = append(l.stateSubscribers, subscriber)
+func (l *Logger) SubscribeToTime(subscriber chan<- string) {
+	l.timeSubscribers = append(l.timeSubscribers, subscriber)
 }
 
 func (l *Logger) Info(log string) {
@@ -54,19 +49,14 @@ func (l *Logger) SendTime(time float64) {
 	if l.isNextSecond(time) {
 		seconds := int(time)
 		l.currentTime = seconds
-		l.State.Time = formatTime(seconds)
-		l.sendState()
+		l.time = formatTime(seconds)
+		l.sendTime()
 	}
 }
 
-func (l *Logger) ShowVolumeWarning(limitExceeded bool) {
-	l.State.VolumeWarning = limitExceeded
-	l.sendState()
-}
-
-func (l *Logger) sendState() {
-	for _, s := range l.stateSubscribers {
-		s <- l.State
+func (l *Logger) sendTime() {
+	for _, s := range l.timeSubscribers {
+		s <- l.time
 	}
 }
 

@@ -33,7 +33,7 @@ type Synth struct {
 	Wavetables  module.WavetableMap  `yaml:"wavetables"`
 
 	Time              float64
-	VolumeMemory      float64
+	volumeMemory      float64
 	sampleRate        float64
 	volumeStep        float64
 	notifyFadeoutChan chan<- bool
@@ -58,7 +58,7 @@ func (s *Synth) Initialize(sampleRate float64) error {
 		Min: 0,
 		Max: maxVolume,
 	})
-	s.VolumeMemory = s.Volume
+	s.volumeMemory = s.Volume
 	s.Volume = 0
 	s.initializeEmptyMaps()
 	s.makeModulesMap()
@@ -117,15 +117,8 @@ func (s *Synth) GetOutput() Output {
 	return out
 }
 
-func (s *Synth) SetVolume(volume float64) {
-	vol := min(volume, maxVolume)
-	vol = max(vol, 0)
-	s.VolumeMemory = vol
-	s.Volume = vol
-}
-
 func (s *Synth) FadeIn(duration float64) {
-	s.volumeStep = secondsToStep(duration, s.VolumeMemory-s.Volume, s.sampleRate)
+	s.volumeStep = secondsToStep(duration, s.volumeMemory-s.Volume, s.sampleRate)
 }
 
 func (s *Synth) FadeOut(duration float64) {
@@ -146,9 +139,9 @@ func (s *Synth) adjustVolume() {
 	}
 	s.Volume += s.volumeStep
 
-	if s.volumeStep > 0 && s.Volume >= s.VolumeMemory {
+	if s.volumeStep > 0 && s.Volume >= s.volumeMemory {
 		s.volumeStep = 0
-		s.Volume = s.VolumeMemory
+		s.Volume = s.volumeMemory
 		return
 	}
 

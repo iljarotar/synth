@@ -82,14 +82,12 @@ func init() {
 	rootCmd.Flags().Float64P("fade-in", "i", config.DefaultFadeIn, "fade-in in seconds")
 	rootCmd.Flags().Float64P("fade-out", "o", config.DefaultFadeOut, "fade-out in seconds")
 	rootCmd.Flags().StringP("config", "c", defaultConfigPath, "path to your config file")
-	rootCmd.Flags().Float64P("duration", "d", config.DefaultDuration, "duration in seconds; if positive duration is provided, synth will stop playing after the defined time")
 }
 
 func parseFlags(cmd *cobra.Command, config *config.Config) error {
 	s, _ := cmd.Flags().GetInt("sample-rate")
 	in, _ := cmd.Flags().GetFloat64("fade-in")
 	out, _ := cmd.Flags().GetFloat64("fade-out")
-	duration, _ := cmd.Flags().GetFloat64("duration")
 
 	if cmd.Flag("sample-rate").Changed {
 		config.SampleRate = s
@@ -99,9 +97,6 @@ func parseFlags(cmd *cobra.Command, config *config.Config) error {
 	}
 	if cmd.Flag("fade-out").Changed {
 		config.FadeOut = out
-	}
-	if cmd.Flag("duration").Changed {
-		config.Duration = duration
 	}
 
 	return config.Validate()
@@ -152,17 +147,13 @@ func start(filename string, c *config.Config) error {
 	uiConfig := ui.Config{
 		Logger:     logger,
 		File:       filename,
-		Duration:   c.Duration,
 		SignalChan: signalChan,
-		Control:    ctl,
 	}
 
 	u := ui.NewUI(uiConfig)
 	go u.Enter()
 
 	done := make(chan bool)
-	durationDone := make(chan bool)
-	ctl.WatchDuration(durationDone)
 	var fadingOut bool
 
 Loop:
@@ -185,12 +176,6 @@ Loop:
 				loader.Stop()
 				go ctl.Stop(done, true)
 			}
-
-		case <-durationDone:
-			fadingOut = true
-			logger.Info(fmt.Sprintf("duration reached, fading out in %fs", c.FadeOut))
-			loader.Stop()
-			go ctl.Stop(done, false)
 
 		case <-done:
 			break Loop

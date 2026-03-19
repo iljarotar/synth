@@ -131,7 +131,7 @@ func TestSynth_Update(t *testing.T) {
 					"w2": w2,
 				},
 				Time:         5,
-				VolumeMemory: 1,
+				volumeMemory: 1,
 				sampleRate:   44100,
 				volumeStep:   0.1,
 				modules: module.NewModuleMap(map[string]module.IModule{
@@ -344,7 +344,7 @@ func TestSynth_Update(t *testing.T) {
 					},
 				},
 				Time:         5,
-				VolumeMemory: 1,
+				volumeMemory: 1,
 				sampleRate:   44100,
 				volumeStep:   0.1,
 				modules: module.NewModuleMap(map[string]module.IModule{

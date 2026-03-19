@@ -12,21 +12,18 @@ const (
 	minSampleRate   = 8000
 	maxSampleRate   = 48000
 	maxFadeDuration = 3600
-	maxDuration     = 7200
 
 	defaultConfigFile = "config.yaml"
 	defaultConfigDir  = "synth"
 	DefaultSampleRate = 44100
 	DefaultFadeIn     = 1
 	DefaultFadeOut    = 1
-	DefaultDuration   = 0
 )
 
 type Config struct {
 	SampleRate int     `yaml:"sample-rate"`
 	FadeIn     float64 `yaml:"fade-in"`
 	FadeOut    float64 `yaml:"fade-out"`
-	Duration   float64 `yaml:"duration"`
 }
 
 func GetDefaultConfigPath() (string, error) {
@@ -55,7 +52,6 @@ func EnsureDefaultConfig() error {
 		SampleRate: DefaultSampleRate,
 		FadeIn:     DefaultFadeIn,
 		FadeOut:    DefaultFadeOut,
-		Duration:   DefaultDuration,
 	}
 
 	defaultConfigBytes, err := yaml.Marshal(defaultConfig)
@@ -110,9 +106,6 @@ func (c *Config) Validate() error {
 	}
 	if c.FadeOut > maxFadeDuration {
 		return fmt.Errorf("fade-out duration must be lower than or equal to %d", maxFadeDuration)
-	}
-	if c.Duration > maxDuration {
-		return fmt.Errorf("duration must be lower than or equal to %d", maxDuration)
 	}
 	return nil
 }
