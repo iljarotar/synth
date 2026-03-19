@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"runtime"
 	"time"
 
 	"github.com/iljarotar/synth/audio"
@@ -33,8 +34,7 @@ Documentation and usage: https://github.com/iljarotar/synth`,
 		}
 
 		if len(args) == 0 {
-			cmd.Help()
-			return nil
+			return cmd.Help()
 		}
 
 		if err := cobra.MaximumNArgs(1)(cmd, args); err != nil {
@@ -53,7 +53,7 @@ Documentation and usage: https://github.com/iljarotar/synth`,
 
 		c, err := config.LoadConfig(cfg)
 		if err != nil {
-			return fmt.Errorf("could not load config file: %v\n", err)
+			return fmt.Errorf("could not load config file: %w", err)
 		}
 
 		err = parseFlags(cmd, c)
@@ -135,10 +135,7 @@ func start(filename string, c *config.Config) error {
 		return err
 	}
 	defer func() {
-		err := audioCtx.Close()
-		if err != nil {
-			fmt.Printf("failed to close audio context:%v", err)
-		}
+		runtime.KeepAlive(audioCtx)
 	}()
 
 	state, err := term.MakeRaw(int(os.Stdin.Fd()))

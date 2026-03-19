@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: install alsa
+      - name: Install ALSA
         run: sudo apt update && sudo apt install libasound2-dev
 
       - name: Set up Go
@@ -20,6 +20,9 @@ jobs:
         with:
           go-version-file: "go.mod"
           cache: false
+
+      - name: Lint Go
+        uses: golangci/golangci-lint-action@v9
 
       - name: Test
         run: make test

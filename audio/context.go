@@ -13,7 +13,6 @@ const (
 )
 
 type Context struct {
-	ctx    *oto.Context
 	player *oto.Player
 }
 
@@ -39,15 +38,10 @@ func NewContext(sampleRate int, readSample func() [2]float64) (*Context, error) 
 	player.Play()
 
 	context := &Context{
-		ctx:    ctx,
 		player: player,
 	}
 
 	return context, nil
-}
-
-func (a *Context) Close() error {
-	return a.player.Close()
 }
 
 func bufferDuration(bufferSize, sampleRate float64) time.Duration {
