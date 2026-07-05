@@ -205,9 +205,7 @@ func TestSynth_Update(t *testing.T) {
 				},
 				Gates: module.GateMap{
 					"g2": {
-						CV:     "new-cv",
-						BPM:    20,
-						Mod:    "new-mod",
+						Sub:    20,
 						Signal: []float64{1},
 					},
 				},
@@ -290,8 +288,6 @@ func TestSynth_Update(t *testing.T) {
 				},
 				Gates: module.GateMap{
 					"g2": {
-						CV:     "new-cv",
-						Mod:    "new-mod",
 						Signal: []float64{1},
 					},
 				},

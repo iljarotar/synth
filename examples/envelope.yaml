@@ -1,5 +1,6 @@
 vol: 1
 out: main
+bpm: 60
 
 envelopes:
   env:
@@ -12,7 +13,7 @@ envelopes:
 
 gates:
   gate:
-    bpm: 520
+    sub: 4
     signal: [1, 0, 0, 0]
 
 mixers:

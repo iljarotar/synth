@@ -9,43 +9,31 @@ import (
 type (
 	Gate struct {
 		Module
-		BPM    float64   `yaml:"bpm"`
-		CV     string    `yaml:"cv"`
-		Mod    string    `yaml:"mod"`
+		Sub    int       `yaml:"sub"`
 		Signal []float64 `yaml:"signal"`
 		Index  int       `yaml:"index"`
-		Fade   float64   `yaml:"fade"`
 
-		sampleRate float64
-		idx        float64
-
-		bpmFader *fader
+		idx            float64
+		samplesPerBeat float64
 	}
 
 	GateMap map[string]*Gate
 )
 
-func (m GateMap) Initialize(sampleRate float64) {
+func (m GateMap) Initialize(sampleRate, bpm float64) {
 	for _, g := range m {
 		if g == nil {
 			continue
 		}
-		g.initialize(sampleRate)
+		g.initialize(sampleRate, bpm)
 	}
 }
 
-func (g *Gate) initialize(sampleRate float64) {
-	g.sampleRate = sampleRate
-	g.BPM = calc.Limit(g.BPM, bpmRange)
-	g.Fade = calc.Limit(g.Fade, fadeRange)
+func (g *Gate) initialize(sampleRate, bpm float64) {
+	g.samplesPerBeat = samplesPerBeat(sampleRate, bpm, g.Sub)
+	g.Sub = int(calc.Limit(float64(g.Sub), subdivisionsRange))
 	g.Index = int(calc.Limit(float64(g.Index), calc.Range{Min: 0, Max: float64(len(g.Signal) - 1)}))
 	g.idx = float64(g.Index)
-
-	g.bpmFader = &fader{
-		current: g.BPM,
-		target:  g.BPM,
-	}
-	g.bpmFader.initialize(g.Fade, sampleRate)
 
 	for i, val := range g.Signal {
 		if val <= 0 {
@@ -60,16 +48,8 @@ func (g *Gate) Update(new *Gate) {
 	if new == nil {
 		return
 	}
-
-	g.CV = new.CV
-	g.Mod = new.Mod
 	g.Signal = new.Signal
-	g.Fade = new.Fade
-
-	if g.bpmFader != nil {
-		g.bpmFader.target = new.BPM
-		g.bpmFader.initialize(g.Fade, g.sampleRate)
-	}
+	g.samplesPerBeat = new.samplesPerBeat
 }
 
 func (g *Gate) Step(modules *ModuleMap) {
@@ -84,31 +64,13 @@ func (g *Gate) Step(modules *ModuleMap) {
 		Right: val / 2,
 	}
 
-	bpm := g.BPM
-	if g.CV != "" {
-		bpm = cv(bpmRange, getMono(modules, g.CV))
-	}
-
-	bpm = modulate(bpm, bpmRange, getMono(modules, g.Mod))
-	spb := samplesPerBeat(g.sampleRate, bpm)
-	if spb == 0 {
-		return
-	}
-
-	g.idx += 1 / spb
-	g.fade()
+	g.idx += 1 / g.samplesPerBeat
 }
 
-func (g *Gate) fade() {
-	if g.bpmFader != nil {
-		g.BPM = g.bpmFader.fade()
-	}
-}
-
-func samplesPerBeat(sampleRate, bpm float64) float64 {
-	if bpm == 0 {
+func samplesPerBeat(sampleRate, bpm float64, subdivisions int) float64 {
+	if bpm == 0 || subdivisions == 0 {
 		return math.Inf(1)
 	}
 
-	return sampleRate * 60 / bpm
+	return sampleRate * 60 / (bpm * float64(subdivisions))
 }

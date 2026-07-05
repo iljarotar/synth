@@ -1,5 +1,6 @@
 vol: 1
 out: main
+bpm: 100
 
 delays:
   delay-bass:
@@ -19,7 +20,7 @@ envelopes:
 
 gates:
   gate:
-    bpm: 400
+    sub: 2
     signal: [
       1,0,0,0,
       0,0,1,0,

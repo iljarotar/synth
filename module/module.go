@@ -22,9 +22,9 @@ type (
 )
 
 var (
-	bpmRange = calc.Range{
+	subdivisionsRange = calc.Range{
 		Min: 0,
-		Max: 2000,
+		Max: 128,
 	}
 	envelopeRange = calc.Range{
 		Min: 1e-15,

@@ -19,6 +19,7 @@ type Output struct {
 type Synth struct {
 	Out    string  `yaml:"out"`
 	Volume float64 `yaml:"vol"`
+	BPM    float64 `yaml:"bpm"`
 
 	Delays      module.DelayMap      `yaml:"delays"`
 	Envelopes   module.EnvelopeMap   `yaml:"envelopes"`
@@ -79,7 +80,7 @@ func (s *Synth) Initialize(sampleRate float64) error {
 
 	s.Delays.Initialize(sampleRate)
 	s.Envelopes.Initialize(sampleRate)
-	s.Gates.Initialize(sampleRate)
+	s.Gates.Initialize(sampleRate, s.BPM)
 	s.Pans.Initialize(sampleRate)
 	s.Wavetables.Initialize(sampleRate)
 
@@ -95,6 +96,7 @@ func (s *Synth) Update(from *Synth) error {
 	s.addNewModules(from)
 	s.updateModules(from)
 	s.Out = from.Out
+	s.BPM = from.BPM
 
 	return nil
 }
