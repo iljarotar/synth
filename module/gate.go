@@ -49,6 +49,7 @@ func (g *Gate) Update(new *Gate) {
 		return
 	}
 	g.Signal = new.Signal
+	g.Sub = new.Sub
 	g.samplesPerBeat = new.samplesPerBeat
 }
 

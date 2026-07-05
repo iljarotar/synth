@@ -86,6 +86,7 @@ func TestSynth_Update(t *testing.T) {
 			s: &Synth{
 				Out:    "main",
 				Volume: 0.5,
+				BPM:    120,
 				Delays: module.DelayMap{
 					"d1": d1,
 					"d2": d2,
@@ -173,6 +174,7 @@ func TestSynth_Update(t *testing.T) {
 			new: &Synth{
 				Out:    "new-main",
 				Volume: 0.5,
+				BPM:    150,
 				Delays: module.DelayMap{
 					"d2": {
 						Time: 20,
@@ -205,7 +207,8 @@ func TestSynth_Update(t *testing.T) {
 				},
 				Gates: module.GateMap{
 					"g2": {
-						Sub:    20,
+						Sub:    2,
+						Index:  4,
 						Signal: []float64{1},
 					},
 				},
@@ -264,6 +267,7 @@ func TestSynth_Update(t *testing.T) {
 			want: &Synth{
 				Out:    "new-main",
 				Volume: 0.5,
+				BPM:    150,
 				Delays: module.DelayMap{
 					"d2": {
 						Time: 20,
@@ -288,6 +292,7 @@ func TestSynth_Update(t *testing.T) {
 				},
 				Gates: module.GateMap{
 					"g2": {
+						Sub:    2,
 						Signal: []float64{1},
 					},
 				},

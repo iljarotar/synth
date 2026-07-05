@@ -179,6 +179,7 @@ gates:
 
     # Provides an initial offset to the signal.
     # Count starts at 0.
+    # Index will not be updated while playing.
     index: 4
 
 # Mixers combine outputs of multiple modules and control their output levels.
