@@ -106,8 +106,6 @@ func (m *Mixer) Step(modules *ModuleMap) {
 		Right: right,
 	}
 
-	fmt.Println(mono)
-
 	m.fade()
 }
 
