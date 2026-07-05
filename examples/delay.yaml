@@ -20,7 +20,7 @@ envelopes:
 
 gates:
   gate:
-    sub: 2
+    sub: 4
     signal: [
       1,0,0,0,
       0,0,1,0,

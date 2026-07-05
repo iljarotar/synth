@@ -1,6 +1,6 @@
 vol: 1
 out: main
-bpm: 60
+bpm: 100
 
 envelopes:
   env:
@@ -36,7 +36,7 @@ mixers:
 oscillators:
   sine:
     type: Sine
-    freq: 80
+    freq: 240
 
   lfo:
     type: Sine

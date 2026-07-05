@@ -65,259 +65,255 @@ To control the amount of modulation you must send the modulator through a mixer 
 The following yaml file provides examples and explanations for all configuration parameters.
 
 ```yaml
-# my-patch.yaml
+# My-patch.yaml.
 
-# main volume control
-# range [0, 1]
+# Main volume control.
+# Range [0, 1].
 vol: 1
 
-# name of the module to output
+# Name of the module to output.
 out: name-of-main-module
 
-# delay effects
+# Global beats per minute used as the base tempo for all gate modules.
+# Range [0, 400]
+bpm: 120
+
+# Delay effects.
 delays:
-  # the unique module name to be used as a reference in other modules
+  # The unique module name to be used as a reference in other modules.
   delay:
-    # delay time in milliseconds in range [0, 5000]
+    # Delay time in milliseconds in range [0, 5000].
     time: 100
 
-    # gain of delayed signal in range [0, 1]
+    # Gain of delayed signal in range [0, 1].
     gain: 0.25
 
-    # name of the module to run through the delay
+    # Name of the module to run through the delay.
     in: name-of-input-module
 
-    # cv for mix
+    # CV for mix.
     cv: name-of-cv-module
 
-    # modulator for mix
+    # Modulator for mix.
     mod: name-of-modulator
 
-    # fade controls the transition length in seconds
-    # affected parameter is gain
+    # Fade controls the transition length in seconds.
+    # Affected parameter is gain.
     fade: 2
 
-# adsr envelopes
-# output values in range [0, 1]
+# Adsr envelopes.
+# Output values in range [0, 1].
 envelopes:
-  # the unique module name to be used as a reference in other modules
+  # The unique module name to be used as a reference in other modules.
   envelope:
-    # attack length in seconds
-    # range [1e-15, 3600]
+    # Attack length in seconds.
+    # Range [1e-15, 3600].
     attack: 0.1
 
-    # decay length in seconds
-    # range [1e-15, 3600]
+    # Decay length in seconds.
+    # Range [1e-15, 3600].
     decay: 0.05
 
-    # release length in seconds
-    # range [1e-15, 3600]
+    # Release length in seconds.
+    # Range [1e-15, 3600].
     release: 2
 
-    # peak level targeted during the attack phase
-    # range [0, 1]
+    # Peak level targeted during the attack phase.
+    # Range [0, 1].
     peak: 1
 
-    # sustain level
-    # range [0, 1]
+    # Sustain level.
+    # Range [0, 1].
     level: 0.75
 
-    # name of the module to use as a gate signal
-    # when gate output changes from negative or zero to positive the envelope is triggered
-    # while gate is positive the attack, decay or sustain phases are active
-    # when gate output changes from positive to negative or zero the envelope is released
+    # Name of the module to use as a gate signal.
+    # When gate output changes from negative or zero to positive the envelope is triggered.
+    # While gate is positive the attack, decay or sustain phases are active.
+    # When gate output changes from positive to negative or zero the envelope is released.
     gate: name-of-gate-module
 
-    # fade controls the transition length in seconds
-    # affected parameters are attack, decay, release, peak and level
+    # Fade controls the transition length in seconds.
+    # Affected parameters are attack, decay, release, peak and level.
     fade: 2
 
-# filters of type low pass, high pass or band pass
+# Filters of type low pass, high pass or band pass.
 filters:
-  # the unique module name to be used as a reference in other modules
+  # The unique module name to be used as a reference in other modules.
   filter:
-    # one of LowPass, HighPass, BandPass
+    # One of LowPass, HighPass, BandPass.
     type: BandPass
 
-    # critical frequency
-    # range [0, 20000]
+    # Critical frequency.
+    # Range [0, 20000].
     freq: 500
 
-    # band width in case of type BandPass
-    # ignored for other types
+    # Band width in case of type BandPass.
+    # Ignored for other types.
     width: 50
 
-    # cv for freq
+    # CV for freq.
     cv: name-of-cv
 
-    # modulator for freq
+    # Modulator for freq.
     mod: name-of-modulator
 
-    # name of the module whose output will be filtered
+    # Name of the module whose output will be filtered.
     in: name-of-input-module
 
-    # fade controls the transition length in seconds
-    # affected parameters are freq and width
+    # Fade controls the transition length in seconds.
+    # Affected parameters are freq and width.
     fade: 2
 
-# gates can be used as gates for envelopes or sequencers or as triggers for samplers.
+# Gates can be used as gates for envelopes or sequencers or as triggers for samplers.
 gates:
-  # the unique module name to be used as a reference in other modules
+  # The unique module name to be used as a reference in other modules.
   gate:
-    # beats per minute controls the tempo of the gate signal
-    bpm: 260
+    # Number of sub divisions of a single beat in range [0, 128].
+    # For example, a global bpm of 120 with 4 sub divisions results in 4*120 advancements of the signal per minute.
+    # Since the signal has to change from 0 to one 1 or vice versa to actually trigger some other module, this would result in 2*120 possible beats.
+    sub: 4
 
-    # cv for bpm
-    cv: name-of-cv
-
-    # modulator for bpm
-    mod: name-of-modulator
-
-    # binary signal
-    # each negative or zero value will be mapped to -1, each positive to 1
+    # Binary signal.
+    # Each negative or zero value will be mapped to -1, each positive to 1.
     signal: [1, 0, 0, 1, 0, 1, 1, 0, 1, 0]
 
-    # provides an initial offset to the signal
-    # count starts at 0
+    # Provides an initial offset to the signal.
+    # Count starts at 0.
     index: 4
 
-    # fade controls the transition length in seconds
-    # affected parameter is bpm
-    fade: 2
-
-# mixers combine outputs of multiple modules and control their output levels
+# Mixers combine outputs of multiple modules and control their output levels.
 mixers:
-  # the unique module name to be used as a reference in other modules
+  # The unique module name to be used as a reference in other modules.
   mixer:
-    # gain in range [0, 1]
+    # Gain in range [0, 1].
     gain: 0.5
 
-    # cv for gain
+    # CV for gain.
     cv: name-of-cv
 
-    # modulator for gain
+    # Modulator for gain.
     mod: name-of-modulator
 
-    # mapping of module names to their corresponding gain levels
-    # these gain levels can be in the range [0, 1000]
-    # the output will be limited not to exceed the range [-1, 1]
+    # Mapping of module names to their corresponding gain levels.
+    # These gain levels can be in the range [0, 1000].
+    # The output will be limited not to exceed the range [-1, 1].
     in:
       name-of-first-module: 0.5
       name-of-second-module: 0.25
 
-    # fade controls the transition length in seconds
-    # affected parameters are gain as well as all input modules' gain levels
+    # Fade controls the transition length in seconds.
+    # Affected parameters are gain as well as all input modules' gain levels.
     fade: 2
 
-# noise modules simple output random values
+# Noise modules simple output random values.
 noises:
-  # the unique module name to be used as a reference in other modules
-  # a noise module doesn't have any parameters to configure, so pass an empty object {}
+  # The unique module name to be used as a reference in other modules.
+  # A noise module doesn't have any parameters to configure, so pass an empty object {}.
   noise: {}
 
-# oscillators output basic wave forms like sine waves, triangles, etc.
+# Oscillators output basic wave forms like sine waves, triangles, etc..
 oscillators:
-  # the unique module name to be used as a reference in other modules
+  # The unique module name to be used as a reference in other modules.
   oscillator:
-    # one of Sine, Square, Triangle, Sawtooth, ReverseSawtooth
+    # One of Sine, Square, Triangle, Sawtooth, ReverseSawtooth.
     type: Sine
 
-    # frequency in range [0, 20000]
+    # Frequency in range [0, 20000].
     freq: 440
 
-    # cv for freq
+    # CV for freq.
     cv: name-of-cv
 
-    # modulator for freq
-    # maximum amount of modulation is one octave up and down
+    # Modulator for freq.
+    # Maximum amount of modulation is one octave up and down.
     mod: name-of-mod
 
-    # static phase shift in percent of one period
-    # range [-1, 1]
+    # Static phase shift in percent of one period.
+    # Range [-1, 1].
     phase: 0.75
 
-    # fade controls the transition length in seconds
-    # affected parameters are freq and phase
+    # Fade controls the transition length in seconds.
+    # Affected parameters are freq and phase.
     fade: 2
 
-# pan modules are used to add stereo balance
+# Pan modules are used to add stereo balance.
 pans:
-  # the unique module name to be used as a reference in other modules
+  # The unique module name to be used as a reference in other modules.
   pan:
-    # specifies how big a portion of the signal is output through the left and right channels
-    # range [1-, 1]
-    # a value of -1 places the signal completely to the left, 1 places it to the right
+    # Specifies how big a portion of the signal is output through the left and right channels.
+    # Range [1-, 1].
+    # A value of -1 places the signal completely to the left, 1 places it to the right.
     pan: -0.5
 
-    # name of the module whose output should be stereo balanced
+    # Name of the module whose output should be stereo balanced.
     in: name-of-input-module
 
-    # modulator for pan
+    # Modulator for pan.
     mod: name-of-mod
 
-    # fade controls the transition length in seconds
-    # affected parameter is pan
+    # Fade controls the transition length in seconds.
+    # Affected parameter is pan.
     fade: 2
 
-# sample and hold modules
+# Sample and hold modules.
 samplers:
-  # the unique module name to be used as a reference in other modules
+  # The unique module name to be used as a reference in other modules.
   sampler:
-    # name of the module that is being sampled
+    # Name of the module that is being sampled.
     in: name-of-input-module
 
-    # name of the trigger module
-    # when the trigger's output value changes from negative of zero to positive a new sample is taken from the input modules output
+    # Name of the trigger module.
+    # When the trigger's output value changes from negative of zero to positive a new sample is taken from the input modules output.
     trigger: name-of-trigger-module
 
-# sequencers can be combined with oscillators or wavetables to create melodic sequences
-# output values in range [0, 1]
+# Sequencers can be combined with oscillators or wavetables to create melodic sequences.
+# Output values in range [0, 1].
 sequencers:
-  # the unique module name to be used as a reference in other modules
+  # The unique module name to be used as a reference in other modules.
   sequencer:
-    # a sequence of notes in scientific pitch notation
-    # flats are denoted by 'b', sharps by '#'
-    # a note is separated from its octave by an underscore
-    # minimum octave is 0, maximum is 10
+    # A sequence of notes in scientific pitch notation.
+    # Flats are denoted by 'b', sharps by '#'.
+    # A note is separated from its octave by an underscore.
+    # Minimum octave is 0, maximum is 10.
     sequence: ["a_4", "eb_3", "c#_5"]
 
-    # when the trigger's value changes from negative or zero to positive the next note in the sequence is triggered
+    # When the trigger's value changes from negative or zero to positive the next note in the sequence is triggered.
     trigger: name-of-trigger-module
 
-    # base pitch from which to calculate all other frequencies
+    # Base pitch from which to calculate all other frequencies.
     pitch: 440
 
-    # transpose the whole sequence by any number of semitones
-    # range [-24, 24]
+    # Transpose the whole sequence by any number of semitones.
+    # Range [-24, 24].
     transpose: -4
 
-    # if true the notes in the sequence will be played in random order
+    # If true the notes in the sequence will be played in random order.
     randomize: true
 
-    # provides an initial offset to the sequence
-    # count starts at 0
+    # Provides an initial offset to the sequence.
+    # Count starts at 0.
     index: 2
 
-# pass any values to a wavetable to create arbitrary signals
+# Pass any values to a wavetable to create arbitrary signals.
 wavetables:
-  # the unique module name to be used as a reference in other modules
+  # The unique module name to be used as a reference in other modules.
   wavetable:
-    # frequency in range [0, 20000]
-    # specifies how many times per second the entire signal given in the signal field will be played
+    # Frequency in range [0, 20000].
+    # Specifies how many times per second the entire signal given in the signal field will be played.
     freq: 440
 
-    # cv for freq
+    # CV for freq.
     cv: name-of-cv
 
-    # modulator for freq
+    # Modulator for freq.
     mod: name-of-mod
 
-    # an arbitrary signal
-    # the signal can have any length
+    # An arbitrary signal.
+    # The signal can have any length.
     signal: [-1, 0, 0.25, -0.3, 0.8, 1]
 
-    # fade controls the transition length in seconds
-    # affected parameter is freq
+    # Fade controls the transition length in seconds.
+    # Affected parameter is freq.
     fade: 2
 ```
 

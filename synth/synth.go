@@ -8,8 +8,15 @@ import (
 	"github.com/samber/lo"
 )
 
-const (
-	maxVolume = 1
+var (
+	volumeRange = calc.Range{
+		Min: 0,
+		Max: 1,
+	}
+	bpmRange = calc.Range{
+		Min: 0,
+		Max: 400,
+	}
 )
 
 type Output struct {
@@ -55,10 +62,8 @@ type Synth struct {
 
 func (s *Synth) Initialize(sampleRate float64) error {
 	s.sampleRate = sampleRate
-	s.Volume = calc.Limit(s.Volume, calc.Range{
-		Min: 0,
-		Max: maxVolume,
-	})
+	s.Volume = calc.Limit(s.Volume, volumeRange)
+	s.BPM = calc.Limit(s.BPM, bpmRange)
 	s.volumeMemory = s.Volume
 	s.Volume = 0
 	s.initializeEmptyMaps()
