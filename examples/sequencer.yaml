@@ -1,5 +1,6 @@
 vol: 1
 out: main
+bpm: 250
 
 envelopes:
   env:
@@ -12,7 +13,7 @@ envelopes:
 
 gates:
   gate:
-    bpm: 1000
+    sub: 4
     signal: [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0]
     index: 10
 
