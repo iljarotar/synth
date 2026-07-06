@@ -102,6 +102,7 @@ func (s *Synth) Update(from *Synth) error {
 	s.updateModules(from)
 	s.Out = from.Out
 	s.BPM = from.BPM
+	s.Volume = from.volumeMemory
 
 	return nil
 }
